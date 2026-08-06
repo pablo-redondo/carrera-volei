@@ -20,7 +20,8 @@ function renderSidebar(jugador) {
   const overall = calcularOverall(jugador);
   const posicion = POSICIONES[jugador.posicionId].nombre;
   const paisJugador = PAISES[jugador.paisId];
-  const paisClub = PAISES[jugador.club.paisId];
+  const ligaClub = PAISES[jugador.club.paisId].ligas[jugador.club.division];
+  const etiquetaDivision = jugador.club.division === "primera" ? "1ª división" : "2ª división";
 
   const barras = ATRIBUTOS.map((a) => {
     const v = jugador.atributos[a.id];
@@ -38,7 +39,7 @@ function renderSidebar(jugador) {
     <div class="sub">${posicion} · ${jugador.edad} años · Selección de ${escapar(paisJugador.nombre)}</div>
     <div class="club-actual">
       🏐 <b>${escapar(jugador.club.nombre)}</b><br>
-      ${escapar(paisClub.liga)} (${escapar(paisClub.nombre)})
+      ${escapar(ligaClub.nombre)} (${etiquetaDivision}) — ${escapar(PAISES[jugador.club.paisId].nombre)}
     </div>
     <div class="overall">
       <span class="num">${overall}</span>
@@ -99,7 +100,7 @@ function renderCreacion(cb) {
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <div class="tarjeta-posicion ${estadoLocal.paisId === id ? "seleccionada" : ""}" data-pais="${id}">
         <h3>${p.nombre}</h3>
-        <p>${p.liga} · nivel ${p.nivelLiga}/10</p>
+        <p>${p.ligas.primera.nombre} (nivel ${p.ligas.primera.nivelLiga}/10)<br>${p.ligas.segunda.nombre} (nivel ${p.ligas.segunda.nivelLiga}/10)</p>
       </div>
     `).join("");
 
@@ -136,7 +137,7 @@ function renderCreacion(cb) {
           <input type="text" id="input-nombre" maxlength="24" placeholder="Ej. Laura Martín" value="${escapar(estadoLocal.nombre)}">
         </div>
         <div class="form-fila">
-          <label>Selección nacional / país</label>
+          <label>Selección nacional / país — empezarás en un club de la 2ª división de este país</label>
           <div class="posiciones-grid">${paisesHtml}</div>
         </div>
         <div class="form-fila">
@@ -247,9 +248,9 @@ function renderResultadoEvento(mensaje, cb) {
 
 /* ================= RESUMEN DE TEMPORADA ================= */
 function renderResumenTemporada(jugador, resultado, cb) {
-  const pais = PAISES[jugador.club.paisId];
+  const liga = PAISES[jugador.club.paisId].ligas[jugador.club.division];
   const chips = [];
-  if (resultado.esCampeon) chips.push(`<span class="chip oro">🏆 Campeón/a de ${escapar(pais.liga)}</span>`);
+  if (resultado.esCampeon) chips.push(`<span class="chip oro">🏆 Campeón/a de ${escapar(liga.nombre)}</span>`);
   if (resultado.copa) chips.push(`<span class="chip oro">🥇 Copa</span>`);
   if (resultado.temporadaDificil) chips.push(`<span class="chip rojo">📉 Temporada difícil</span>`);
   if (resultado.lesionado) chips.push(`<span class="chip rojo">🩹 Lesión durante la temporada</span>`);
@@ -269,7 +270,7 @@ function renderResumenTemporada(jugador, resultado, cb) {
   $pantalla().innerHTML = `
     <div class="panel">
       <h2>Resumen de la temporada — ${jugador.edad} años</h2>
-      <p class="narrativa">${escapar(jugador.club.nombre)} finaliza la temporada de ${escapar(pais.liga)} en la <b>${resultado.posicion}ª posición</b> de ${resultado.nClubes}.</p>
+      <p class="narrativa">${escapar(jugador.club.nombre)} finaliza la temporada de ${escapar(liga.nombre)} en la <b>${resultado.posicion}ª posición</b> de ${resultado.nClubes}.</p>
       ${resultado.fraseFinal ? `<p class="narrativa destacada">${resultado.fraseFinal}</p>` : ""}
       <div class="chips">${chips.join("")}</div>
       <table class="tabla-stats">
@@ -308,11 +309,14 @@ function renderConvocatoria(jugador, info, cb) {
 function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
   const tarjetas = ofertas.map((o, i) => {
     const paisOferta = PAISES[o.paisId];
+    const ligaOferta = paisOferta.ligas[o.division];
+    const etiquetaDivision = o.division === "primera" ? "1ª división" : "2ª división";
     const etiquetaPais = o.internacional ? ` 🌍 ${escapar(paisOferta.nombre)}` : "";
+    const etiquetaAscenso = o.ascenso ? ` ⬆️` : "";
     return `
     <button class="opcion" data-idx="${i}">
-      <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}${etiquetaPais}</span>
-      <span class="detalle-opcion">${escapar(paisOferta.liga)} · Salario estimado: ${o.salario.toLocaleString("es-ES")} €/temporada</span>
+      <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}${etiquetaPais}${etiquetaAscenso}</span>
+      <span class="detalle-opcion">${escapar(ligaOferta.nombre)} (${etiquetaDivision}) · Salario estimado: ${o.salario.toLocaleString("es-ES")} €/temporada</span>
     </button>
   `;
   }).join("");
@@ -340,9 +344,11 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
 /* ================= RETIRO / FIN DE CARRERA ================= */
 function renderRetiro(jugador, legado, cb) {
   const e = jugador.estadisticasCarrera;
-  const historialClubes = jugador.historialClubes.map((c) =>
-    `<tr><td>${escapar(c.club)}</td><td>${escapar(PAISES[c.paisId].liga)} (${escapar(PAISES[c.paisId].nombre)})</td><td>Desde los ${c.desdeEdad} años</td></tr>`
-  ).join("");
+  const historialClubes = jugador.historialClubes.map((c) => {
+    const liga = PAISES[c.paisId].ligas[c.division];
+    const etiquetaDivision = c.division === "primera" ? "1ª división" : "2ª división";
+    return `<tr><td>${escapar(c.club)}</td><td>${escapar(liga.nombre)} (${etiquetaDivision}, ${escapar(PAISES[c.paisId].nombre)})</td><td>Desde los ${c.desdeEdad} años</td></tr>`;
+  }).join("");
 
   const titulos = jugador.titulos.length
     ? `<div class="chips">${jugador.titulos.map((t) => `<span class="chip oro">🏆 ${t.tipo} — ${escapar(t.liga)} (${t.edad} años, ${escapar(t.club)})</span>`).join("")}</div>`

@@ -13,6 +13,7 @@ function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
 function clampAtributo(v) { return clamp(Math.round(v), 1, 99); }
+function divisionLiga(paisId, division) { return PAISES[paisId].ligas[division]; }
 
 /* ---------------- creación de jugador ---------------- */
 function crearJugador({ nombre, paisId, posicionId, reparto }) {
@@ -22,9 +23,8 @@ function crearJugador({ nombre, paisId, posicionId, reparto }) {
     atributos[a.id] = clampAtributo(perfil.base[a.id] + (reparto[a.id] || 0));
   }
 
-  const pais = PAISES[paisId];
-  const clubesModestos = pais.clubes.filter((c) => c.prestigio <= 5);
-  const clubInicial = pick(clubesModestos.length ? clubesModestos : pais.clubes);
+  const segunda = PAISES[paisId].ligas.segunda;
+  const clubInicial = pick(segunda.clubes);
 
   return {
     nombre: nombre || "Jugador/a",
@@ -35,8 +35,8 @@ function crearJugador({ nombre, paisId, posicionId, reparto }) {
     moral: 70,
     dinero: 0,
     reputacion: 10,
-    club: { nombre: clubInicial.nombre, paisId, prestigio: clubInicial.prestigio },
-    historialClubes: [{ club: clubInicial.nombre, paisId, desdeEdad: EDAD_INICIAL }],
+    club: { nombre: clubInicial.nombre, paisId, division: "segunda", prestigio: clubInicial.prestigio },
+    historialClubes: [{ club: clubInicial.nombre, paisId, division: "segunda", desdeEdad: EDAD_INICIAL }],
     titulos: [],
     convocatoriasSeleccion: 0,
     torneosInternacionales: [],
@@ -59,13 +59,24 @@ function calcularOverall(jugador) {
 
 /* ---------------- curva de crecimiento por edad ---------------- */
 function rangoCrecimiento(edad) {
-  if (edad <= 19) return { entrenado: [3, 6], secundario: [0, 2] };
-  if (edad <= 23) return { entrenado: [2, 4], secundario: [0, 1] };
-  if (edad <= 27) return { entrenado: [1, 3], secundario: [-1, 1] };
-  if (edad <= 30) return { entrenado: [0, 2], secundario: [-1, 1] };
-  if (edad <= 33) return { entrenado: [-1, 1], secundario: [-2, 0] };
-  if (edad <= 36) return { entrenado: [-2, 0], secundario: [-3, -1] };
-  return { entrenado: [-4, -1], secundario: [-4, -2] };
+  if (edad <= 19) return { entrenado: [6, 10], secundario: [3, 6] };
+  if (edad <= 23) return { entrenado: [4, 7], secundario: [2, 4] };
+  if (edad <= 27) return { entrenado: [1, 3], secundario: [1, 2] };
+  if (edad <= 30) return { entrenado: [0, 2], secundario: [0, 1] };
+  if (edad <= 33) return { entrenado: [-1, 1], secundario: [-1, 1] };
+  if (edad <= 36) return { entrenado: [-3, -1], secundario: [-2, 0] };
+  return { entrenado: [-5, -2], secundario: [-4, -2] };
+}
+
+/* Las 3 características (además del foco elegido) con más peso en la posición
+   del jugador: son las que un profesional desarrolla de forma natural al
+   entrenar, sea cual sea el ejercicio concreto que elija cada temporada. */
+function atributosSecundarios(jugador, focoId) {
+  const pesos = POSICIONES[jugador.posicionId].pesos;
+  return ATRIBUTOS.map((a) => a.id)
+    .filter((id) => id !== focoId && pesos[id] > 0)
+    .sort((a, b) => pesos[b] - pesos[a])
+    .slice(0, 3);
 }
 
 function aplicarEntrenamiento(jugador, focoId) {
@@ -77,10 +88,7 @@ function aplicarEntrenamiento(jugador, focoId) {
     jugador.moral = clamp(jugador.moral + 3, 0, 100);
   } else {
     cambios[focoId] = randInt(rango.entrenado[0], rango.entrenado[1]);
-    const otros = ATRIBUTOS.map((a) => a.id).filter((id) => id !== focoId && POSICIONES[jugador.posicionId].pesos[id] > 0);
-    for (let i = 0; i < 2 && otros.length; i++) {
-      const idx = randInt(0, otros.length - 1);
-      const id = otros.splice(idx, 1)[0];
+    for (const id of atributosSecundarios(jugador, focoId)) {
       cambios[id] = (cambios[id] || 0) + randInt(rango.secundario[0], rango.secundario[1]);
     }
   }
@@ -114,12 +122,12 @@ function aplicarEfectoEvento(jugador, efecto) {
 /* ---------------- simulación de temporada ---------------- */
 function simularTemporada(jugador) {
   const overall = calcularOverall(jugador);
-  const pais = PAISES[jugador.club.paisId];
-  const clubesLiga = pais.clubes;
+  const liga = divisionLiga(jugador.club.paisId, jugador.club.division);
+  const clubesLiga = liga.clubes;
   const nClubes = clubesLiga.length;
 
-  const fuerzaEquipo = clamp(overall * 0.5 + pais.nivelLiga * 3 + jugador.club.prestigio * 2.5 + randInt(-6, 6), 5, 99);
-  const promedioLiga = 20 + pais.nivelLiga * 6.5;
+  const fuerzaEquipo = clamp(overall * 0.5 + liga.nivelLiga * 3 + jugador.club.prestigio * 2.5 + randInt(-6, 6), 5, 99);
+  const promedioLiga = 15 + liga.nivelLiga * 6.5;
   const diferencia = fuerzaEquipo - promedioLiga;
 
   let posicion = clamp(Math.round((nClubes + 1) / 2 - diferencia / 9 + randInt(-1, 1)), 1, nClubes);
@@ -177,8 +185,9 @@ function aplicarResultadoTemporada(jugador, resultado) {
   if (resultado.titular) e.temporadasComoTitular++;
 
   const pais = PAISES[jugador.club.paisId];
-  if (resultado.esCampeon) jugador.titulos.push({ tipo: "Liga", liga: pais.liga, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
-  if (resultado.copa) jugador.titulos.push({ tipo: "Copa", liga: pais.liga, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
+  const liga = pais.ligas[jugador.club.division];
+  if (resultado.esCampeon) jugador.titulos.push({ tipo: "Liga", liga: liga.nombre, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
+  if (resultado.copa) jugador.titulos.push({ tipo: "Copa", liga: liga.nombre, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
 
   jugador.reputacion = clamp(jugador.reputacion + (resultado.esCampeon ? 8 : 0) + (resultado.titular ? 3 : -1) - (resultado.temporadaDificil ? 3 : 0), 0, 100);
   jugador.moral = clamp(jugador.moral + (resultado.esCampeon ? 10 : 0) - (resultado.temporadaDificil ? 6 : 0) - (resultado.lesionado ? 8 : 0), 0, 100);
@@ -187,7 +196,8 @@ function aplicarResultadoTemporada(jugador, resultado) {
     edad: jugador.edad,
     club: jugador.club.nombre,
     pais: pais.nombre,
-    liga: pais.liga,
+    liga: liga.nombre,
+    division: jugador.club.division,
     posicion: resultado.posicion,
     nClubes: resultado.nClubes,
     overall: resultado.overall,
@@ -200,10 +210,10 @@ function aplicarResultadoTemporada(jugador, resultado) {
 /* ---------------- selección nacional ---------------- */
 function comprobarSeleccionNacional(jugador) {
   const overall = calcularOverall(jugador);
-  const umbral = jugador.posicionId === "libero" ? 62 : 68;
+  const umbral = jugador.posicionId === "libero" ? 70 : 76;
   if (overall < umbral || jugador.edad < 18 || jugador.edad > 34) return null;
 
-  const probabilidad = clamp((overall - umbral) * 2 + jugador.reputacion / 4, 0, 55);
+  const probabilidad = clamp((overall - umbral) * 2.2 + jugador.reputacion / 4, 0, 55);
   if (Math.random() * 100 > probabilidad) return null;
 
   jugador.convocatoriasSeleccion++;
@@ -215,10 +225,10 @@ function comprobarSeleccionNacional(jugador) {
     const torneo = pick(TORNEOS);
     const rendimiento = overall + randInt(-15, 15);
     let resultadoTexto;
-    if (rendimiento >= 88) resultadoTexto = "🥇 Medalla de oro";
-    else if (rendimiento >= 78) resultadoTexto = "🥈 Medalla de plata";
-    else if (rendimiento >= 70) resultadoTexto = "🥉 Medalla de bronce";
-    else if (rendimiento >= 55) resultadoTexto = "Semifinales";
+    if (rendimiento >= 95) resultadoTexto = "🥇 Medalla de oro";
+    else if (rendimiento >= 88) resultadoTexto = "🥈 Medalla de plata";
+    else if (rendimiento >= 82) resultadoTexto = "🥉 Medalla de bronce";
+    else if (rendimiento >= 72) resultadoTexto = "Semifinales";
     else resultadoTexto = "Fase de grupos";
     torneoResultado = { torneo, resultado: resultadoTexto, edad: jugador.edad };
     jugador.torneosInternacionales.push(torneoResultado);
@@ -234,44 +244,65 @@ function comprobarSeleccionNacional(jugador) {
 function generarOfertas(jugador, resultadoTemporada) {
   const overall = resultadoTemporada.overall;
   const paisActual = PAISES[jugador.club.paisId];
+  const divisionActual = jugador.club.division;
   const ofertas = [];
 
   // Renovación con el club actual
   ofertas.push({
     club: jugador.club.nombre,
     paisId: jugador.club.paisId,
+    division: divisionActual,
     prestigio: jugador.club.prestigio,
-    salario: Math.round(jugador.club.prestigio * 1400 + overall * 90 + randInt(-300, 300)),
+    salario: Math.round(jugador.club.prestigio * 1000 + overall * 90 + randInt(-300, 300)),
     esActual: true,
   });
 
-  // Ofertas nacionales: clubes del mismo país, preferentemente de prestigio similar o superior si rindes bien
-  const candidatosNacionales = paisActual.clubes.filter((c) => c.nombre !== jugador.club.nombre);
+  // Ofertas nacionales de la misma división
+  const candidatosMismaDivision = paisActual.ligas[divisionActual].clubes.filter((c) => c.nombre !== jugador.club.nombre);
   const nOfertasNacionales = randInt(1, 2);
-  for (let i = 0; i < nOfertasNacionales && candidatosNacionales.length; i++) {
-    const club = pick(candidatosNacionales);
+  for (let i = 0; i < nOfertasNacionales && candidatosMismaDivision.length; i++) {
+    const club = pick(candidatosMismaDivision);
     if (ofertas.some((o) => o.club === club.nombre)) continue;
     ofertas.push({
       club: club.nombre,
       paisId: jugador.club.paisId,
+      division: divisionActual,
       prestigio: club.prestigio,
-      salario: Math.round(club.prestigio * 1400 + overall * 90 + randInt(-300, 500)),
+      salario: Math.round(club.prestigio * 1000 + overall * 90 + randInt(-300, 500)),
       esActual: false,
     });
   }
 
-  // Oferta internacional: solo si el rendimiento y la reputación lo justifican
-  const probInternacional = clamp((overall - 65) * 2 + jugador.reputacion / 3, 0, 60);
+  // Ascenso a primera división (si juegas en segunda y rindes muy bien)
+  if (divisionActual === "segunda") {
+    const probAscenso = clamp((overall - 55) * 2 + jugador.reputacion / 3, 0, 55);
+    if (Math.random() * 100 < probAscenso) {
+      const club = pick(paisActual.ligas.primera.clubes);
+      ofertas.push({
+        club: club.nombre,
+        paisId: jugador.club.paisId,
+        division: "primera",
+        prestigio: club.prestigio,
+        salario: Math.round(club.prestigio * 1400 + overall * 110 + randInt(0, 600)),
+        esActual: false,
+        ascenso: true,
+      });
+    }
+  }
+
+  // Oferta internacional: solo a clubes de primera división de otro país, si el nivel lo justifica
+  const probInternacional = clamp((overall - 72) * 2.2 + jugador.reputacion / 3, 0, 55);
   if (Math.random() * 100 < probInternacional) {
     const otrosPaisesIds = Object.keys(PAISES).filter((id) => id !== jugador.club.paisId);
     const paisDestinoId = pick(otrosPaisesIds);
     const paisDestino = PAISES[paisDestinoId];
-    const club = pick(paisDestino.clubes);
+    const club = pick(paisDestino.ligas.primera.clubes);
     ofertas.push({
       club: club.nombre,
       paisId: paisDestinoId,
+      division: "primera",
       prestigio: club.prestigio,
-      salario: Math.round(club.prestigio * 1600 + paisDestino.nivelLiga * 300 + overall * 110 + randInt(0, 800)),
+      salario: Math.round(club.prestigio * 1600 + paisDestino.ligas.primera.nivelLiga * 300 + overall * 120 + randInt(0, 800)),
       esActual: false,
       internacional: true,
     });
@@ -282,8 +313,8 @@ function generarOfertas(jugador, resultadoTemporada) {
 
 function ficharPorClub(jugador, oferta) {
   if (!oferta.esActual) {
-    jugador.club = { nombre: oferta.club, paisId: oferta.paisId, prestigio: oferta.prestigio };
-    jugador.historialClubes.push({ club: oferta.club, paisId: oferta.paisId, desdeEdad: jugador.edad + 1 });
+    jugador.club = { nombre: oferta.club, paisId: oferta.paisId, division: oferta.division, prestigio: oferta.prestigio };
+    jugador.historialClubes.push({ club: oferta.club, paisId: oferta.paisId, division: oferta.division, desdeEdad: jugador.edad + 1 });
   }
 }
 
@@ -295,10 +326,10 @@ function calcularLegado(jugador) {
 
   let puntuacion = mejorOverall + nTitulosLiga * 12 + nMedallas * 15 + jugador.convocatoriasSeleccion * 2;
 
-  if (puntuacion >= 130) return { titulo: "Leyenda del Voleibol", descripcion: "Tu nombre quedará escrito en la historia de este deporte." };
-  if (puntuacion >= 100) return { titulo: "Ídolo de la Afición", descripcion: "Una carrera brillante que se recordará durante años." };
-  if (puntuacion >= 75) return { titulo: "Profesional Consagrado/a", descripcion: "Una trayectoria sólida y respetada en el mundo del vóley." };
-  if (puntuacion >= 45) return { titulo: "Jugador/a de Club", descripcion: "Diste todo por tus colores partido tras partido." };
+  if (puntuacion >= 170) return { titulo: "Leyenda del Voleibol", descripcion: "Tu nombre quedará escrito en la historia de este deporte." };
+  if (puntuacion >= 135) return { titulo: "Ídolo de la Afición", descripcion: "Una carrera brillante que se recordará durante años." };
+  if (puntuacion >= 100) return { titulo: "Profesional Consagrado/a", descripcion: "Una trayectoria sólida y respetada en el mundo del vóley." };
+  if (puntuacion >= 65) return { titulo: "Jugador/a de Club", descripcion: "Diste todo por tus colores partido tras partido." };
   return { titulo: "Carrera Discreta", descripcion: "El vóley profesional no fue sencillo, pero disfrutaste del camino." };
 }
 
