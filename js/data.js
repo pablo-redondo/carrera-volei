@@ -52,46 +52,170 @@ const POSICIONES = {
 const PUNTOS_CREACION = 35;
 const TOPE_CREACION = 65;
 
-/* ---------------- Clubes y divisiones (ficticios) ---------------- */
-/* prestigio: 1 (modesto) a 10 (histórico), influye en dificultad, salario y fama */
-const CLUBES = {
-  primera_nacional: [
-    { nombre: "CV Ribera Alta", prestigio: 2 },
-    { nombre: "Club Voleibol Altamira", prestigio: 2 },
-    { nombre: "UD Voleibol Peñalta", prestigio: 1 },
-    { nombre: "CV Puerto Levante", prestigio: 2 },
-    { nombre: "Voleibol Sierra Nueva", prestigio: 1 },
-    { nombre: "CV Villafranca", prestigio: 2 },
-  ],
-  superliga2: [
-    { nombre: "CV Costa Azul", prestigio: 4 },
-    { nombre: "Voleibol Miralbueno", prestigio: 4 },
-    { nombre: "CV Torremonte", prestigio: 3 },
-    { nombre: "Club Voleibol Alcántara", prestigio: 4 },
-    { nombre: "CV Guadalpeña", prestigio: 3 },
-    { nombre: "Voleibol Montearagón", prestigio: 5 },
-  ],
-  superliga1: [
-    { nombre: "CV Marbella Elite", prestigio: 8 },
-    { nombre: "Real Voleibol Castilla", prestigio: 9 },
-    { nombre: "CV Atlántico", prestigio: 7 },
-    { nombre: "Voleibol Levante FC", prestigio: 8 },
-    { nombre: "CV Ciudad Imperial", prestigio: 10 },
-    { nombre: "Club Voleibol Norte", prestigio: 7 },
-    { nombre: "CV Bahía Dorada", prestigio: 6 },
-    { nombre: "Voleibol Sporting Vega", prestigio: 6 },
-  ],
-};
-
-const ORDEN_DIVISIONES = ["primera_nacional", "superliga2", "superliga1"];
-const NOMBRE_DIVISION = {
-  primera_nacional: "Primera Nacional",
-  superliga2: "Superliga 2",
-  superliga1: "Superliga 1",
+/* ---------------------------------------------------------------
+   Países, ligas y clubes reales.
+   nivelLiga (1-10): fuerza relativa de la competición a nivel mundial.
+   Cada club tiene un prestigio (1-10) relativo dentro de su propio país.
+   --------------------------------------------------------------- */
+const PAISES = {
+  espana: {
+    nombre: "España", gentilicio: "española", liga: "Superliga Masculina de Voleibol", nivelLiga: 5,
+    clubes: [
+      { nombre: "Unicaja Almería", prestigio: 9 },
+      { nombre: "CV Teruel", prestigio: 8 },
+      { nombre: "Barça Voleibol", prestigio: 7 },
+      { nombre: "Guaguas Las Palmas", prestigio: 6 },
+      { nombre: "Ushuaïa Ibiza Voley", prestigio: 6 },
+      { nombre: "Río Duero Soria", prestigio: 4 },
+      { nombre: "CV Melilla", prestigio: 4 },
+      { nombre: "CV Textil Santanderina", prestigio: 3 },
+    ],
+  },
+  polonia: {
+    nombre: "Polonia", gentilicio: "polaca", liga: "PlusLiga", nivelLiga: 10,
+    clubes: [
+      { nombre: "Skra Bełchatów", prestigio: 10 },
+      { nombre: "ZAKSA Kędzierzyn-Koźle", prestigio: 9 },
+      { nombre: "Jastrzębski Węgiel", prestigio: 8 },
+      { nombre: "Asseco Resovia Rzeszów", prestigio: 8 },
+      { nombre: "Warta Zawiercie", prestigio: 7 },
+      { nombre: "Trefl Gdańsk", prestigio: 6 },
+      { nombre: "Projekt Warszawa", prestigio: 6 },
+      { nombre: "Indykpol AZS Olsztyn", prestigio: 5 },
+    ],
+  },
+  italia: {
+    nombre: "Italia", gentilicio: "italiana", liga: "SuperLega", nivelLiga: 10,
+    clubes: [
+      { nombre: "Sir Susa Vim Perugia", prestigio: 10 },
+      { nombre: "Cucine Lube Civitanova", prestigio: 9 },
+      { nombre: "Itas Trentino", prestigio: 9 },
+      { nombre: "Valsa Group Modena", prestigio: 8 },
+      { nombre: "Allianz Milano", prestigio: 7 },
+      { nombre: "Gas Sales Piacenza", prestigio: 6 },
+      { nombre: "Vero Volley Monza", prestigio: 6 },
+      { nombre: "Rana Verona", prestigio: 5 },
+    ],
+  },
+  brasil: {
+    nombre: "Brasil", gentilicio: "brasileña", liga: "Superliga Brasileira Masculina", nivelLiga: 9,
+    clubes: [
+      { nombre: "Sada Cruzeiro", prestigio: 10 },
+      { nombre: "Minas Tênis Clube", prestigio: 9 },
+      { nombre: "EC Pinheiros", prestigio: 8 },
+      { nombre: "Sesi-SP", prestigio: 7 },
+      { nombre: "EMS Taubaté Funvic", prestigio: 6 },
+      { nombre: "Suzano Vôlei", prestigio: 6 },
+      { nombre: "Vôlei Renata Campinas", prestigio: 5 },
+      { nombre: "Fluminense Vôlei", prestigio: 4 },
+    ],
+  },
+  francia: {
+    nombre: "Francia", gentilicio: "francesa", liga: "Ligue A", nivelLiga: 7,
+    clubes: [
+      { nombre: "Tours VB", prestigio: 10 },
+      { nombre: "Paris Volley", prestigio: 8 },
+      { nombre: "Montpellier UC", prestigio: 8 },
+      { nombre: "Chaumont VB 52", prestigio: 7 },
+      { nombre: "AS Cannes Volley-Ball", prestigio: 6 },
+      { nombre: "Nantes Rezé Métropole Volley", prestigio: 5 },
+      { nombre: "Toulouse Spacer's", prestigio: 4 },
+      { nombre: "Narbonne Volley", prestigio: 4 },
+    ],
+  },
+  argentina: {
+    nombre: "Argentina", gentilicio: "argentina", liga: "Liga Argentina de Voleibol", nivelLiga: 6,
+    clubes: [
+      { nombre: "UPCN San Juan Vóley", prestigio: 10 },
+      { nombre: "Personal Bolívar", prestigio: 9 },
+      { nombre: "Ciudad Vóley", prestigio: 7 },
+      { nombre: "Boca Juniors Vóley", prestigio: 6 },
+      { nombre: "River Plate Vóley", prestigio: 5 },
+      { nombre: "Club de Amigos", prestigio: 5 },
+      { nombre: "Ferro Carril Oeste", prestigio: 4 },
+      { nombre: "Monteros Vóley", prestigio: 4 },
+    ],
+  },
+  japon: {
+    nombre: "Japón", gentilicio: "japonesa", liga: "V.League Division 1", nivelLiga: 7,
+    clubes: [
+      { nombre: "Suntory Sunbirds", prestigio: 10 },
+      { nombre: "Panasonic Panthers", prestigio: 9 },
+      { nombre: "Wolfdogs Nagoya", prestigio: 8 },
+      { nombre: "JT Thunders Hiroshima", prestigio: 7 },
+      { nombre: "Toray Arrows", prestigio: 6 },
+      { nombre: "Osaka Bluteon", prestigio: 5 },
+      { nombre: "Tokyo Great Bears", prestigio: 5 },
+      { nombre: "Sagawa Printing", prestigio: 4 },
+    ],
+  },
+  serbia: {
+    nombre: "Serbia", gentilicio: "serbia", liga: "Superliga Srbije", nivelLiga: 7,
+    clubes: [
+      { nombre: "OK Vojvodina", prestigio: 9 },
+      { nombre: "OK Crvena Zvezda", prestigio: 9 },
+      { nombre: "OK Radnički Kragujevac", prestigio: 8 },
+      { nombre: "OK Partizan", prestigio: 7 },
+      { nombre: "OK Železničar", prestigio: 5 },
+      { nombre: "OK Napredak", prestigio: 4 },
+      { nombre: "OK Ub", prestigio: 4 },
+      { nombre: "OK Vranjska Banja", prestigio: 3 },
+    ],
+  },
+  turquia: {
+    nombre: "Turquía", gentilicio: "turca", liga: "Efeler Ligi", nivelLiga: 8,
+    clubes: [
+      { nombre: "Ziraat Bankası", prestigio: 9 },
+      { nombre: "Halkbank", prestigio: 9 },
+      { nombre: "Fenerbahçe", prestigio: 8 },
+      { nombre: "Galatasaray", prestigio: 8 },
+      { nombre: "Arkas Spor İzmir", prestigio: 6 },
+      { nombre: "Türk Telekom", prestigio: 5 },
+      { nombre: "Beşiktaş", prestigio: 4 },
+      { nombre: "Maliye Piyango", prestigio: 4 },
+    ],
+  },
+  rusia: {
+    nombre: "Rusia", gentilicio: "rusa", liga: "Superleague", nivelLiga: 8,
+    clubes: [
+      { nombre: "Zenit Kazan", prestigio: 10 },
+      { nombre: "Dynamo Moscow", prestigio: 9 },
+      { nombre: "Zenit Saint Petersburg", prestigio: 8 },
+      { nombre: "Belogorie Belgorod", prestigio: 8 },
+      { nombre: "Lokomotiv Novosibirsk", prestigio: 6 },
+      { nombre: "Fakel Novy Urengoy", prestigio: 6 },
+      { nombre: "Dynamo-LO", prestigio: 4 },
+      { nombre: "Nova Novokuibyshevsk", prestigio: 4 },
+    ],
+  },
+  iran: {
+    nombre: "Irán", gentilicio: "iraní", liga: "Iran Volleyball Super League", nivelLiga: 6,
+    clubes: [
+      { nombre: "Foolad Sirjan", prestigio: 9 },
+      { nombre: "Shahdab Yazd", prestigio: 8 },
+      { nombre: "Shahrdari Urmia", prestigio: 8 },
+      { nombre: "Sarmayeh Bank Tehran", prestigio: 7 },
+      { nombre: "Paykan Tehran", prestigio: 7 },
+      { nombre: "Kalleh Mazandaran", prestigio: 5 },
+      { nombre: "Barij Essence Kashan", prestigio: 4 },
+      { nombre: "Gostaresh Foulad Tabriz", prestigio: 4 },
+    ],
+  },
+  eslovenia: {
+    nombre: "Eslovenia", gentilicio: "eslovena", liga: "1. DOL", nivelLiga: 5,
+    clubes: [
+      { nombre: "ACH Volley Ljubljana", prestigio: 10 },
+      { nombre: "Calcit Kamnik", prestigio: 7 },
+      { nombre: "Merkur Maribor", prestigio: 5 },
+      { nombre: "Fužinar Ravne", prestigio: 4 },
+      { nombre: "Triglav Kranj", prestigio: 3 },
+      { nombre: "Salonit Anhovo", prestigio: 3 },
+    ],
+  },
 };
 
 /* ---------------- Eventos aleatorios de pretemporada ---------------- */
-/* efecto: función(estado) -> aplica cambios y devuelve texto de resultado */
+/* efecto: objeto de cambios aplicado al jugador */
 const EVENTOS_PRETEMPORADA = [
   {
     texto: (j) => `El preparador físico te propone un plan de pesas intensivo antes de empezar la pretemporada. Es duro, pero puede marcar la diferencia.`,
@@ -101,7 +225,7 @@ const EVENTOS_PRETEMPORADA = [
     ],
   },
   {
-    texto: (j) => `Una marca deportiva local se pone en contacto contigo para patrocinarte la equipación a cambio de aparecer en sus anuncios.`,
+    texto: (j) => `Una marca deportiva se pone en contacto contigo para patrocinarte la equipación a cambio de aparecer en sus anuncios.`,
     opciones: [
       { texto: "Firmar el patrocinio", efecto: { dinero: 3000, liderazgo: 1 }, resultado: "El dinero extra viene bien, aunque algún compañero comenta que te has vuelto “una estrella”." },
       { texto: "Rechazarlo y centrarte en el juego", efecto: { moral: 2 }, resultado: "Prefieres que hablen tus actuaciones en la cancha." },
@@ -129,16 +253,16 @@ const EVENTOS_PRETEMPORADA = [
     ],
   },
   {
-    texto: (j) => `Un club extranjero se interesa por ti para una experiencia de pretemporada internacional.`,
+    texto: (j) => `El club organiza una pretemporada con partidos amistosos frente a rivales de otros países.`,
     opciones: [
-      { texto: "Ir a foguearte fuera", efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, resultado: "La experiencia te abre la cabeza y mejoras varios aspectos de tu juego." },
-      { texto: "Quedarte con tu equipo", efecto: { liderazgo: 1 }, resultado: "Refuerzas la conexión con tus compañeros de siempre." },
+      { texto: "Aprovechar para foguearte fuera", efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, resultado: "La experiencia internacional te abre la cabeza y mejoras varios aspectos de tu juego." },
+      { texto: "Centrarte en la puesta a punto física", efecto: { fisico: 2 }, resultado: "Priorizas llegar en plena forma al inicio de la liga." },
     ],
   },
   {
-    texto: (j) => `Se acerca el cierre del mercado de fichajes y tu agente te llama: hay rumores de interés de otro club.`,
+    texto: (j) => `Se acerca el cierre del mercado de fichajes y tu agente te llama: hay rumores de interés desde el extranjero.`,
     opciones: [
-      { texto: "Escuchar la oferta", efecto: { moral: 1 }, resultado: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos." },
+      { texto: "Escuchar la oferta", efecto: { moral: 1 }, resultado: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos del mundo." },
       { texto: "Cortar la conversación", efecto: { liderazgo: 1 }, resultado: "Tu club valora tu compromiso este curso." },
     ],
   },
@@ -177,7 +301,7 @@ const EVENTOS_TEMPORADA = [
 ];
 
 /* ---------------- Torneos internacionales ---------------- */
-const TORNEOS = ["Campeonato de Europa", "Copa del Mundo", "Juegos Olímpicos"];
+const TORNEOS = ["Campeonato de Europa", "Copa del Mundo", "Juegos Olímpicos", "Liga de Naciones"];
 
 /* ---------------- Frases de resumen de clasificación ---------------- */
 const FRASES_CAMPEON = [
@@ -185,14 +309,14 @@ const FRASES_CAMPEON = [
   "Cerráis una temporada perfecta levantando el trofeo de campeones.",
   "El equipo entero se funde en un abrazo tras confirmar el título.",
 ];
-const FRASES_DESCENSO = [
-  "La temporada termina con la amarga noticia del descenso de categoría.",
-  "El equipo no pudo evitar el descenso tras una campaña irregular.",
+const FRASES_TEMPORADA_DIFICIL = [
+  "La temporada termina entre la decepción de una campaña muy irregular.",
+  "Un curso para el olvido: el equipo nunca encontró su mejor versión.",
 ];
 
 export {
   ATRIBUTOS, POSICIONES, PUNTOS_CREACION, TOPE_CREACION,
-  CLUBES, ORDEN_DIVISIONES, NOMBRE_DIVISION,
+  PAISES,
   EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, TORNEOS,
-  FRASES_CAMPEON, FRASES_DESCENSO,
+  FRASES_CAMPEON, FRASES_TEMPORADA_DIFICIL,
 };

@@ -1,7 +1,7 @@
 import {
-  ATRIBUTOS, POSICIONES, CLUBES, ORDEN_DIVISIONES, NOMBRE_DIVISION,
+  ATRIBUTOS, POSICIONES, PAISES,
   EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, TORNEOS,
-  FRASES_CAMPEON, FRASES_DESCENSO,
+  FRASES_CAMPEON, FRASES_TEMPORADA_DIFICIL,
 } from "./data.js";
 
 const EDAD_INICIAL = 16;
@@ -15,31 +15,32 @@ function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
 function clampAtributo(v) { return clamp(Math.round(v), 1, 99); }
 
 /* ---------------- creación de jugador ---------------- */
-function crearJugador({ nombre, pais, posicionId, reparto }) {
+function crearJugador({ nombre, paisId, posicionId, reparto }) {
   const perfil = POSICIONES[posicionId];
   const atributos = {};
   for (const a of ATRIBUTOS) {
     atributos[a.id] = clampAtributo(perfil.base[a.id] + (reparto[a.id] || 0));
   }
 
-  const clubInicial = pick(CLUBES.primera_nacional);
+  const pais = PAISES[paisId];
+  const clubesModestos = pais.clubes.filter((c) => c.prestigio <= 5);
+  const clubInicial = pick(clubesModestos.length ? clubesModestos : pais.clubes);
 
   return {
     nombre: nombre || "Jugador/a",
-    pais: pais || "España",
+    paisId,
     posicionId,
     edad: EDAD_INICIAL,
     atributos,
     moral: 70,
     dinero: 0,
     reputacion: 10,
-    club: { ...clubInicial, division: "primera_nacional" },
-    historialClubes: [{ club: clubInicial.nombre, division: "primera_nacional", desdeEdad: EDAD_INICIAL }],
+    club: { nombre: clubInicial.nombre, paisId, prestigio: clubInicial.prestigio },
+    historialClubes: [{ club: clubInicial.nombre, paisId, desdeEdad: EDAD_INICIAL }],
     titulos: [],
     convocatoriasSeleccion: 0,
     torneosInternacionales: [],
     riesgoLesionBase: 5,
-    lesionadoTemporadaAnterior: false,
     estadisticasCarrera: {
       puntosTotales: 0, partidosTotales: 0, acesTotales: 0, bloqueosTotales: 0,
       defensasTotales: 0, mejorTemporadaPuntos: 0, temporadasComoTitular: 0,
@@ -113,18 +114,19 @@ function aplicarEfectoEvento(jugador, efecto) {
 /* ---------------- simulación de temporada ---------------- */
 function simularTemporada(jugador) {
   const overall = calcularOverall(jugador);
-  const division = jugador.club.division;
-  const promedioDivision = { primera_nacional: 32, superliga2: 52, superliga1: 74 }[division];
+  const pais = PAISES[jugador.club.paisId];
+  const clubesLiga = pais.clubes;
+  const nClubes = clubesLiga.length;
 
-  const fuerzaEquipo = clamp(overall * 0.55 + jugador.club.prestigio * 4 + randInt(-6, 6), 5, 99);
-  const diferencia = fuerzaEquipo - promedioDivision;
+  const fuerzaEquipo = clamp(overall * 0.5 + pais.nivelLiga * 3 + jugador.club.prestigio * 2.5 + randInt(-6, 6), 5, 99);
+  const promedioLiga = 20 + pais.nivelLiga * 6.5;
+  const diferencia = fuerzaEquipo - promedioLiga;
 
-  let posicion = clamp(Math.round(5.5 - diferencia / 9 + randInt(-2, 2)), 1, 10);
+  let posicion = clamp(Math.round((nClubes + 1) / 2 - diferencia / 9 + randInt(-1, 1)), 1, nClubes);
 
   const esCampeon = posicion === 1 && Math.random() < 0.5;
   const copa = posicion <= 3 && Math.random() < 0.12;
-  const ascenso = division !== "superliga1" && posicion <= 2 && Math.random() < 0.45;
-  const descenso = division !== "primera_nacional" && posicion >= 9 && Math.random() < 0.55;
+  const temporadaDificil = posicion >= nClubes - 1 && Math.random() < 0.5;
 
   // Riesgo de lesión
   const riesgoLesion = clamp(
@@ -156,9 +158,9 @@ function simularTemporada(jugador) {
   }
 
   const resultado = {
-    overall, fuerzaEquipo, division, posicion, esCampeon, copa, ascenso, descenso,
+    overall, fuerzaEquipo, posicion, nClubes, esCampeon, copa, temporadaDificil,
     lesionado, titular, partidosJugados, stats,
-    fraseFinal: esCampeon ? pick(FRASES_CAMPEON) : (descenso ? pick(FRASES_DESCENSO) : null),
+    fraseFinal: esCampeon ? pick(FRASES_CAMPEON) : (temporadaDificil ? pick(FRASES_TEMPORADA_DIFICIL) : null),
   };
 
   return resultado;
@@ -174,25 +176,20 @@ function aplicarResultadoTemporada(jugador, resultado) {
   e.mejorTemporadaPuntos = Math.max(e.mejorTemporadaPuntos, resultado.stats.puntosTotales);
   if (resultado.titular) e.temporadasComoTitular++;
 
-  if (resultado.esCampeon) jugador.titulos.push({ tipo: "Liga", division: NOMBRE_DIVISION[resultado.division], edad: jugador.edad, club: jugador.club.nombre });
-  if (resultado.copa) jugador.titulos.push({ tipo: "Copa", division: NOMBRE_DIVISION[resultado.division], edad: jugador.edad, club: jugador.club.nombre });
+  const pais = PAISES[jugador.club.paisId];
+  if (resultado.esCampeon) jugador.titulos.push({ tipo: "Liga", liga: pais.liga, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
+  if (resultado.copa) jugador.titulos.push({ tipo: "Copa", liga: pais.liga, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
 
-  if (resultado.ascenso) {
-    const idx = ORDEN_DIVISIONES.indexOf(jugador.club.division);
-    jugador.club.division = ORDEN_DIVISIONES[Math.min(idx + 1, ORDEN_DIVISIONES.length - 1)];
-  } else if (resultado.descenso) {
-    const idx = ORDEN_DIVISIONES.indexOf(jugador.club.division);
-    jugador.club.division = ORDEN_DIVISIONES[Math.max(idx - 1, 0)];
-  }
-
-  jugador.reputacion = clamp(jugador.reputacion + (resultado.esCampeon ? 8 : 0) + (resultado.titular ? 3 : -1) - (resultado.descenso ? 5 : 0), 0, 100);
-  jugador.moral = clamp(jugador.moral + (resultado.esCampeon ? 10 : 0) - (resultado.descenso ? 10 : 0) - (resultado.lesionado ? 8 : 0), 0, 100);
+  jugador.reputacion = clamp(jugador.reputacion + (resultado.esCampeon ? 8 : 0) + (resultado.titular ? 3 : -1) - (resultado.temporadaDificil ? 3 : 0), 0, 100);
+  jugador.moral = clamp(jugador.moral + (resultado.esCampeon ? 10 : 0) - (resultado.temporadaDificil ? 6 : 0) - (resultado.lesionado ? 8 : 0), 0, 100);
 
   jugador.historialTemporadas.push({
     edad: jugador.edad,
     club: jugador.club.nombre,
-    division: NOMBRE_DIVISION[resultado.division],
+    pais: pais.nombre,
+    liga: pais.liga,
     posicion: resultado.posicion,
+    nClubes: resultado.nClubes,
     overall: resultado.overall,
     ...resultado.stats,
     partidosJugados: resultado.partidosJugados,
@@ -225,7 +222,7 @@ function comprobarSeleccionNacional(jugador) {
     else resultadoTexto = "Fase de grupos";
     torneoResultado = { torneo, resultado: resultadoTexto, edad: jugador.edad };
     jugador.torneosInternacionales.push(torneoResultado);
-    if (resultadoTexto.includes("oro") || resultadoTexto.includes("plata") || resultadoTexto.includes("bronce")) {
+    if (resultadoTexto.includes("edalla")) {
       jugador.reputacion = clamp(jugador.reputacion + 10, 0, 100);
     }
   }
@@ -236,40 +233,47 @@ function comprobarSeleccionNacional(jugador) {
 /* ---------------- ofertas de fichaje ---------------- */
 function generarOfertas(jugador, resultadoTemporada) {
   const overall = resultadoTemporada.overall;
-  const divisionActualIdx = ORDEN_DIVISIONES.indexOf(jugador.club.division);
+  const paisActual = PAISES[jugador.club.paisId];
   const ofertas = [];
 
   // Renovación con el club actual
   ofertas.push({
     club: jugador.club.nombre,
-    division: jugador.club.division,
+    paisId: jugador.club.paisId,
     prestigio: jugador.club.prestigio,
     salario: Math.round(jugador.club.prestigio * 1400 + overall * 90 + randInt(-300, 300)),
     esActual: true,
   });
 
-  const nDivisionesDisponibles = [];
-  nDivisionesDisponibles.push(divisionActualIdx);
-  if (overall >= 60 && (resultadoTemporada.posicion <= 3 || resultadoTemporada.ascenso) && divisionActualIdx < ORDEN_DIVISIONES.length - 1) {
-    nDivisionesDisponibles.push(divisionActualIdx + 1);
-  }
-  if (resultadoTemporada.posicion >= 8 && divisionActualIdx > 0 && Math.random() < 0.3) {
-    nDivisionesDisponibles.push(divisionActualIdx - 1);
-  }
-
-  const nOfertas = randInt(1, 2);
-  for (let i = 0; i < nOfertas; i++) {
-    const divIdx = pick(nDivisionesDisponibles);
-    const division = ORDEN_DIVISIONES[divIdx];
-    const candidatos = CLUBES[division].filter((c) => c.nombre !== jugador.club.nombre);
-    const club = pick(candidatos);
+  // Ofertas nacionales: clubes del mismo país, preferentemente de prestigio similar o superior si rindes bien
+  const candidatosNacionales = paisActual.clubes.filter((c) => c.nombre !== jugador.club.nombre);
+  const nOfertasNacionales = randInt(1, 2);
+  for (let i = 0; i < nOfertasNacionales && candidatosNacionales.length; i++) {
+    const club = pick(candidatosNacionales);
     if (ofertas.some((o) => o.club === club.nombre)) continue;
     ofertas.push({
       club: club.nombre,
-      division,
+      paisId: jugador.club.paisId,
       prestigio: club.prestigio,
       salario: Math.round(club.prestigio * 1400 + overall * 90 + randInt(-300, 500)),
       esActual: false,
+    });
+  }
+
+  // Oferta internacional: solo si el rendimiento y la reputación lo justifican
+  const probInternacional = clamp((overall - 65) * 2 + jugador.reputacion / 3, 0, 60);
+  if (Math.random() * 100 < probInternacional) {
+    const otrosPaisesIds = Object.keys(PAISES).filter((id) => id !== jugador.club.paisId);
+    const paisDestinoId = pick(otrosPaisesIds);
+    const paisDestino = PAISES[paisDestinoId];
+    const club = pick(paisDestino.clubes);
+    ofertas.push({
+      club: club.nombre,
+      paisId: paisDestinoId,
+      prestigio: club.prestigio,
+      salario: Math.round(club.prestigio * 1600 + paisDestino.nivelLiga * 300 + overall * 110 + randInt(0, 800)),
+      esActual: false,
+      internacional: true,
     });
   }
 
@@ -278,10 +282,8 @@ function generarOfertas(jugador, resultadoTemporada) {
 
 function ficharPorClub(jugador, oferta) {
   if (!oferta.esActual) {
-    jugador.club = { nombre: oferta.club, division: oferta.division, prestigio: oferta.prestigio };
-    jugador.historialClubes.push({ club: oferta.club, division: oferta.division, desdeEdad: jugador.edad + 1 });
-  } else {
-    jugador.club.division = oferta.division;
+    jugador.club = { nombre: oferta.club, paisId: oferta.paisId, prestigio: oferta.prestigio };
+    jugador.historialClubes.push({ club: oferta.club, paisId: oferta.paisId, desdeEdad: jugador.edad + 1 });
   }
 }
 

@@ -132,9 +132,8 @@ function pantallaSiguientePaso() {
 }
 
 function pantallaFichajes() {
-  const resultado = estado.jugador.historialTemporadas[estado.jugador.historialTemporadas.length - 1];
-  const overallFalso = { overall: resultado.overall, posicion: resultado.posicion, ascenso: false };
-  const ofertas = generarOfertas(estado.jugador, overallFalso);
+  const ultimaTemporada = estado.jugador.historialTemporadas[estado.jugador.historialTemporadas.length - 1];
+  const ofertas = generarOfertas(estado.jugador, { overall: ultimaTemporada.overall });
   const permiteRetiro = estado.jugador.edad >= 30;
 
   renderFichajes(estado.jugador, ofertas, permiteRetiro, {
