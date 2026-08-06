@@ -148,9 +148,12 @@ function renderInicio({ hayGuardado }, cb) {
   if (hayGuardado) document.getElementById("btn-continuar").onclick = cb.onContinuar;
 }
 
-/* ================= CREACIÓN DE PERSONAJE ================= */
+/* ================= CREACIÓN DE PERSONAJE =================
+   Esta pantalla se pinta UNA sola vez y a partir de ahí se actualiza en
+   sitio. Antes se reconstruía el HTML entero en cada clic, lo que relanzaba
+   las animaciones de entrada (que arrancan en opacidad 0) y hacía que la
+   pantalla parpadeara en negro con cada selección. */
 function renderCreacion(cb) {
-  irArriba();
   const estadoLocal = {
     nombre: "",
     paisId: null,
@@ -158,112 +161,142 @@ function renderCreacion(cb) {
     reparto: Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 0])),
   };
 
-  function puntosUsados() {
-    return Object.values(estadoLocal.reparto).reduce((a, b) => a + b, 0);
-  }
+  const puntosUsados = () => Object.values(estadoLocal.reparto).reduce((a, b) => a + b, 0);
+  const listoParaEmpezar = () => Boolean(estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim());
 
-  function pintar() {
+  const paisesHtml = Object.entries(PAISES).map(([id, p], i) => `
+    <div class="tarjeta-opcion" data-pais="${id}" style="--i:${i}">
+      <h3>${p.nombre}</h3>
+      <p>${p.ligas.primera.nombre}<br>${p.ligas.segunda.nombre}</p>
+    </div>
+  `).join("");
+
+  const posicionesHtml = Object.entries(POSICIONES).map(([id, p], i) => `
+    <div class="tarjeta-opcion" data-pos="${id}" style="--i:${i}">
+      <h3>${p.nombre}</h3>
+      <p>${p.descripcion}</p>
+    </div>
+  `).join("");
+
+  pintarPantalla(`
+    <div class="panel">
+      <div class="panel-cabecera">
+        <div>
+          <span class="eyebrow">Nueva carrera</span>
+          <h2>Crea tu jugador/a</h2>
+        </div>
+      </div>
+
+      <div class="form-fila">
+        <label for="input-nombre">Nombre</label>
+        <input type="text" id="input-nombre" maxlength="24" placeholder="Ej. Laura Martín">
+      </div>
+
+      <div class="form-fila">
+        <label>País — empezarás en la 2ª división</label>
+        <div class="tarjetas-grid">${paisesHtml}</div>
+      </div>
+
+      <div class="form-fila">
+        <label>Posición</label>
+        <div class="tarjetas-grid">${posicionesHtml}</div>
+      </div>
+
+      <div class="form-fila" id="bloque-reparto" hidden>
+        <label>Reparto de atributos</label>
+        <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> puntos disponibles</div>
+        <div id="lista-reparto"></div>
+      </div>
+
+      <div class="opciones">
+        <button class="principal" id="btn-crear" disabled>Comenzar carrera</button>
+      </div>
+    </div>
+  `);
+
+  const $ = (sel) => document.querySelector(sel);
+  const btnCrear = $("#btn-crear");
+  const bloqueReparto = $("#bloque-reparto");
+  const listaReparto = $("#lista-reparto");
+  const puntosLibres = $("#puntos-libres");
+
+  /* Refresca cifras, barras y botones +/- sin tocar la estructura del DOM. */
+  function actualizarValores() {
     const restantes = PUNTOS_CREACION - puntosUsados();
+    puntosLibres.textContent = restantes;
 
-    const paisesHtml = Object.entries(PAISES).map(([id, p], i) => `
-      <div class="tarjeta-opcion ${estadoLocal.paisId === id ? "seleccionada" : ""}" data-pais="${id}" style="--i:${i}">
-        <h3>${p.nombre}</h3>
-        <p>${p.ligas.primera.nombre}<br>${p.ligas.segunda.nombre}</p>
-      </div>
-    `).join("");
-
-    const posicionesHtml = Object.entries(POSICIONES).map(([id, p], i) => `
-      <div class="tarjeta-opcion ${estadoLocal.posicionId === id ? "seleccionada" : ""}" data-pos="${id}" style="--i:${i}">
-        <h3>${p.nombre}</h3>
-        <p>${p.descripcion}</p>
-      </div>
-    `).join("");
-
-    let repartoHtml = "";
-    if (estadoLocal.posicionId) {
-      const perfil = POSICIONES[estadoLocal.posicionId];
-      repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => {
-        const base = perfil.base[a.id];
-        const extra = estadoLocal.reparto[a.id];
-        const valor = base + extra;
-        return `
-          <div class="reparto-atributo">
-            <span class="nombre-attr">${a.icono} ${a.nombre}</span>
-            <button class="btn-punto" data-op="menos" data-attr="${a.id}" ${extra <= 0 ? "disabled" : ""}>−</button>
-            <span class="valor-attr">${valor}</span>
-            <button class="btn-punto" data-op="mas" data-attr="${a.id}" ${(restantes <= 0 || valor >= TOPE_CREACION) ? "disabled" : ""}>+</button>
-            <div class="barra-fondo"><div class="barra-relleno" style="width:${valor}%"></div></div>
-          </div>`;
-      }).join("");
-    }
-
-    const listo = estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim();
-
-    $pantalla().innerHTML = `
-      <div class="panel">
-        <div class="panel-cabecera">
-          <div>
-            <span class="eyebrow">Nueva carrera</span>
-            <h2>Crea tu jugador/a</h2>
-          </div>
-        </div>
-
-        <div class="form-fila">
-          <label for="input-nombre">Nombre</label>
-          <input type="text" id="input-nombre" maxlength="24" placeholder="Ej. Laura Martín" value="${escapar(estadoLocal.nombre)}">
-        </div>
-
-        <div class="form-fila">
-          <label>País — empezarás en la 2ª división</label>
-          <div class="tarjetas-grid">${paisesHtml}</div>
-        </div>
-
-        <div class="form-fila">
-          <label>Posición</label>
-          <div class="tarjetas-grid">${posicionesHtml}</div>
-        </div>
-
-        ${estadoLocal.posicionId ? `
-        <div class="form-fila">
-          <label>Reparto de atributos</label>
-          <div class="puntos-restantes"><b>${restantes}</b> puntos disponibles</div>
-          ${repartoHtml}
-        </div>` : ""}
-
-        <div class="opciones">
-          <button class="principal" id="btn-crear" ${listo ? "" : "disabled"}>Comenzar carrera</button>
-        </div>
-      </div>
-    `;
-
-    document.getElementById("input-nombre").oninput = (e) => {
-      estadoLocal.nombre = e.target.value;
-      const btn = document.getElementById("btn-crear");
-      if (btn) btn.disabled = !(estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim());
-    };
-    document.querySelectorAll("[data-pais]").forEach((el) => {
-      el.onclick = () => { estadoLocal.paisId = el.dataset.pais; pintar(); };
+    const perfil = POSICIONES[estadoLocal.posicionId];
+    listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
+      const id = fila.dataset.fila;
+      const extra = estadoLocal.reparto[id];
+      const valor = perfil.base[id] + extra;
+      fila.querySelector(".valor-attr").textContent = valor;
+      fila.querySelector(".barra-relleno").style.width = `${valor}%`;
+      fila.querySelector('[data-op="menos"]').disabled = extra <= 0;
+      fila.querySelector('[data-op="mas"]').disabled = restantes <= 0 || valor >= TOPE_CREACION;
     });
-    document.querySelectorAll("[data-pos]").forEach((el) => {
-      el.onclick = () => { estadoLocal.posicionId = el.dataset.pos; pintar(); };
-    });
-    document.querySelectorAll(".btn-punto").forEach((el) => {
-      el.onclick = () => {
-        const attr = el.dataset.attr;
-        if (el.dataset.op === "mas" && puntosUsados() < PUNTOS_CREACION) {
-          const perfil = POSICIONES[estadoLocal.posicionId];
-          if (perfil.base[attr] + estadoLocal.reparto[attr] < TOPE_CREACION) estadoLocal.reparto[attr]++;
-        } else if (el.dataset.op === "menos" && estadoLocal.reparto[attr] > 0) {
-          estadoLocal.reparto[attr]--;
-        }
-        pintar();
-      };
-    });
-    const btnCrear = document.getElementById("btn-crear");
-    if (btnCrear) btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
+
+    btnCrear.disabled = !listoParaEmpezar();
   }
 
-  pintar();
+  /* Solo se reconstruye al cambiar de posición: cambian los atributos. */
+  function pintarReparto() {
+    const perfil = POSICIONES[estadoLocal.posicionId];
+    for (const id of Object.keys(estadoLocal.reparto)) estadoLocal.reparto[id] = 0;
+
+    listaReparto.innerHTML = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
+      <div class="reparto-atributo" data-fila="${a.id}">
+        <span class="nombre-attr">${a.icono} ${a.nombre}</span>
+        <button class="btn-punto" data-op="menos" data-attr="${a.id}">−</button>
+        <span class="valor-attr">${perfil.base[a.id]}</span>
+        <button class="btn-punto" data-op="mas" data-attr="${a.id}">+</button>
+        <div class="barra-fondo"><div class="barra-relleno" style="width:${perfil.base[a.id]}%"></div></div>
+      </div>`).join("");
+
+    bloqueReparto.hidden = false;
+    actualizarValores();
+  }
+
+  $("#input-nombre").oninput = (e) => {
+    estadoLocal.nombre = e.target.value;
+    btnCrear.disabled = !listoParaEmpezar();
+  };
+
+  document.querySelectorAll("[data-pais]").forEach((el) => {
+    el.onclick = () => {
+      estadoLocal.paisId = el.dataset.pais;
+      document.querySelectorAll("[data-pais]").forEach((o) => o.classList.toggle("seleccionada", o === el));
+      btnCrear.disabled = !listoParaEmpezar();
+    };
+  });
+
+  document.querySelectorAll("[data-pos]").forEach((el) => {
+    el.onclick = () => {
+      if (estadoLocal.posicionId === el.dataset.pos) return;
+      estadoLocal.posicionId = el.dataset.pos;
+      document.querySelectorAll("[data-pos]").forEach((o) => o.classList.toggle("seleccionada", o === el));
+      pintarReparto();
+    };
+  });
+
+  /* Un único listener para todos los +/- (delegación): así los botones
+     recreados al cambiar de posición siguen funcionando. */
+  listaReparto.onclick = (e) => {
+    const btn = e.target.closest(".btn-punto");
+    if (!btn || btn.disabled) return;
+    const attr = btn.dataset.attr;
+    const perfil = POSICIONES[estadoLocal.posicionId];
+    if (btn.dataset.op === "mas") {
+      if (puntosUsados() < PUNTOS_CREACION && perfil.base[attr] + estadoLocal.reparto[attr] < TOPE_CREACION) {
+        estadoLocal.reparto[attr]++;
+      }
+    } else if (estadoLocal.reparto[attr] > 0) {
+      estadoLocal.reparto[attr]--;
+    }
+    actualizarValores();
+  };
+
+  btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
 }
 
 /* ================= PRETEMPORADA: ENTRENAMIENTO ================= */

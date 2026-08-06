@@ -13,9 +13,9 @@
   /* superficies */
   --bg:          #070a10;
   --bg-alto:     #0b1018;
-  --panel:       rgba(20, 27, 38, .82);
+  --panel:       rgba(19, 26, 37, .94);
   --panel-solido:#141b26;
-  --panel-2:     rgba(31, 41, 56, .72);
+  --panel-2:     rgba(31, 41, 56, .85);
   --panel-3:     #253143;
   --borde:       rgba(255, 255, 255, .09);
   --borde-fuerte:rgba(255, 255, 255, .16);
@@ -67,6 +67,9 @@ body {
 .svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
 /* --------- Fondo: aurora + líneas de pista de voleibol --------- */
+/* Estático a propósito: animar una capa fija a pantalla completa obligaba al
+   navegador a repintar todo el fondo en cada fotograma y hacía que la página
+   fuera a tirones, sobre todo en móvil. */
 .fondo-pista {
   position: fixed;
   inset: 0;
@@ -76,7 +79,6 @@ body {
     radial-gradient(900px 520px at 8% -10%, rgba(255, 107, 26, .20), transparent 62%),
     radial-gradient(760px 460px at 96% 4%, rgba(34, 211, 238, .14), transparent 58%),
     radial-gradient(700px 500px at 50% 108%, rgba(79, 124, 255, .12), transparent 60%);
-  animation: respirar 14s ease-in-out infinite alternate;
 }
 .fondo-pista::after {
   /* líneas diagonales tipo red de voleibol */
@@ -89,10 +91,6 @@ body {
     repeating-linear-gradient(-60deg, rgba(255,255,255,.028) 0 1px, transparent 1px 30px);
   mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 78%);
   -webkit-mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 78%);
-}
-@keyframes respirar {
-  from { opacity: .75; transform: scale(1); }
-  to   { opacity: 1;   transform: scale(1.06); }
 }
 
 #app {
@@ -130,13 +128,13 @@ body {
   color: inherit;
   min-width: 0;
 }
+/* Sin rotación permanente: una animación infinita en la cabecera mantiene al
+   navegador repintando durante toda la partida sin aportar nada. */
 .marca-balon {
   width: 30px; height: 30px;
   flex-shrink: 0;
-  filter: drop-shadow(0 4px 14px rgba(255, 107, 26, .6));
-  animation: girar-balon 9s linear infinite;
+  filter: drop-shadow(0 4px 14px rgba(255, 107, 26, .5));
 }
-@keyframes girar-balon { to { transform: rotate(360deg); } }
 
 .marca-texto {
   font-size: 1rem;
@@ -208,8 +206,6 @@ body {
   position: sticky;
   top: 74px;
   background: var(--panel);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--borde);
   border-radius: var(--r-xl);
   padding: 18px;
@@ -333,15 +329,15 @@ body {
   background: rgba(255, 255, 255, .08);
   overflow: hidden;
 }
+/* Sin animación de entrada: la ficha se repinta varias veces por turno y las
+   barras "rebotaban" cada vez. La transición sí se aprovecha al repartir
+   puntos, donde el ancho cambia sobre el mismo elemento. */
 .barra-relleno {
   height: 100%;
   border-radius: 99px;
   background: var(--grad-acento);
-  transform-origin: left;
-  animation: crecer-barra .9s var(--ease) both;
-  transition: width .6s var(--ease);
+  transition: width .35s var(--ease);
 }
-@keyframes crecer-barra { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 /* filas de estado */
 .mini-stats { display: flex; flex-direction: column; }
@@ -363,8 +359,6 @@ body {
 .panel {
   position: relative;
   background: var(--panel);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--borde);
   border-radius: var(--r-xl);
   padding: 26px;
@@ -506,19 +500,20 @@ button.principal {
   box-shadow: 0 12px 30px -14px rgba(255, 107, 26, .95);
   transition: transform .18s var(--ease), filter .2s, box-shadow .25s;
 }
-/* brillo que recorre el botón */
+/* Brillo que recorre el botón. Se anima con transform (no con "left") para
+   que el navegador no tenga que recalcular el layout en cada fotograma. */
 button.principal::after {
   content: "";
   position: absolute;
-  top: 0; bottom: 0; left: -60%;
+  top: 0; bottom: 0; left: 0;
   width: 45%;
   background: linear-gradient(100deg, transparent, rgba(255,255,255,.45), transparent);
-  transform: skewX(-18deg);
+  will-change: transform;
   animation: destello 3.4s ease-in-out infinite;
 }
 @keyframes destello {
-  0%, 62% { left: -60%; }
-  100%    { left: 130%; }
+  0%, 62% { transform: translateX(-160%) skewX(-18deg); }
+  100%    { transform: translateX(320%) skewX(-18deg); }
 }
 button.principal:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 18px 38px -14px rgba(255, 107, 26, 1); }
 button.principal:active { transform: translateY(0) scale(.985); }
@@ -766,7 +761,7 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
 .chip.verde { color: var(--verde); border-color: rgba(46, 224, 138, .42); background: rgba(46, 224, 138, .12); }
 .chip.rojo  { color: var(--rojo);  border-color: rgba(255, 77, 109, .42); background: rgba(255, 77, 109, .12); }
 .chip.azul  { color: var(--cian);  border-color: rgba(34, 211, 238, .42); background: rgba(34, 211, 238, .12); }
-.chip.destaca { animation: latir 1.9s ease-in-out infinite; }
+.chip.destaca { animation: latir 1.9s ease-in-out 3; }
 @keyframes latir {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 197, 61, .35); }
   50%      { box-shadow: 0 0 0 7px rgba(255, 197, 61, 0); }
@@ -784,8 +779,6 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
   background:
     radial-gradient(600px 300px at 50% 0%, rgba(255, 107, 26, .18), transparent 70%),
     var(--panel);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   overflow: hidden;
   box-shadow: var(--sombra-alta);
   animation: aparecer .5s var(--ease) both;
