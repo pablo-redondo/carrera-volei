@@ -1,6 +1,6 @@
 import {
   ATRIBUTOS, POSICIONES, PAISES,
-  EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, TORNEOS,
+  EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, EVENTOS_ECONOMICOS, TORNEOS,
   FRASES_CAMPEON, FRASES_TEMPORADA_DIFICIL,
 } from "./data.js";
 
@@ -14,6 +14,17 @@ function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) 
 function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
 function clampAtributo(v) { return clamp(Math.round(v), 1, 99); }
 function divisionLiga(paisId, division) { return PAISES[paisId].ligas[division]; }
+
+/* Elige un elemento de una lista ponderada [{ prob, ... }] según su peso relativo. */
+function elegirPonderado(lista) {
+  const total = lista.reduce((s, x) => s + x.prob, 0);
+  let r = Math.random() * total;
+  for (const item of lista) {
+    r -= item.prob;
+    if (r <= 0) return item;
+  }
+  return lista[lista.length - 1];
+}
 
 /* ---------------- creación de jugador ---------------- */
 function crearJugador({ nombre, paisId, posicionId, reparto }) {
@@ -55,6 +66,18 @@ function calcularOverall(jugador) {
   let total = 0;
   for (const a of ATRIBUTOS) total += jugador.atributos[a.id] * (pesos[a.id] || 0);
   return Math.round(total);
+}
+
+/* Valoración media de toda la carrera (no solo la última temporada jugada). */
+function calcularOverallMedio(jugador) {
+  if (!jugador.historialTemporadas.length) return calcularOverall(jugador);
+  const suma = jugador.historialTemporadas.reduce((s, t) => s + t.overall, 0);
+  return Math.round(suma / jugador.historialTemporadas.length);
+}
+
+function calcularOverallMaximo(jugador) {
+  if (!jugador.historialTemporadas.length) return calcularOverall(jugador);
+  return jugador.historialTemporadas.reduce((m, t) => Math.max(m, t.overall), 0);
 }
 
 /* ---------------- curva de crecimiento por edad ---------------- */
@@ -108,9 +131,11 @@ function aplicarEfectoEvento(jugador, efecto) {
     if (clave === "moral") {
       jugador.moral = clamp(jugador.moral + valor, 0, 100);
     } else if (clave === "dinero") {
-      jugador.dinero += valor;
+      jugador.dinero = Math.max(0, jugador.dinero + valor);
+    } else if (clave === "reputacion") {
+      jugador.reputacion = clamp(jugador.reputacion + valor, 0, 100);
     } else if (clave === "riesgoLesion") {
-      jugador.riesgoLesionBase += valor;
+      jugador.riesgoLesionBase = clamp(jugador.riesgoLesionBase + valor, 0, 60);
     } else if (ATRIBUTOS.some((a) => a.id === clave)) {
       jugador.atributos[clave] = clampAtributo(jugador.atributos[clave] + valor);
     }
@@ -119,10 +144,20 @@ function aplicarEfectoEvento(jugador, efecto) {
   return resumen;
 }
 
+/* Resuelve una opción de evento cuyo desenlace es incierto: cada opción trae
+   varios resultados posibles con su propia probabilidad ("resultados": [{prob,
+   efecto, texto}]), así la misma decisión no siempre acaba igual. */
+function resolverOpcion(jugador, opcion) {
+  const resultado = elegirPonderado(opcion.resultados);
+  aplicarEfectoEvento(jugador, resultado.efecto);
+  return resultado.texto;
+}
+
 /* ---------------- simulación de temporada ---------------- */
 function simularTemporada(jugador) {
   const overall = calcularOverall(jugador);
-  const liga = divisionLiga(jugador.club.paisId, jugador.club.division);
+  const divisionJugada = jugador.club.division;
+  const liga = divisionLiga(jugador.club.paisId, divisionJugada);
   const clubesLiga = liga.clubes;
   const nClubes = clubesLiga.length;
 
@@ -135,6 +170,10 @@ function simularTemporada(jugador) {
   const esCampeon = posicion === 1 && Math.random() < 0.5;
   const copa = posicion <= 3 && Math.random() < 0.12;
   const temporadaDificil = posicion >= nClubes - 1 && Math.random() < 0.5;
+
+  // Ascenso/descenso automático de TU club según lo que hagáis esta temporada
+  const ascensoDivision = divisionJugada === "segunda" && (esCampeon || (posicion <= 2 && Math.random() < 0.25));
+  const descensoDivision = divisionJugada === "primera" && posicion >= nClubes - 1 && Math.random() < 0.4;
 
   // Riesgo de lesión
   const riesgoLesion = clamp(
@@ -166,12 +205,32 @@ function simularTemporada(jugador) {
   }
 
   const resultado = {
-    overall, fuerzaEquipo, posicion, nClubes, esCampeon, copa, temporadaDificil,
+    overall, fuerzaEquipo, posicion, nClubes, divisionJugada,
+    esCampeon, copa, temporadaDificil, ascensoDivision, descensoDivision,
     lesionado, titular, partidosJugados, stats,
     fraseFinal: esCampeon ? pick(FRASES_CAMPEON) : (temporadaDificil ? pick(FRASES_TEMPORADA_DIFICIL) : null),
   };
 
   return resultado;
+}
+
+/* Ingresos de la temporada: sueldo según club y nivel, menos gastos
+   (impuestos, agente, tren de vida), más un posible imprevisto económico. */
+function calcularFinanzasTemporada(jugador, overall) {
+  const ingresoBruto = Math.max(0, Math.round(jugador.club.prestigio * 900 + overall * 70 + randInt(-200, 400)));
+  const gastos = Math.round(ingresoBruto * (randInt(15, 35) / 100));
+  let neto = ingresoBruto - gastos;
+
+  let evento = null;
+  if (Math.random() < 0.4) {
+    evento = elegirPonderado(EVENTOS_ECONOMICOS);
+    const delta = Math.round(ingresoBruto * evento.factor);
+    neto += delta;
+    evento = { texto: evento.texto, delta };
+  }
+
+  jugador.dinero = Math.max(0, jugador.dinero + neto);
+  return { ingresoBruto, gastos, neto, evento };
 }
 
 function aplicarResultadoTemporada(jugador, resultado) {
@@ -185,7 +244,7 @@ function aplicarResultadoTemporada(jugador, resultado) {
   if (resultado.titular) e.temporadasComoTitular++;
 
   const pais = PAISES[jugador.club.paisId];
-  const liga = pais.ligas[jugador.club.division];
+  const liga = pais.ligas[resultado.divisionJugada];
   if (resultado.esCampeon) jugador.titulos.push({ tipo: "Liga", liga: liga.nombre, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
   if (resultado.copa) jugador.titulos.push({ tipo: "Copa", liga: liga.nombre, edad: jugador.edad, club: jugador.club.nombre, pais: pais.nombre });
 
@@ -197,7 +256,7 @@ function aplicarResultadoTemporada(jugador, resultado) {
     club: jugador.club.nombre,
     pais: pais.nombre,
     liga: liga.nombre,
-    division: jugador.club.division,
+    division: resultado.divisionJugada,
     posicion: resultado.posicion,
     nClubes: resultado.nClubes,
     overall: resultado.overall,
@@ -205,6 +264,20 @@ function aplicarResultadoTemporada(jugador, resultado) {
     partidosJugados: resultado.partidosJugados,
     titulos: resultado.esCampeon ? ["Liga"] : (resultado.copa ? ["Copa"] : []),
   });
+
+  const finanzas = calcularFinanzasTemporada(jugador, resultado.overall);
+
+  // El ascenso/descenso de TU club se aplica al final, una vez registrada
+  // la temporada (que se jugó en la división de partida).
+  if (resultado.ascensoDivision) {
+    jugador.club.division = "primera";
+    jugador.historialClubes.push({ club: jugador.club.nombre, paisId: jugador.club.paisId, division: "primera", desdeEdad: jugador.edad + 1 });
+  } else if (resultado.descensoDivision) {
+    jugador.club.division = "segunda";
+    jugador.historialClubes.push({ club: jugador.club.nombre, paisId: jugador.club.paisId, division: "segunda", desdeEdad: jugador.edad + 1 });
+  }
+
+  return finanzas;
 }
 
 /* ---------------- selección nacional ---------------- */
@@ -273,7 +346,7 @@ function generarOfertas(jugador, resultadoTemporada) {
     });
   }
 
-  // Ascenso a primera división (si juegas en segunda y rindes muy bien)
+  // Ascenso a primera división vía fichaje (si juegas en segunda y rindes muy bien)
   if (divisionActual === "segunda") {
     const probAscenso = clamp((overall - 55) * 2 + jugador.reputacion / 3, 0, 55);
     if (Math.random() * 100 < probAscenso) {
@@ -320,7 +393,7 @@ function ficharPorClub(jugador, oferta) {
 
 /* ---------------- legado / retiro ---------------- */
 function calcularLegado(jugador) {
-  const mejorOverall = jugador.historialTemporadas.reduce((m, t) => Math.max(m, t.overall), 0);
+  const mejorOverall = calcularOverallMaximo(jugador);
   const nTitulosLiga = jugador.titulos.filter((t) => t.tipo === "Liga").length;
   const nMedallas = jugador.torneosInternacionales.filter((t) => t.resultado.includes("edalla")).length;
 
@@ -335,8 +408,8 @@ function calcularLegado(jugador) {
 
 export {
   EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO,
-  crearJugador, calcularOverall, aplicarEntrenamiento,
-  generarEvento, aplicarEfectoEvento,
+  crearJugador, calcularOverall, calcularOverallMedio, calcularOverallMaximo, aplicarEntrenamiento,
+  generarEvento, aplicarEfectoEvento, resolverOpcion,
   simularTemporada, aplicarResultadoTemporada,
   comprobarSeleccionNacional, generarOfertas, ficharPorClub,
   calcularLegado, clamp, randInt,

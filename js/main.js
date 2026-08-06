@@ -1,8 +1,8 @@
 import { EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA } from "./data.js";
 import {
   EDAD_RETIRO_OBLIGATORIO, crearJugador, aplicarEntrenamiento,
-  generarEvento, aplicarEfectoEvento, simularTemporada, aplicarResultadoTemporada,
-  comprobarSeleccionNacional, generarOfertas, ficharPorClub, calcularLegado,
+  generarEvento, resolverOpcion, simularTemporada, aplicarResultadoTemporada,
+  comprobarSeleccionNacional, generarOfertas, ficharPorClub, calcularLegado, calcularOverallMedio,
 } from "./engine.js";
 import {
   renderSidebar, actualizarCabeceraTemporada, renderInicio, renderCreacion,
@@ -29,8 +29,8 @@ function borrarGuardado() {
 }
 
 /* ---------------- refresco de UI persistente ---------------- */
-function refrescarCabecera() {
-  renderSidebar(estado.jugador);
+function refrescarCabecera(opts) {
+  renderSidebar(estado.jugador, opts);
   actualizarCabeceraTemporada(estado.jugador, estado.temporadaNum);
 }
 
@@ -79,9 +79,9 @@ function pantallaEventoPretemporada() {
   const evento = generarEvento(EVENTOS_PRETEMPORADA);
   renderEvento(estado.jugador, evento, "Pretemporada", {
     onElegir: (opcion) => {
-      aplicarEfectoEvento(estado.jugador, opcion.efecto);
+      const texto = resolverOpcion(estado.jugador, opcion);
       refrescarCabecera();
-      renderResultadoEvento(opcion.resultado, {
+      renderResultadoEvento(texto, {
         onContinuar: () => {
           if (Math.random() < 0.5) pantallaEventoTemporada();
           else pantallaSimularTemporada();
@@ -95,16 +95,16 @@ function pantallaEventoTemporada() {
   const evento = generarEvento(EVENTOS_TEMPORADA);
   renderEvento(estado.jugador, evento, "Mitad de temporada", {
     onElegir: (opcion) => {
-      aplicarEfectoEvento(estado.jugador, opcion.efecto);
+      const texto = resolverOpcion(estado.jugador, opcion);
       refrescarCabecera();
-      renderResultadoEvento(opcion.resultado, { onContinuar: pantallaSimularTemporada });
+      renderResultadoEvento(texto, { onContinuar: pantallaSimularTemporada });
     },
   });
 }
 
 function pantallaSimularTemporada() {
   const resultado = simularTemporada(estado.jugador);
-  aplicarResultadoTemporada(estado.jugador, resultado);
+  resultado.finanzas = aplicarResultadoTemporada(estado.jugador, resultado);
   refrescarCabecera();
   guardar();
   renderResumenTemporada(estado.jugador, resultado, {
@@ -159,7 +159,9 @@ function pantallaRetirar() {
 }
 
 function pantallaRetiro() {
-  refrescarCabecera();
+  // En la ficha lateral, la carrera terminada muestra la valoración MEDIA
+  // de toda la trayectoria en vez de la de la última temporada jugada.
+  refrescarCabecera({ overallOverride: calcularOverallMedio(estado.jugador), etiquetaOverall: "MEDIA CARRERA" });
   const legado = calcularLegado(estado.jugador);
   renderRetiro(estado.jugador, legado, {
     onNuevaCarrera: () => {

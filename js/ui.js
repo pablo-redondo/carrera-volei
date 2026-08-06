@@ -1,5 +1,5 @@
 import { ATRIBUTOS, POSICIONES, PUNTOS_CREACION, TOPE_CREACION, PAISES } from "./data.js";
-import { calcularOverall } from "./engine.js";
+import { calcularOverall, calcularOverallMedio, calcularOverallMaximo } from "./engine.js";
 
 const $pantalla = () => document.getElementById("pantalla");
 const $sidebar = () => document.getElementById("sidebar");
@@ -22,12 +22,13 @@ function etiquetaDivision(division) {
 }
 
 /* ================= SIDEBAR / FICHA DEL JUGADOR ================= */
-function renderSidebar(jugador) {
+function renderSidebar(jugador, opts = {}) {
   const el = $sidebar();
   if (!jugador) { el.classList.add("oculto"); el.innerHTML = ""; return; }
   el.classList.remove("oculto");
 
-  const overall = calcularOverall(jugador);
+  const overall = opts.overallOverride ?? calcularOverall(jugador);
+  const etiquetaOverall = opts.etiquetaOverall ?? "GLOBAL";
   const posicion = POSICIONES[jugador.posicionId].nombre;
   const paisJugador = PAISES[jugador.paisId];
   const ligaClub = PAISES[jugador.club.paisId].ligas[jugador.club.division];
@@ -41,19 +42,17 @@ function renderSidebar(jugador) {
       </div>`;
   }).join("");
 
-  const titulosTxt = jugador.titulos.length ? `${jugador.titulos.length}` : "0";
-
   el.innerHTML = `
     <div class="jugador-cabecera">
       <div class="overall-ring" style="--pct:${overall}">
         <div class="overall-ring-inner">
           <span class="num">${overall}</span>
-          <span class="lbl">GLOBAL</span>
+          <span class="lbl">${escapar(etiquetaOverall)}</span>
         </div>
       </div>
       <div class="jugador-info">
         <h2>${escapar(jugador.nombre)}</h2>
-        <div class="sub">${posicion}<br>${jugador.edad} años · ${escapar(paisJugador.nombre)}</div>
+        <div class="sub">${posicion} · ${jugador.edad} años<br>${escapar(paisJugador.nombre)}</div>
       </div>
     </div>
 
@@ -65,12 +64,13 @@ function renderSidebar(jugador) {
     <div class="bloque-titulo">Atributos</div>
     <div class="atributos">${barras}</div>
 
-    <div class="extra">
-      <span>💰 Ahorros <b>${jugador.dinero.toLocaleString("es-ES")} €</b></span>
-      <span>📣 Reputación <b>${jugador.reputacion}/100</b></span>
-      <span>🙂 Moral <b>${jugador.moral}/100</b></span>
-      <span>🏆 Títulos <b>${titulosTxt}</b></span>
-      <span>🌐 Selección <b>${jugador.convocatoriasSeleccion}</b></span>
+    <div class="bloque-titulo">Estado</div>
+    <div class="mini-stats">
+      <div class="mini-stat"><span class="mini-icono">💰</span><span class="mini-label">Ahorros</span><span class="mini-valor">${jugador.dinero.toLocaleString("es-ES")} €</span></div>
+      <div class="mini-stat"><span class="mini-icono">📣</span><span class="mini-label">Reputación</span><span class="mini-valor">${jugador.reputacion}/100</span></div>
+      <div class="mini-stat"><span class="mini-icono">🙂</span><span class="mini-label">Moral</span><span class="mini-valor">${jugador.moral}/100</span></div>
+      <div class="mini-stat"><span class="mini-icono">🏆</span><span class="mini-label">Títulos</span><span class="mini-valor">${jugador.titulos.length}</span></div>
+      <div class="mini-stat"><span class="mini-icono">🌐</span><span class="mini-label">Selección</span><span class="mini-valor">${jugador.convocatoriasSeleccion}</span></div>
     </div>
   `;
 }
@@ -282,13 +282,30 @@ function renderResultadoEvento(mensaje, cb) {
 
 /* ================= RESUMEN DE TEMPORADA ================= */
 function renderResumenTemporada(jugador, resultado, cb) {
-  const liga = PAISES[jugador.club.paisId].ligas[jugador.club.division];
+  // Ojo: si el club ascendió/descendió esta misma temporada, jugador.club.division
+  // ya apunta a la división NUEVA — para el resumen usamos la que realmente se jugó.
+  const liga = PAISES[jugador.club.paisId].ligas[resultado.divisionJugada];
   const chips = [];
   if (resultado.esCampeon) chips.push(`<span class="chip oro">🏆 Campeón/a de ${escapar(liga.nombre)}</span>`);
   if (resultado.copa) chips.push(`<span class="chip oro">🥇 Copa</span>`);
-  if (resultado.temporadaDificil) chips.push(`<span class="chip rojo">📉 Temporada difícil</span>`);
+  if (resultado.ascensoDivision) chips.push(`<span class="chip verde">⬆️ ¡Asciende a 1ª división!</span>`);
+  if (resultado.descensoDivision) chips.push(`<span class="chip rojo">⬇️ Desciende a 2ª división</span>`);
+  if (resultado.temporadaDificil && !resultado.descensoDivision) chips.push(`<span class="chip rojo">📉 Temporada difícil</span>`);
   if (resultado.lesionado) chips.push(`<span class="chip rojo">🩹 Lesión</span>`);
   chips.push(`<span class="chip azul">${resultado.titular ? "⭐ Titular habitual" : "🪑 Rol suplente"}</span>`);
+
+  const fin = resultado.finanzas;
+  let finanzasHtml = "";
+  if (fin) {
+    const signo = fin.neto >= 0 ? "+" : "";
+    finanzasHtml = `
+      <div class="bloque-titulo">Finanzas de la temporada</div>
+      <div class="chips">
+        <span class="chip ${fin.neto >= 0 ? "verde" : "rojo"}">💶 ${signo}${fin.neto.toLocaleString("es-ES")} € netos</span>
+      </div>
+      ${fin.evento ? `<p class="narrativa destacada">💸 ${escapar(fin.evento.texto)} (${fin.evento.delta >= 0 ? "+" : ""}${fin.evento.delta.toLocaleString("es-ES")} €)</p>` : ""}
+    `;
+  }
 
   const s = resultado.stats;
   const esLibero = jugador.posicionId === "libero";
@@ -309,6 +326,7 @@ function renderResumenTemporada(jugador, resultado, cb) {
       ${resultado.fraseFinal ? `<p class="narrativa destacada">${resultado.fraseFinal}</p>` : ""}
       <div class="chips">${chips.join("")}</div>
       <div class="stats-grid">${tiles}</div>
+      ${finanzasHtml}
       <div class="opciones">
         <button class="principal" id="btn-continuar">Continuar</button>
       </div>
@@ -405,7 +423,11 @@ function renderRetiro(jugador, legado, cb) {
     : "";
 
   const esLibero = jugador.posicionId === "libero";
+  const overallMedio = calcularOverallMedio(jugador);
+  const overallMaximo = calcularOverallMaximo(jugador);
   const tilesCarrera = `
+    <div class="stat-tile"><span class="stat-valor">${overallMedio}</span><span class="stat-label">Media global</span></div>
+    <div class="stat-tile fria"><span class="stat-valor">${overallMaximo}</span><span class="stat-label">Máxima global</span></div>
     <div class="stat-tile"><span class="stat-valor">${jugador.historialTemporadas.length}</span><span class="stat-label">Temporadas</span></div>
     <div class="stat-tile"><span class="stat-valor">${e.partidosTotales}</span><span class="stat-label">Partidos</span></div>
     ${esLibero

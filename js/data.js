@@ -386,62 +386,190 @@ const PAISES = {
 };
 
 /* ---------------- Eventos aleatorios de pretemporada ---------------- */
-/* efecto: objeto de cambios aplicado al jugador */
+/* Cada opción tiene varios desenlaces posibles ponderados por "prob"
+   (no hace falta que sumen 100): la misma decisión no siempre sale igual. */
 const EVENTOS_PRETEMPORADA = [
   {
     texto: (j) => `El preparador físico te propone un plan de pesas intensivo antes de empezar la pretemporada. Es duro, pero puede marcar la diferencia.`,
     opciones: [
-      { texto: "Aceptar el reto", efecto: { fisico: 3, moral: -2 }, resultado: "Terminas la pretemporada agotado/a, pero notablemente más fuerte." },
-      { texto: "Seguir el plan estándar", efecto: { fisico: 1 }, resultado: "Cumples con lo justo. Nada que destacar." },
+      {
+        texto: "Aceptar el reto",
+        resultados: [
+          { prob: 65, efecto: { fisico: 4, moral: -1 }, texto: "El plan te sienta de maravilla: terminas la pretemporada notablemente más fuerte." },
+          { prob: 35, efecto: { fisico: -1, moral: -3, riesgoLesion: 6 }, texto: "Te has pasado de frenada: llegas sobrecargado/a y con molestias de cara al inicio de liga." },
+        ],
+      },
+      {
+        texto: "Seguir el plan estándar",
+        resultados: [
+          { prob: 80, efecto: { fisico: 1 }, texto: "Cumples con lo justo. Nada que destacar, pero llegas entero/a." },
+          { prob: 20, efecto: { fisico: 2, moral: 1 }, texto: "La rutina sencilla te sienta mejor de lo esperado y llegas fresco/a a la pretemporada." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Una marca deportiva se pone en contacto contigo para patrocinarte la equipación a cambio de aparecer en sus anuncios.`,
     opciones: [
-      { texto: "Firmar el patrocinio", efecto: { dinero: 3000, liderazgo: 1 }, resultado: "El dinero extra viene bien, aunque algún compañero comenta que te has vuelto “una estrella”." },
-      { texto: "Rechazarlo y centrarte en el juego", efecto: { moral: 2 }, resultado: "Prefieres que hablen tus actuaciones en la cancha." },
+      {
+        texto: "Firmar el patrocinio",
+        resultados: [
+          { prob: 75, efecto: { dinero: 3000, liderazgo: 1 }, texto: "El acuerdo sale redondo: ingresas un buen dinero y tu imagen crece." },
+          { prob: 25, efecto: { dinero: 800, moral: -2 }, texto: "La campaña resulta un poco cutre y varios compañeros se ríen de los anuncios. El pago es menor de lo prometido." },
+        ],
+      },
+      {
+        texto: "Rechazarlo y centrarte en el juego",
+        resultados: [
+          { prob: 100, efecto: { moral: 2 }, texto: "Prefieres que hablen tus actuaciones en la cancha, y así se lo haces saber a tu entorno." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `El entrenador reúne al vestuario y pide un capitán o capitana para la temporada. Varios compañeros te miran.`,
     opciones: [
-      { texto: "Dar un paso al frente", efecto: { liderazgo: 4, moral: 1 }, resultado: "Te conviertes en un referente del vestuario." },
-      { texto: "Declinar el ofrecimiento", efecto: { moral: -1 }, resultado: "Prefieres centrarte solo en tu rendimiento." },
+      {
+        texto: "Dar un paso al frente",
+        resultados: [
+          { prob: 70, efecto: { liderazgo: 4, moral: 2 }, texto: "Te conviertes en un referente indiscutible del vestuario." },
+          { prob: 30, efecto: { liderazgo: 2, moral: -2 }, texto: "Aceptas el brazalete, pero el peso extra de la responsabilidad te pasa factura al principio." },
+        ],
+      },
+      {
+        texto: "Declinar el ofrecimiento",
+        resultados: [
+          { prob: 100, efecto: { moral: -1 }, texto: "Prefieres centrarte solo en tu rendimiento, aunque algún veterano lo interpreta como falta de compromiso." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Un periodista de un medio deportivo local quiere entrevistarte sobre tus objetivos para la temporada.`,
     opciones: [
-      { texto: "Hablar con ambición", efecto: { liderazgo: 2, moral: -1 }, resultado: "Tus declaraciones generan expectación... y presión." },
-      { texto: "Mantener un perfil bajo", efecto: { moral: 1 }, resultado: "Prefieres que hablen los resultados." },
+      {
+        texto: "Hablar con ambición",
+        resultados: [
+          { prob: 55, efecto: { liderazgo: 3, reputacion: 4 }, texto: "Tus declaraciones generan expectación positiva y ganas notoriedad." },
+          { prob: 45, efecto: { moral: -3, reputacion: -2 }, texto: "Tus palabras se malinterpretan y acaban generando presión extra y algún titular incómodo." },
+        ],
+      },
+      {
+        texto: "Mantener un perfil bajo",
+        resultados: [
+          { prob: 100, efecto: { moral: 1 }, texto: "Prefieres que hablen los resultados y evitas cualquier polémica innecesaria." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Durante un entrenamiento notas una leve molestia física. El fisioterapeuta te recomienda parar unos días.`,
     opciones: [
-      { texto: "Parar y cuidarte", efecto: { fisico: 1, moral: -1 }, resultado: "La molestia desaparece sin mayores complicaciones." },
-      { texto: "Seguir entrenando al máximo", efecto: { fisico: -3, riesgoLesion: 8 }, resultado: "Sigues adelante, aunque el riesgo de lesión aumenta este año." },
+      {
+        texto: "Parar y cuidarte",
+        resultados: [
+          { prob: 85, efecto: { fisico: 1, moral: -1 }, texto: "La molestia desaparece sin mayores complicaciones tras un descanso breve." },
+          { prob: 15, efecto: { moral: -3, riesgoLesion: -5 }, texto: "El parón se alarga más de lo previsto y pierdes ritmo de pretemporada, aunque llegas más sano/a." },
+        ],
+      },
+      {
+        texto: "Seguir entrenando al máximo",
+        resultados: [
+          { prob: 40, efecto: { fisico: 2 }, texto: "Aprietas los dientes y sales indemne: la molestia no va a más." },
+          { prob: 60, efecto: { fisico: -4, riesgoLesion: 10, moral: -2 }, texto: "Te has arriesgado de más: la molestia se agrava y el riesgo de lesión aumenta bastante este año." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `El club organiza una pretemporada con partidos amistosos frente a rivales de otros países.`,
     opciones: [
-      { texto: "Aprovechar para foguearte fuera", efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, resultado: "La experiencia internacional te abre la cabeza y mejoras varios aspectos de tu juego." },
-      { texto: "Centrarte en la puesta a punto física", efecto: { fisico: 2 }, resultado: "Priorizas llegar en plena forma al inicio de la liga." },
+      {
+        texto: "Aprovechar para foguearte fuera",
+        resultados: [
+          { prob: 70, efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, texto: "La experiencia internacional te abre la cabeza y mejoras varios aspectos de tu juego." },
+          { prob: 30, efecto: { fisico: -2, moral: -1 }, texto: "El viaje y el cambio de horarios te pasan factura físicamente." },
+        ],
+      },
+      {
+        texto: "Centrarte en la puesta a punto física",
+        resultados: [
+          { prob: 100, efecto: { fisico: 2 }, texto: "Priorizas llegar en plena forma al inicio de la liga." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Se acerca el cierre del mercado de fichajes y tu agente te llama: hay rumores de interés desde el extranjero.`,
     opciones: [
-      { texto: "Escuchar la oferta", efecto: { moral: 1 }, resultado: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos del mundo." },
-      { texto: "Cortar la conversación", efecto: { liderazgo: 1 }, resultado: "Tu club valora tu compromiso este curso." },
+      {
+        texto: "Escuchar la oferta",
+        resultados: [
+          { prob: 60, efecto: { moral: 2, reputacion: 3 }, texto: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos del mundo." },
+          { prob: 40, efecto: { moral: -2 }, texto: "Los rumores llegan al vestuario y generan un ambiente incómodo con tus compañeros." },
+        ],
+      },
+      {
+        texto: "Cortar la conversación",
+        resultados: [
+          { prob: 100, efecto: { liderazgo: 1 }, texto: "Tu club valora tu compromiso este curso." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Un compañero veterano del vestuario se ofrece a darte consejos extra después de los entrenamientos.`,
     opciones: [
-      { texto: "Aprovechar su experiencia", efecto: { colocacion: 1, defensa: 1, recepcion: 1 }, resultado: "Aprendes pequeños detalles que marcan la diferencia en pista." },
-      { texto: "Preferir entrenar por tu cuenta", efecto: { fisico: 1 }, resultado: "Sigues tu propio método de trabajo." },
+      {
+        texto: "Aprovechar su experiencia",
+        resultados: [
+          { prob: 80, efecto: { colocacion: 1, defensa: 1, recepcion: 1 }, texto: "Aprendes pequeños detalles que marcan la diferencia en pista." },
+          { prob: 20, efecto: { moral: -1 }, texto: "Sus consejos chocan con lo que te dice el entrenador y acabas hecho/a un lío." },
+        ],
+      },
+      {
+        texto: "Preferir entrenar por tu cuenta",
+        resultados: [
+          { prob: 100, efecto: { fisico: 1 }, texto: "Sigues tu propio método de trabajo." },
+        ],
+      },
+    ],
+  },
+  {
+    texto: (j) => `Un canal deportivo te propone participar en un reto viral en redes sociales junto a otros jugadores.`,
+    opciones: [
+      {
+        texto: "Grabar el vídeo",
+        resultados: [
+          { prob: 50, efecto: { dinero: 1200, reputacion: 5, moral: 2 }, texto: "El vídeo se hace viral: ganas seguidores, un pequeño ingreso y caes muy bien a la afición." },
+          { prob: 30, efecto: { moral: -1 }, texto: "El vídeo pasa sin pena ni gloria, aunque no cuesta nada intentarlo." },
+          { prob: 20, efecto: { reputacion: -4, moral: -2 }, texto: "Una broma sale mal y te llueven las críticas en redes durante unos días." },
+        ],
+      },
+      {
+        texto: "Declinar la propuesta",
+        resultados: [
+          { prob: 100, efecto: {}, texto: "Prefieres mantener tu vida privada al margen de las redes." },
+        ],
+      },
+    ],
+  },
+  {
+    texto: (j) => `Tu club te ofrece firmar una cláusula de renovación automática a cambio de una prima ahora mismo.`,
+    opciones: [
+      {
+        texto: "Aceptar la prima inmediata",
+        resultados: [
+          { prob: 100, efecto: { dinero: 1800, liderazgo: -1 }, texto: "Cobras la prima al instante, aunque pierdes algo de margen para negociar en el futuro." },
+        ],
+      },
+      {
+        texto: "Rechazarla y mantener la libertad de negociar",
+        resultados: [
+          { prob: 60, efecto: { reputacion: 2 }, texto: "Con el tiempo, tu decisión de no atarte resulta inteligente: mantienes tu valor de mercado." },
+          { prob: 40, efecto: { moral: -1 }, texto: "El club se lo toma como un desplante y la relación se enfría un poco." },
+        ],
+      },
     ],
   },
 ];
@@ -451,22 +579,110 @@ const EVENTOS_TEMPORADA = [
   {
     texto: (j) => `A mitad de temporada, el vestuario vive un cruce de opiniones sobre el sistema de juego del entrenador.`,
     opciones: [
-      { texto: "Respaldar al entrenador en público", efecto: { liderazgo: 2 }, resultado: "El cuerpo técnico valora tu apoyo." },
-      { texto: "Mantenerte al margen", efecto: {}, resultado: "Prefieres no meterte en líos internos." },
+      {
+        texto: "Respaldar al entrenador en público",
+        resultados: [
+          { prob: 70, efecto: { liderazgo: 2, reputacion: 2 }, texto: "El cuerpo técnico valora mucho tu apoyo público." },
+          { prob: 30, efecto: { moral: -2 }, texto: "Parte del vestuario se lo toma mal y notas cierta tensión con algunos compañeros." },
+        ],
+      },
+      {
+        texto: "Mantenerte al margen",
+        resultados: [
+          { prob: 100, efecto: {}, texto: "Prefieres no meterte en líos internos y sigues centrado/a en tu juego." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Tienes la oportunidad de dar una charla motivacional en un colegio sobre tu experiencia como deportista.`,
     opciones: [
-      { texto: "Aceptar la charla", efecto: { liderazgo: 2, moral: 1 }, resultado: "Disfrutas conectando con jóvenes aficionados/as al vóley." },
-      { texto: "Declinar por falta de tiempo", efecto: { fisico: 1 }, resultado: "Prefieres centrar tu energía en los entrenamientos." },
+      {
+        texto: "Aceptar la charla",
+        resultados: [
+          { prob: 85, efecto: { liderazgo: 2, moral: 2, reputacion: 1 }, texto: "Disfrutas conectando con jóvenes aficionados/as al vóley y sales con las pilas cargadas." },
+          { prob: 15, efecto: { fisico: -1, moral: -1 }, texto: "El día se alarga más de lo previsto y llegas cansado/a al entrenamiento siguiente." },
+        ],
+      },
+      {
+        texto: "Declinar por falta de tiempo",
+        resultados: [
+          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres centrar tu energía en los entrenamientos." },
+        ],
+      },
     ],
   },
   {
     texto: (j) => `Una lesión de un compañero titular te da la oportunidad de ganar más minutos en pista.`,
     opciones: [
-      { texto: "Dar un paso al frente", efecto: { moral: 2 }, resultado: "Aprovechas la ocasión para ganarte la confianza del cuerpo técnico." },
-      { texto: "Ir con cautela", efecto: { fisico: 1 }, resultado: "Prefieres coger ritmo sin forzar." },
+      {
+        texto: "Dar un paso al frente",
+        resultados: [
+          { prob: 65, efecto: { moral: 3, reputacion: 3 }, texto: "Aprovechas la ocasión y te ganas la confianza definitiva del cuerpo técnico." },
+          { prob: 35, efecto: { moral: -2, fisico: -2 }, texto: "El exceso de partidos de golpe te pasa factura físicamente y no rindes como esperabas." },
+        ],
+      },
+      {
+        texto: "Ir con cautela",
+        resultados: [
+          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres coger ritmo sin forzar la máquina." },
+        ],
+      },
+    ],
+  },
+  {
+    texto: (j) => `Un ojeador de otro club se presenta en un partido para verte jugar en directo.`,
+    opciones: [
+      {
+        texto: "Intentar destacar al máximo",
+        resultados: [
+          { prob: 55, efecto: { reputacion: 5, moral: 2 }, texto: "Firmas un partidazo delante del ojeador: tu valor de mercado sube como la espuma." },
+          { prob: 45, efecto: { moral: -3, fisico: -1 }, texto: "La presión te juega una mala pasada y firmas uno de tus peores partidos del año." },
+        ],
+      },
+      {
+        texto: "Jugar con normalidad, sin obsesionarte",
+        resultados: [
+          { prob: 100, efecto: { moral: 1 }, texto: "Decides no darle más importancia de la cuenta y eso te ayuda a rendir con soltura." },
+        ],
+      },
+    ],
+  },
+  {
+    texto: (j) => `Un compañero de vestuario te propone salir de fiesta la noche antes de un partido importante.`,
+    opciones: [
+      {
+        texto: "Salir un rato y desconectar",
+        resultados: [
+          { prob: 40, efecto: { moral: 3 }, texto: "La noche te sienta bien: desconectas y llegas al partido con la cabeza despejada." },
+          { prob: 60, efecto: { fisico: -2, moral: -1 }, texto: "Te acuestas más tarde de lo debido y se nota en tus piernas al día siguiente." },
+        ],
+      },
+      {
+        texto: "Quedarte a descansar",
+        resultados: [
+          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres cuidar tu descanso antes de un partido clave." },
+        ],
+      },
+    ],
+  },
+  {
+    texto: (j) => `El club atraviesa un bache de resultados y la directiva plantea cambios en el once inicial.`,
+    opciones: [
+      {
+        texto: "Pedir explicaciones directamente al entrenador",
+        resultados: [
+          { prob: 50, efecto: { liderazgo: 2, moral: 1 }, texto: "La conversación sincera aclara las cosas y refuerza tu papel en el equipo." },
+          { prob: 50, efecto: { moral: -3 }, texto: "La charla se tensa y notas que tu relación con el entrenador se resiente." },
+        ],
+      },
+      {
+        texto: "Callar y demostrarlo en la pista",
+        resultados: [
+          { prob: 70, efecto: { moral: 2, reputacion: 2 }, texto: "Tu actitud profesional en los entrenamientos no pasa desapercibida." },
+          { prob: 30, efecto: { moral: -1 }, texto: "Guardarte la frustración empieza a pesarte con el paso de las semanas." },
+        ],
+      },
     ],
   },
 ];
@@ -485,9 +701,24 @@ const FRASES_TEMPORADA_DIFICIL = [
   "Un curso para el olvido: el equipo nunca encontró su mejor versión.",
 ];
 
+/* ---------------- Imprevistos económicos de fin de temporada ----------------
+   Se suman al sueldo de la temporada: factor = variación sobre el ingreso bruto. */
+const EVENTOS_ECONOMICOS = [
+  { prob: 12, factor: 0.30, texto: "Un patrocinador te sorprende con una prima por objetivos cumplidos." },
+  { prob: 10, factor: 0.20, texto: "Cierras un pequeño acuerdo publicitario que te deja un ingreso extra." },
+  { prob: 8,  factor: 0.15, texto: "Recibes una prima de fidelidad de tu club por el compromiso mostrado." },
+  { prob: 8,  factor: 0.12, texto: "Una inversión que hiciste tiempo atrás empieza por fin a dar beneficios." },
+  { prob: 14, factor: -0.25, texto: "Hacienda te reclama una regularización de impuestos atrasados." },
+  { prob: 12, factor: -0.20, texto: "Una mala inversión inmobiliaria te cuesta más de lo esperado." },
+  { prob: 10, factor: -0.18, texto: "Ayudas económicamente a tu familia en un momento complicado." },
+  { prob: 8,  factor: -0.15, texto: "Un imprevisto en tu domicilio te obliga a afrontar gastos inesperados." },
+  { prob: 6,  factor: -0.30, texto: "Tu agente desaparece con parte de tus ahorros tras una gestión turbia." },
+  { prob: 12, factor: 0.10, texto: "Un evento benéfico en el que participas te reporta una pequeña compensación." },
+];
+
 export {
   ATRIBUTOS, POSICIONES, PUNTOS_CREACION, TOPE_CREACION,
   PAISES,
-  EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, TORNEOS,
+  EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, EVENTOS_ECONOMICOS, TORNEOS,
   FRASES_CAMPEON, FRASES_TEMPORADA_DIFICIL,
 };
