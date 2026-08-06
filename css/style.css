@@ -420,6 +420,71 @@ button.secundario {
 }
 button.secundario:hover { border-color: var(--naranja-claro); background: rgba(255, 107, 26, .07); }
 
+/* ============ REJILLA DE ENTRENAMIENTO (pretemporada) ============
+   Fichas compactas en vez de botones a todo el ancho: así las 8 opciones
+   caben casi sin scroll en el móvil. */
+.rejilla-entreno {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.ficha-entreno {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 92px;
+  padding: 12px 8px;
+  font-family: inherit;
+  color: var(--texto);
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+  transition: border-color .18s, background .18s, transform .12s, box-shadow .18s;
+}
+.ficha-entreno:hover {
+  border-color: var(--naranja);
+  background: var(--panel-3);
+  box-shadow: 0 8px 20px -14px rgba(255, 107, 26, .95);
+}
+.ficha-entreno:active { transform: scale(.96); }
+
+.ficha-icono { font-size: 1.5rem; line-height: 1; }
+.ficha-nombre {
+  font-size: .8rem;
+  font-weight: 650;
+  text-align: center;
+  line-height: 1.25;
+}
+.ficha-valor {
+  font-size: .74rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--naranja-claro);
+}
+
+/* la opción de descanso ocupa toda la fila y se lee en horizontal */
+.ficha-entreno.ancha {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 62px;
+  padding: 12px 16px;
+  text-align: left;
+}
+.ficha-entreno.ancha .ficha-nombre { text-align: left; display: block; }
+.ficha-texto { display: flex; flex-direction: column; gap: 3px; }
+.ficha-detalle {
+  font-size: .74rem;
+  line-height: 1.4;
+  color: var(--texto-tenue);
+}
+
 /* ============================ FORMULARIO DE CREACIÓN ============================ */
 .form-fila { margin-bottom: 22px; }
 .form-fila > label {
@@ -728,12 +793,23 @@ table.tabla-stats tr:last-child td { border-bottom: none; }
   .opciones.horizontal button { width: 100%; }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
+
+  /* tres columnas: las opciones de entrenamiento caben de un vistazo */
+  .rejilla-entreno { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .ficha-entreno { min-height: 84px; padding: 10px 6px; gap: 3px; }
+  .ficha-icono { font-size: 1.3rem; }
+  .ficha-nombre { font-size: .71rem; }
+  .ficha-valor { font-size: .7rem; }
+  .ficha-entreno.ancha { min-height: 58px; padding: 11px 14px; }
+  .ficha-entreno.ancha .ficha-nombre { font-size: .82rem; }
+  .ficha-detalle { font-size: .71rem; }
 }
 
 @media (max-width: 359px) {
   .tarjetas-grid { grid-template-columns: 1fr; }
   .atributos { grid-template-columns: 1fr; }
   .jugador-info h2 { font-size: .98rem; }
+  .rejilla-entreno { grid-template-columns: 1fr 1fr; }
 }
 
 /* ============================ ACCESIBILIDAD ============================ */

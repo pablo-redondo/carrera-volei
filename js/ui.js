@@ -217,9 +217,10 @@ function renderCreacion(cb) {
 /* ================= PRETEMPORADA: ENTRENAMIENTO ================= */
 function renderEntrenamiento(jugador, cb) {
   const opciones = ATRIBUTOS.filter((a) => POSICIONES[jugador.posicionId].pesos[a.id] > 0).map((a) => `
-    <button class="opcion" data-foco="${a.id}">
-      <span class="titulo-opcion">${a.icono} Trabajar ${a.nombre}</span>
-      <span class="detalle-opcion">Mejora principalmente este atributo esta temporada.</span>
+    <button class="ficha-entreno" data-foco="${a.id}">
+      <span class="ficha-icono">${a.icono}</span>
+      <span class="ficha-nombre">${a.nombre}</span>
+      <span class="ficha-valor">${jugador.atributos[a.id]}</span>
     </button>
   `).join("");
 
@@ -227,12 +228,15 @@ function renderEntrenamiento(jugador, cb) {
   $pantalla().innerHTML = `
     <div class="panel">
       <h2>Pretemporada · ${jugador.edad} años</h2>
-      <p class="narrativa">Antes de que arranque la competición, decides en qué centrar tu preparación con <b>${escapar(jugador.club.nombre)}</b>.</p>
-      <div class="opciones">
+      <p class="narrativa">¿En qué centras tu preparación con <b>${escapar(jugador.club.nombre)}</b>?</p>
+      <div class="rejilla-entreno">
         ${opciones}
-        <button class="opcion" data-foco="descanso">
-          <span class="titulo-opcion">😴 Priorizar el descanso y la recuperación</span>
-          <span class="detalle-opcion">Mejora tu físico y tu moral, reduciendo el riesgo de lesión.</span>
+        <button class="ficha-entreno ancha" data-foco="descanso">
+          <span class="ficha-icono">😴</span>
+          <span class="ficha-texto">
+            <span class="ficha-nombre">Descanso y recuperación</span>
+            <span class="ficha-detalle">Mejora tu físico y tu moral, reduciendo el riesgo de lesión.</span>
+          </span>
         </button>
       </div>
     </div>
