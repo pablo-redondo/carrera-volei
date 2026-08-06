@@ -26,11 +26,16 @@ const balonSvg = (clase = "") => `<svg class="${clase}" viewBox="0 0 100 100" ar
 
 /* Anima los números de las tarjetas de estadística contando hasta su valor. */
 function animarContadores(raiz) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   raiz.querySelectorAll("[data-contador]").forEach((el) => {
     const destino = Number(el.dataset.contador);
-    if (!Number.isFinite(destino) || destino === 0) return;
     const sufijo = el.dataset.sufijo || "";
+    // Sin animación (o si no hay nada que contar) mostramos ya el valor final:
+    // de lo contrario la cifra se quedaría congelada en 0.
+    if (!Number.isFinite(destino) || destino === 0 || sinMovimiento) {
+      el.textContent = (Number.isFinite(destino) ? destino : 0).toLocaleString("es-ES") + sufijo;
+      return;
+    }
     const duracion = 750;
     const inicio = performance.now();
     function paso(ahora) {
