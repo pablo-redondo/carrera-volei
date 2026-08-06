@@ -3,23 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0e14">
+<meta name="theme-color" content="#070a10">
 <title>Carrera de Vóley — Simulador</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Biblioteca de gráficos SVG reutilizables (balón, pista, silueta de remate) -->
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="gradAcento" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#ff6b1a"/>
+        <stop offset="100%" stop-color="#ffb347"/>
+      </linearGradient>
+      <linearGradient id="gradFrio" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#22d3ee"/>
+        <stop offset="100%" stop-color="#4f7cff"/>
+      </linearGradient>
+
+      <!-- Balón de voleibol: cuero claro, costuras oscuras y panel naranja -->
+      <radialGradient id="gradCuero" cx="34%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="62%" stop-color="#e7eef7"/>
+        <stop offset="100%" stop-color="#aebccd"/>
+      </radialGradient>
+      <symbol id="ico-balon" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="url(#gradCuero)"/>
+        <!-- panel de color que da carácter deportivo -->
+        <path d="M66 96C60 70 66 40 90 20a46 46 0 0 1-24 76z" fill="url(#gradAcento)" opacity=".92"/>
+        <!-- costuras: las tres curvas clásicas del voleibol -->
+        <g fill="none" stroke="#101822" stroke-width="3.6" stroke-linecap="round" opacity=".92">
+          <path d="M50 4C29 23 20 49 25 79"/>
+          <path d="M95 43C73 39 45 46 23 67"/>
+          <path d="M66 96C60 70 66 40 90 20"/>
+        </g>
+        <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(9,13,19,.35)" stroke-width="2.5"/>
+      </symbol>
+
+      <!-- Silueta de jugador rematando -->
+      <symbol id="ico-remate" viewBox="0 0 160 160">
+        <g fill="currentColor">
+          <circle cx="96" cy="34" r="12"/>
+          <path d="M92 48c10-3 20 2 23 12l7 24c1 5-2 10-7 11s-10-2-11-7l-4-14-6 20 16 22c3 4 2 10-2 13s-10 2-13-2l-20-27c-2-3-3-7-2-11l4-16-14 10-14 20c-3 4-9 5-13 2s-5-9-2-13l16-23c1-2 3-4 5-5l24-13c4-2 8-3 13-3z"/>
+          <path d="M104 44c4-8 12-16 22-20 4-2 8 0 9 4s0 8-4 9c-7 3-13 8-16 14z"/>
+        </g>
+      </symbol>
+
+      <!-- Trofeo -->
+      <symbol id="ico-trofeo" viewBox="0 0 100 100">
+        <g fill="currentColor">
+          <path d="M28 14h44v26a22 22 0 0 1-44 0z"/>
+          <path d="M24 20H12v10a18 18 0 0 0 16 18v-9a10 10 0 0 1-6-9zM76 20h12v10a18 18 0 0 1-16 18v-9a10 10 0 0 0 6-9z"/>
+          <rect x="42" y="60" width="16" height="16" rx="3"/>
+          <rect x="28" y="76" width="44" height="10" rx="4"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
   <div id="app">
+    <div class="fondo-pista" aria-hidden="true"></div>
+
     <header class="cabecera">
-      <div class="cabecera-titulo">
-        <span class="cabecera-icono">🏐</span>
-        <h1>Carrera de <b>Vóley</b></h1>
+      <div class="marca">
+        <svg class="marca-balon" viewBox="0 0 100 100" aria-hidden="true"><use href="#ico-balon"/></svg>
+        <span class="marca-texto">Carrera de <b>Vóley</b></span>
       </div>
-      <div id="cabecera-temporada" class="cabecera-temporada"></div>
+      <div class="cabecera-derecha">
+        <div id="cabecera-overall" class="cabecera-overall"></div>
+        <div id="cabecera-temporada" class="cabecera-temporada"></div>
+      </div>
     </header>
 
     <main class="contenido">
-      <aside id="sidebar" class="sidebar oculto"></aside>
+      <!-- En móvil la pantalla de juego va primero y la ficha debajo (ver CSS) -->
       <section id="pantalla" class="pantalla"></section>
+      <aside id="sidebar" class="sidebar oculto"></aside>
     </main>
 
     <footer class="pie">

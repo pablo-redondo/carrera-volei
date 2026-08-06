@@ -47,7 +47,9 @@ function crearJugador({ nombre, paisId, posicionId, reparto }) {
     dinero: 0,
     reputacion: 10,
     club: { nombre: clubInicial.nombre, paisId, division: "segunda", prestigio: clubInicial.prestigio },
-    historialClubes: [{ club: clubInicial.nombre, paisId, division: "segunda", desdeEdad: EDAD_INICIAL }],
+    // Una entrada por etapa en un club. Si el club sube o baja de división
+    // durante la etapa se anota en "divisiones", sin duplicar la fila.
+    historialClubes: [{ club: clubInicial.nombre, paisId, division: "segunda", divisiones: ["segunda"], desdeEdad: EDAD_INICIAL }],
     titulos: [],
     convocatoriasSeleccion: 0,
     torneosInternacionales: [],
@@ -268,13 +270,17 @@ function aplicarResultadoTemporada(jugador, resultado) {
   const finanzas = calcularFinanzasTemporada(jugador, resultado.overall);
 
   // El ascenso/descenso de TU club se aplica al final, una vez registrada
-  // la temporada (que se jugó en la división de partida).
-  if (resultado.ascensoDivision) {
-    jugador.club.division = "primera";
-    jugador.historialClubes.push({ club: jugador.club.nombre, paisId: jugador.club.paisId, division: "primera", desdeEdad: jugador.edad + 1 });
-  } else if (resultado.descensoDivision) {
-    jugador.club.division = "segunda";
-    jugador.historialClubes.push({ club: jugador.club.nombre, paisId: jugador.club.paisId, division: "segunda", desdeEdad: jugador.edad + 1 });
+  // la temporada (que se jugó en la división de partida). No abrimos una etapa
+  // nueva en el historial: sigues en el mismo club, solo cambia su categoría.
+  const nuevaDivision = resultado.ascensoDivision ? "primera" : (resultado.descensoDivision ? "segunda" : null);
+  if (nuevaDivision) {
+    jugador.club.division = nuevaDivision;
+    const etapa = jugador.historialClubes[jugador.historialClubes.length - 1];
+    if (etapa) {
+      etapa.division = nuevaDivision;
+      if (!etapa.divisiones) etapa.divisiones = [];
+      if (!etapa.divisiones.includes(nuevaDivision)) etapa.divisiones.push(nuevaDivision);
+    }
   }
 
   return finanzas;
@@ -387,7 +393,10 @@ function generarOfertas(jugador, resultadoTemporada) {
 function ficharPorClub(jugador, oferta) {
   if (!oferta.esActual) {
     jugador.club = { nombre: oferta.club, paisId: oferta.paisId, division: oferta.division, prestigio: oferta.prestigio };
-    jugador.historialClubes.push({ club: oferta.club, paisId: oferta.paisId, division: oferta.division, desdeEdad: jugador.edad + 1 });
+    jugador.historialClubes.push({
+      club: oferta.club, paisId: oferta.paisId, division: oferta.division,
+      divisiones: [oferta.division], desdeEdad: jugador.edad + 1,
+    });
   }
 }
 

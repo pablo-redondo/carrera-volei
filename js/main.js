@@ -1,4 +1,4 @@
-import { EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA } from "./data.js";
+import { EVENTOS_PRETEMPORADA, EVENTOS_TEMPORADA, PAISES, POSICIONES } from "./data.js";
 import {
   EDAD_RETIRO_OBLIGATORIO, crearJugador, aplicarEntrenamiento,
   generarEvento, resolverOpcion, simularTemporada, aplicarResultadoTemporada,
@@ -11,17 +11,41 @@ import {
 } from "./ui.js";
 
 const CLAVE_GUARDADO = "carreraVoley";
+/* Subir esta versión invalida las partidas guardadas con un formato anterior.
+   Sin esto, una partida vieja (con ligas o divisiones que ya no existen) hacía
+   que la pantalla reventara al cargarla y el juego se quedaba colgado. */
+const VERSION_GUARDADO = 4;
 
 let estado = { jugador: null, temporadaNum: 1 };
 
 /* ---------------- persistencia ---------------- */
 function guardar() {
-  try { localStorage.setItem(CLAVE_GUARDADO, JSON.stringify(estado)); } catch (e) { /* almacenamiento no disponible */ }
+  try {
+    localStorage.setItem(CLAVE_GUARDADO, JSON.stringify({ ...estado, version: VERSION_GUARDADO }));
+  } catch (e) { /* almacenamiento no disponible */ }
 }
+
+/* Comprueba que la partida guardada encaja con los datos actuales del juego. */
+function esGuardadoValido(g) {
+  if (!g || g.version !== VERSION_GUARDADO || !g.jugador) return false;
+  const j = g.jugador;
+  const pais = PAISES[j.paisId];
+  const paisClub = j.club && PAISES[j.club.paisId];
+  return Boolean(
+    pais && paisClub &&
+    POSICIONES[j.posicionId] &&
+    paisClub.ligas[j.club.division] &&
+    j.atributos && Array.isArray(j.historialTemporadas) && Array.isArray(j.historialClubes)
+  );
+}
+
 function cargar() {
   try {
     const raw = localStorage.getItem(CLAVE_GUARDADO);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const guardado = JSON.parse(raw);
+    if (!esGuardadoValido(guardado)) { borrarGuardado(); return null; }
+    return guardado;
   } catch (e) { return null; }
 }
 function borrarGuardado() {
@@ -161,7 +185,7 @@ function pantallaRetirar() {
 function pantallaRetiro() {
   // En la ficha lateral, la carrera terminada muestra la valoración MEDIA
   // de toda la trayectoria en vez de la de la última temporada jugada.
-  refrescarCabecera({ overallOverride: calcularOverallMedio(estado.jugador), etiquetaOverall: "MEDIA CARRERA" });
+  refrescarCabecera({ overallOverride: calcularOverallMedio(estado.jugador), etiquetaOverall: "MEDIA" });
   const legado = calcularLegado(estado.jugador);
   renderRetiro(estado.jugador, legado, {
     onNuevaCarrera: () => {
