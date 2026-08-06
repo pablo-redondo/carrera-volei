@@ -11,7 +11,17 @@ function escapar(str) {
   return div.innerHTML;
 }
 
-/* ================= SIDEBAR ================= */
+/* Al cambiar de pantalla volvemos arriba: si no, el usuario aparece a media
+   página y la cabecera fija le tapa el título. */
+function irArriba() {
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function etiquetaDivision(division) {
+  return division === "primera" ? "1ª división" : "2ª división";
+}
+
+/* ================= SIDEBAR / FICHA DEL JUGADOR ================= */
 function renderSidebar(jugador) {
   const el = $sidebar();
   if (!jugador) { el.classList.add("oculto"); el.innerHTML = ""; return; }
@@ -21,37 +31,46 @@ function renderSidebar(jugador) {
   const posicion = POSICIONES[jugador.posicionId].nombre;
   const paisJugador = PAISES[jugador.paisId];
   const ligaClub = PAISES[jugador.club.paisId].ligas[jugador.club.division];
-  const etiquetaDivision = jugador.club.division === "primera" ? "1ª división" : "2ª división";
 
   const barras = ATRIBUTOS.map((a) => {
     const v = jugador.atributos[a.id];
     return `
       <div class="barra-atributo">
-        <div class="fila"><span>${a.icono} ${a.nombre}</span><span>${v}</span></div>
+        <div class="fila"><span>${a.icono} ${a.nombre}</span><span class="valor">${v}</span></div>
         <div class="barra-fondo"><div class="barra-relleno" style="width:${v}%"></div></div>
       </div>`;
   }).join("");
 
-  const titulosTxt = jugador.titulos.length ? `<b>${jugador.titulos.length}</b> título(s)` : "Sin títulos aún";
+  const titulosTxt = jugador.titulos.length ? `${jugador.titulos.length}` : "0";
 
   el.innerHTML = `
-    <h2>${escapar(jugador.nombre)}</h2>
-    <div class="sub">${posicion} · ${jugador.edad} años · Selección de ${escapar(paisJugador.nombre)}</div>
+    <div class="jugador-cabecera">
+      <div class="overall-ring" style="--pct:${overall}">
+        <div class="overall-ring-inner">
+          <span class="num">${overall}</span>
+          <span class="lbl">GLOBAL</span>
+        </div>
+      </div>
+      <div class="jugador-info">
+        <h2>${escapar(jugador.nombre)}</h2>
+        <div class="sub">${posicion}<br>${jugador.edad} años · ${escapar(paisJugador.nombre)}</div>
+      </div>
+    </div>
+
     <div class="club-actual">
       🏐 <b>${escapar(jugador.club.nombre)}</b><br>
-      ${escapar(ligaClub.nombre)} (${etiquetaDivision}) — ${escapar(PAISES[jugador.club.paisId].nombre)}
+      <span class="liga-linea">${escapar(ligaClub.nombre)} · ${etiquetaDivision(jugador.club.division)}</span>
     </div>
-    <div class="overall">
-      <span class="num">${overall}</span>
-      <span class="lbl">valoración<br>global</span>
-    </div>
-    ${barras}
+
+    <div class="bloque-titulo">Atributos</div>
+    <div class="atributos">${barras}</div>
+
     <div class="extra">
-      <span>💰 Ahorros: <b>${jugador.dinero.toLocaleString("es-ES")} €</b></span>
-      <span>📣 Reputación: <b>${jugador.reputacion}</b>/100</span>
-      <span>🙂 Moral: <b>${jugador.moral}</b>/100</span>
-      <span>🎖️ ${titulosTxt}</span>
-      <span>🇪🇺 Convocatorias selección: <b>${jugador.convocatoriasSeleccion}</b></span>
+      <span>💰 Ahorros <b>${jugador.dinero.toLocaleString("es-ES")} €</b></span>
+      <span>📣 Reputación <b>${jugador.reputacion}/100</b></span>
+      <span>🙂 Moral <b>${jugador.moral}/100</b></span>
+      <span>🏆 Títulos <b>${titulosTxt}</b></span>
+      <span>🌐 Selección <b>${jugador.convocatoriasSeleccion}</b></span>
     </div>
   `;
 }
@@ -59,19 +78,20 @@ function renderSidebar(jugador) {
 function actualizarCabeceraTemporada(jugador, temporadaNum) {
   const el = $cabeceraTemporada();
   if (!jugador) { el.textContent = ""; return; }
-  el.textContent = `Temporada ${temporadaNum} · ${jugador.edad} años`;
+  el.textContent = `Temp. ${temporadaNum} · ${jugador.edad} años`;
 }
 
 /* ================= PANTALLA DE INICIO ================= */
 function renderInicio({ hayGuardado }, cb) {
   $sidebar().classList.add("oculto");
   $cabeceraTemporada().textContent = "";
+  irArriba();
   $pantalla().innerHTML = `
     <div class="pantalla-centrada">
-      <div style="font-size:3rem;">🏐</div>
-      <h1>Simulador de Carrera de Vóley</h1>
-      <p>Crea tu jugador o jugadora, elige su selección nacional y su posición, y vive una carrera completa, temporada a temporada, desde los 16 hasta los 38 años, en las mejores ligas del mundo.</p>
-      <div class="opciones horizontal" style="justify-content:center;">
+      <div class="balon-hero">🏐</div>
+      <h1>Vive tu <span class="resalte">carrera de vóley</span></h1>
+      <p>Crea tu jugador o jugadora, elige selección y posición, y recorre una carrera completa —de los 16 a los 38 años— desde la segunda división hasta las mejores ligas del mundo.</p>
+      <div class="opciones horizontal" style="justify-content:center; max-width:340px; width:100%;">
         <button class="principal" id="btn-nueva">Nueva carrera</button>
         ${hayGuardado ? `<button class="secundario" id="btn-continuar">Continuar carrera</button>` : ""}
       </div>
@@ -83,6 +103,7 @@ function renderInicio({ hayGuardado }, cb) {
 
 /* ================= CREACIÓN DE PERSONAJE ================= */
 function renderCreacion(cb) {
+  irArriba();
   const estadoLocal = {
     nombre: "",
     paisId: null,
@@ -98,14 +119,14 @@ function renderCreacion(cb) {
     const restantes = PUNTOS_CREACION - puntosUsados();
 
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
-      <div class="tarjeta-posicion ${estadoLocal.paisId === id ? "seleccionada" : ""}" data-pais="${id}">
+      <div class="tarjeta-opcion ${estadoLocal.paisId === id ? "seleccionada" : ""}" data-pais="${id}">
         <h3>${p.nombre}</h3>
-        <p>${p.ligas.primera.nombre} (nivel ${p.ligas.primera.nivelLiga}/10)<br>${p.ligas.segunda.nombre} (nivel ${p.ligas.segunda.nivelLiga}/10)</p>
+        <p>${p.ligas.primera.nombre}<br>${p.ligas.segunda.nombre}</p>
       </div>
     `).join("");
 
     const posicionesHtml = Object.entries(POSICIONES).map(([id, p]) => `
-      <div class="tarjeta-posicion ${estadoLocal.posicionId === id ? "seleccionada" : ""}" data-pos="${id}">
+      <div class="tarjeta-opcion ${estadoLocal.posicionId === id ? "seleccionada" : ""}" data-pos="${id}">
         <h3>${p.nombre}</h3>
         <p>${p.descripcion}</p>
       </div>
@@ -121,42 +142,53 @@ function renderCreacion(cb) {
         return `
           <div class="reparto-atributo">
             <span class="nombre-attr">${a.icono} ${a.nombre}</span>
-            <div class="barra-fondo"><div class="barra-relleno" style="width:${valor}%"></div></div>
             <button class="btn-punto" data-op="menos" data-attr="${a.id}" ${extra <= 0 ? "disabled" : ""}>−</button>
             <span class="valor-attr">${valor}</span>
             <button class="btn-punto" data-op="mas" data-attr="${a.id}" ${(restantes <= 0 || valor >= TOPE_CREACION) ? "disabled" : ""}>+</button>
+            <div class="barra-fondo"><div class="barra-relleno" style="width:${valor}%"></div></div>
           </div>`;
       }).join("");
     }
 
+    const listo = estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim();
+
     $pantalla().innerHTML = `
       <div class="panel">
         <h2>Crea tu jugador/a</h2>
+
         <div class="form-fila">
-          <label>Nombre</label>
+          <label for="input-nombre">Nombre</label>
           <input type="text" id="input-nombre" maxlength="24" placeholder="Ej. Laura Martín" value="${escapar(estadoLocal.nombre)}">
         </div>
+
         <div class="form-fila">
-          <label>Selección nacional / país — empezarás en un club de la 2ª división de este país</label>
-          <div class="posiciones-grid">${paisesHtml}</div>
+          <label>País — empezarás en la 2ª división</label>
+          <div class="tarjetas-grid">${paisesHtml}</div>
         </div>
+
         <div class="form-fila">
           <label>Posición</label>
-          <div class="posiciones-grid">${posicionesHtml}</div>
+          <div class="tarjetas-grid">${posicionesHtml}</div>
         </div>
+
         ${estadoLocal.posicionId ? `
         <div class="form-fila">
-          <label>Reparto de atributos iniciales</label>
-          <div class="puntos-restantes">Puntos disponibles: ${restantes}</div>
+          <label>Reparto de atributos</label>
+          <div class="puntos-restantes"><b>${restantes}</b> puntos disponibles</div>
           ${repartoHtml}
         </div>` : ""}
-        <div class="opciones horizontal">
-          <button class="principal" id="btn-crear" ${!estadoLocal.posicionId || !estadoLocal.paisId || !estadoLocal.nombre.trim() ? "disabled" : ""}>Comenzar carrera</button>
+
+        <div class="opciones">
+          <button class="principal" id="btn-crear" ${listo ? "" : "disabled"}>Comenzar carrera</button>
         </div>
       </div>
     `;
 
-    document.getElementById("input-nombre").oninput = (e) => { estadoLocal.nombre = e.target.value; pintarSoloBoton(); };
+    document.getElementById("input-nombre").oninput = (e) => {
+      estadoLocal.nombre = e.target.value;
+      const btn = document.getElementById("btn-crear");
+      if (btn) btn.disabled = !(estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim());
+    };
     document.querySelectorAll("[data-pais]").forEach((el) => {
       el.onclick = () => { estadoLocal.paisId = el.dataset.pais; pintar(); };
     });
@@ -179,11 +211,6 @@ function renderCreacion(cb) {
     if (btnCrear) btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
   }
 
-  function pintarSoloBoton() {
-    const btn = document.getElementById("btn-crear");
-    if (btn) btn.disabled = !estadoLocal.posicionId || !estadoLocal.paisId || !estadoLocal.nombre.trim();
-  }
-
   pintar();
 }
 
@@ -196,15 +223,16 @@ function renderEntrenamiento(jugador, cb) {
     </button>
   `).join("");
 
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
-      <h2>Pretemporada — ${jugador.edad} años</h2>
-      <p class="narrativa">Antes de que arranque la competición, decides en qué centrar tu preparación con ${escapar(jugador.club.nombre)}.</p>
+      <h2>Pretemporada · ${jugador.edad} años</h2>
+      <p class="narrativa">Antes de que arranque la competición, decides en qué centrar tu preparación con <b>${escapar(jugador.club.nombre)}</b>.</p>
       <div class="opciones">
         ${opciones}
         <button class="opcion" data-foco="descanso">
-          <span class="titulo-opcion">😴 Priorizar el descanso y la recuperación física</span>
-          <span class="detalle-opcion">Reduce el riesgo de lesión y mejora tu físico ligeramente.</span>
+          <span class="titulo-opcion">😴 Priorizar el descanso y la recuperación</span>
+          <span class="detalle-opcion">Mejora tu físico y tu moral, reduciendo el riesgo de lesión.</span>
         </button>
       </div>
     </div>
@@ -222,6 +250,7 @@ function renderEvento(jugador, evento, titulo, cb) {
     </button>
   `).join("");
 
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
       <h2>${titulo}</h2>
@@ -235,10 +264,11 @@ function renderEvento(jugador, evento, titulo, cb) {
 }
 
 function renderResultadoEvento(mensaje, cb) {
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
-      <p class="narrativa">${escapar(mensaje)}</p>
-      <div class="opciones horizontal">
+      <p class="narrativa destacada">${escapar(mensaje)}</p>
+      <div class="opciones">
         <button class="principal" id="btn-continuar">Continuar</button>
       </div>
     </div>
@@ -253,31 +283,29 @@ function renderResumenTemporada(jugador, resultado, cb) {
   if (resultado.esCampeon) chips.push(`<span class="chip oro">🏆 Campeón/a de ${escapar(liga.nombre)}</span>`);
   if (resultado.copa) chips.push(`<span class="chip oro">🥇 Copa</span>`);
   if (resultado.temporadaDificil) chips.push(`<span class="chip rojo">📉 Temporada difícil</span>`);
-  if (resultado.lesionado) chips.push(`<span class="chip rojo">🩹 Lesión durante la temporada</span>`);
-  chips.push(`<span class="chip azul">${resultado.titular ? "Titular habitual" : "Rol suplente"}</span>`);
+  if (resultado.lesionado) chips.push(`<span class="chip rojo">🩹 Lesión</span>`);
+  chips.push(`<span class="chip azul">${resultado.titular ? "⭐ Titular habitual" : "🪑 Rol suplente"}</span>`);
 
   const s = resultado.stats;
   const esLibero = jugador.posicionId === "libero";
-  const filasStats = esLibero
-    ? `<tr><td>Partidos jugados</td><td>${resultado.partidosJugados}</td></tr>
-       <tr><td>% de recepción positiva</td><td>${s.recepcionPct}%</td></tr>
-       <tr><td>Defensas totales</td><td>${s.defensasTotales}</td></tr>`
-    : `<tr><td>Partidos jugados</td><td>${resultado.partidosJugados}</td></tr>
-       <tr><td>Puntos totales</td><td>${s.puntosTotales}</td></tr>
-       <tr><td>Aces (saques directos)</td><td>${s.acesTotales}</td></tr>
-       <tr><td>Bloqueos directos</td><td>${s.bloqueosTotales}</td></tr>`;
+  const tiles = esLibero
+    ? `<div class="stat-tile"><span class="stat-valor">${resultado.partidosJugados}</span><span class="stat-label">Partidos</span></div>
+       <div class="stat-tile fria"><span class="stat-valor">${s.recepcionPct}%</span><span class="stat-label">Recepción</span></div>
+       <div class="stat-tile fria"><span class="stat-valor">${s.defensasTotales}</span><span class="stat-label">Defensas</span></div>`
+    : `<div class="stat-tile"><span class="stat-valor">${s.puntosTotales}</span><span class="stat-label">Puntos</span></div>
+       <div class="stat-tile"><span class="stat-valor">${resultado.partidosJugados}</span><span class="stat-label">Partidos</span></div>
+       <div class="stat-tile fria"><span class="stat-valor">${s.acesTotales}</span><span class="stat-label">Aces</span></div>
+       <div class="stat-tile fria"><span class="stat-valor">${s.bloqueosTotales}</span><span class="stat-label">Bloqueos</span></div>`;
 
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
-      <h2>Resumen de la temporada — ${jugador.edad} años</h2>
-      <p class="narrativa">${escapar(jugador.club.nombre)} finaliza la temporada de ${escapar(liga.nombre)} en la <b>${resultado.posicion}ª posición</b> de ${resultado.nClubes}.</p>
+      <h2>Temporada · ${jugador.edad} años</h2>
+      <p class="narrativa"><b>${escapar(jugador.club.nombre)}</b> termina ${escapar(liga.nombre)} en la <b>${resultado.posicion}ª posición</b> de ${resultado.nClubes}.</p>
       ${resultado.fraseFinal ? `<p class="narrativa destacada">${resultado.fraseFinal}</p>` : ""}
       <div class="chips">${chips.join("")}</div>
-      <table class="tabla-stats">
-        <thead><tr><th colspan="2">Tus estadísticas esta temporada</th></tr></thead>
-        <tbody>${filasStats}</tbody>
-      </table>
-      <div class="opciones horizontal">
+      <div class="stats-grid">${tiles}</div>
+      <div class="opciones">
         <button class="principal" id="btn-continuar">Continuar</button>
       </div>
     </div>
@@ -290,14 +318,19 @@ function renderConvocatoria(jugador, info, cb) {
   const paisJugador = PAISES[jugador.paisId];
   let extra = "";
   if (info.torneoResultado) {
-    extra = `<p class="narrativa destacada">Compites en <b>${info.torneoResultado.torneo}</b> con la selección de ${escapar(paisJugador.nombre)}.<br>Resultado: <b>${info.torneoResultado.resultado}</b></p>`;
+    extra = `
+      <p class="narrativa destacada">
+        Compites en <b>${escapar(info.torneoResultado.torneo)}</b> con la selección ${escapar(paisJugador.gentilicio)}.
+      </p>
+      <div class="chips"><span class="chip oro">${escapar(info.torneoResultado.resultado)}</span></div>`;
   }
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
       <h2>📣 Llamada de la selección</h2>
       <p class="narrativa">¡Recibes una convocatoria de la selección ${escapar(paisJugador.gentilicio)}!</p>
       ${extra}
-      <div class="opciones horizontal">
+      <div class="opciones">
         <button class="principal" id="btn-continuar">Continuar</button>
       </div>
     </div>
@@ -310,27 +343,30 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
   const tarjetas = ofertas.map((o, i) => {
     const paisOferta = PAISES[o.paisId];
     const ligaOferta = paisOferta.ligas[o.division];
-    const etiquetaDivision = o.division === "primera" ? "1ª división" : "2ª división";
-    const etiquetaPais = o.internacional ? ` 🌍 ${escapar(paisOferta.nombre)}` : "";
-    const etiquetaAscenso = o.ascenso ? ` ⬆️` : "";
+    const insignias = [];
+    if (o.esActual) insignias.push(`<span class="chip">Tu club</span>`);
+    if (o.ascenso) insignias.push(`<span class="chip verde">⬆️ Ascenso a 1ª</span>`);
+    if (o.internacional) insignias.push(`<span class="chip azul">🌍 ${escapar(paisOferta.nombre)}</span>`);
+
     return `
     <button class="opcion" data-idx="${i}">
-      <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}${etiquetaPais}${etiquetaAscenso}</span>
-      <span class="detalle-opcion">${escapar(ligaOferta.nombre)} (${etiquetaDivision}) · Salario estimado: ${o.salario.toLocaleString("es-ES")} €/temporada</span>
-    </button>
-  `;
+      <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}</span>
+      <span class="detalle-opcion">${escapar(ligaOferta.nombre)} · ${etiquetaDivision(o.division)} · ${o.salario.toLocaleString("es-ES")} €/temporada</span>
+      ${insignias.length ? `<span class="chips">${insignias.join("")}</span>` : ""}
+    </button>`;
   }).join("");
 
+  irArriba();
   $pantalla().innerHTML = `
     <div class="panel">
       <h2>Mercado de fichajes</h2>
       <p class="narrativa">Estas son las propuestas que recibes de cara a la próxima temporada.</p>
       <div class="opciones">${tarjetas}</div>
       ${permiteRetiro ? `
-        <div class="opciones" style="margin-top:22px;">
+        <div class="opciones" style="margin-top:20px;">
           <button class="opcion" id="btn-retiro">
             <span class="titulo-opcion">🏁 Poner fin a tu carrera profesional</span>
-            <span class="detalle-opcion">Te retiras del vóley profesional al final de esta temporada.</span>
+            <span class="detalle-opcion">Te retiras del vóley profesional y cierras tu palmarés.</span>
           </button>
         </div>` : ""}
     </div>
@@ -344,54 +380,69 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
 /* ================= RETIRO / FIN DE CARRERA ================= */
 function renderRetiro(jugador, legado, cb) {
   const e = jugador.estadisticasCarrera;
+
   const historialClubes = jugador.historialClubes.map((c) => {
     const liga = PAISES[c.paisId].ligas[c.division];
-    const etiquetaDivision = c.division === "primera" ? "1ª división" : "2ª división";
-    return `<tr><td>${escapar(c.club)}</td><td>${escapar(liga.nombre)} (${etiquetaDivision}, ${escapar(PAISES[c.paisId].nombre)})</td><td>Desde los ${c.desdeEdad} años</td></tr>`;
+    return `<tr>
+      <td>${escapar(c.club)}</td>
+      <td>${escapar(liga.nombre)} · ${etiquetaDivision(c.division)} (${escapar(PAISES[c.paisId].nombre)})</td>
+      <td>${c.desdeEdad} años</td>
+    </tr>`;
   }).join("");
 
   const titulos = jugador.titulos.length
-    ? `<div class="chips">${jugador.titulos.map((t) => `<span class="chip oro">🏆 ${t.tipo} — ${escapar(t.liga)} (${t.edad} años, ${escapar(t.club)})</span>`).join("")}</div>`
+    ? `<div class="chips">${jugador.titulos.map((t) =>
+        `<span class="chip oro">🏆 ${t.tipo} — ${escapar(t.liga)} · ${t.edad} años</span>`).join("")}</div>`
     : `<p class="narrativa">No conseguiste títulos, pero cada temporada dejó su huella.</p>`;
 
   const medallas = jugador.torneosInternacionales.length
-    ? `<div class="chips">${jugador.torneosInternacionales.map((t) => `<span class="chip azul">${escapar(t.torneo)}: ${t.resultado} (${t.edad} años)</span>`).join("")}</div>`
+    ? `<div class="chips">${jugador.torneosInternacionales.map((t) =>
+        `<span class="chip azul">${escapar(t.torneo)}: ${escapar(t.resultado)} · ${t.edad} años</span>`).join("")}</div>`
     : "";
 
+  const esLibero = jugador.posicionId === "libero";
+  const tilesCarrera = `
+    <div class="stat-tile"><span class="stat-valor">${jugador.historialTemporadas.length}</span><span class="stat-label">Temporadas</span></div>
+    <div class="stat-tile"><span class="stat-valor">${e.partidosTotales}</span><span class="stat-label">Partidos</span></div>
+    ${esLibero
+      ? `<div class="stat-tile fria"><span class="stat-valor">${e.defensasTotales}</span><span class="stat-label">Defensas</span></div>`
+      : `<div class="stat-tile"><span class="stat-valor">${e.puntosTotales}</span><span class="stat-label">Puntos</span></div>
+         <div class="stat-tile fria"><span class="stat-valor">${e.acesTotales}</span><span class="stat-label">Aces</span></div>
+         <div class="stat-tile fria"><span class="stat-valor">${e.bloqueosTotales}</span><span class="stat-label">Bloqueos</span></div>`}
+    <div class="stat-tile fria"><span class="stat-valor">${jugador.convocatoriasSeleccion}</span><span class="stat-label">Selección</span></div>
+  `;
+
+  irArriba();
   $pantalla().innerHTML = `
     <div class="pantalla-centrada">
-      <div style="font-size:2.4rem;">🏐👋</div>
-      <h1>Fin de tu carrera profesional</h1>
-      <div class="legado-titulo">${legado.titulo}</div>
-      <p>${legado.descripcion}</p>
+      <div class="balon-hero">🏐</div>
+      <h1>Fin de tu carrera</h1>
+      <div class="legado-titulo">${escapar(legado.titulo)}</div>
+      <p>${escapar(legado.descripcion)}</p>
     </div>
+
     <div class="panel">
       <h2>Estadísticas de carrera</h2>
-      <table class="tabla-stats">
-        <tbody>
-          <tr><td>Temporadas jugadas</td><td>${jugador.historialTemporadas.length}</td></tr>
-          <tr><td>Partidos totales</td><td>${e.partidosTotales}</td></tr>
-          <tr><td>Puntos totales anotados</td><td>${e.puntosTotales}</td></tr>
-          <tr><td>Aces totales</td><td>${e.acesTotales}</td></tr>
-          <tr><td>Bloqueos directos totales</td><td>${e.bloqueosTotales}</td></tr>
-          <tr><td>Temporadas como titular</td><td>${e.temporadasComoTitular}</td></tr>
-          <tr><td>Convocatorias con la selección</td><td>${jugador.convocatoriasSeleccion}</td></tr>
-        </tbody>
-      </table>
+      <div class="stats-grid">${tilesCarrera}</div>
     </div>
+
     <div class="panel">
       <h2>Palmarés</h2>
       ${titulos}
       ${medallas}
     </div>
+
     <div class="panel">
       <h2>Clubes defendidos</h2>
-      <table class="tabla-stats">
-        <thead><tr><th>Club</th><th>Liga</th><th>Etapa</th></tr></thead>
-        <tbody>${historialClubes}</tbody>
-      </table>
+      <div class="tabla-envoltorio">
+        <table class="tabla-stats">
+          <thead><tr><th>Club</th><th>Competición</th><th>Desde</th></tr></thead>
+          <tbody>${historialClubes}</tbody>
+        </table>
+      </div>
     </div>
-    <div class="opciones horizontal" style="justify-content:center; margin-top:20px;">
+
+    <div class="opciones" style="margin-top:18px;">
       <button class="principal" id="btn-nueva-carrera">Empezar una nueva carrera</button>
     </div>
   `;
