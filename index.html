@@ -68,6 +68,16 @@
         <svg class="marca-balon" viewBox="0 0 100 100" aria-hidden="true"><use href="#ico-balon"/></svg>
         <span class="marca-texto">Carrera de <b>Vóley</b></span>
       </div>
+      <!-- Progreso de la carrera (16 → 38 años): llena el centro de la barra
+           con información útil en vez de dejar un hueco vacío. -->
+      <div id="cabecera-progreso" class="cabecera-progreso" hidden>
+        <div class="progreso-datos">
+          <span id="progreso-etiqueta"></span>
+          <span id="progreso-restante" class="progreso-restante"></span>
+        </div>
+        <div class="progreso-pista"><div id="progreso-relleno" class="progreso-relleno"></div></div>
+      </div>
+
       <div class="cabecera-derecha">
         <div id="cabecera-overall" class="cabecera-overall"></div>
         <div id="cabecera-temporada" class="cabecera-temporada"></div>

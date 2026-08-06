@@ -61,7 +61,7 @@ const TOPE_CREACION = 75;
    --------------------------------------------------------------- */
 const PAISES = {
   espana: {
-    nombre: "España", gentilicio: "española",
+    nombre: "España", gentilicio: "española", bandera: "🇪🇸",
     ligas: {
       primera: {
         nombre: "Superliga Masculina de Voleibol", nivelLiga: 5,
@@ -89,7 +89,7 @@ const PAISES = {
     },
   },
   polonia: {
-    nombre: "Polonia", gentilicio: "polaca",
+    nombre: "Polonia", gentilicio: "polaca", bandera: "🇵🇱",
     ligas: {
       primera: {
         nombre: "PlusLiga", nivelLiga: 10,
@@ -116,7 +116,7 @@ const PAISES = {
     },
   },
   italia: {
-    nombre: "Italia", gentilicio: "italiana",
+    nombre: "Italia", gentilicio: "italiana", bandera: "🇮🇹",
     ligas: {
       primera: {
         nombre: "SuperLega", nivelLiga: 10,
@@ -143,7 +143,7 @@ const PAISES = {
     },
   },
   brasil: {
-    nombre: "Brasil", gentilicio: "brasileña",
+    nombre: "Brasil", gentilicio: "brasileña", bandera: "🇧🇷",
     ligas: {
       primera: {
         nombre: "Superliga Brasileira Masculina", nivelLiga: 9,
@@ -170,7 +170,7 @@ const PAISES = {
     },
   },
   francia: {
-    nombre: "Francia", gentilicio: "francesa",
+    nombre: "Francia", gentilicio: "francesa", bandera: "🇫🇷",
     ligas: {
       primera: {
         nombre: "Ligue A", nivelLiga: 7,
@@ -197,7 +197,7 @@ const PAISES = {
     },
   },
   argentina: {
-    nombre: "Argentina", gentilicio: "argentina",
+    nombre: "Argentina", gentilicio: "argentina", bandera: "🇦🇷",
     ligas: {
       primera: {
         nombre: "Liga Argentina de Voleibol", nivelLiga: 6,
@@ -224,7 +224,7 @@ const PAISES = {
     },
   },
   japon: {
-    nombre: "Japón", gentilicio: "japonesa",
+    nombre: "Japón", gentilicio: "japonesa", bandera: "🇯🇵",
     ligas: {
       primera: {
         nombre: "V.League Division 1", nivelLiga: 7,
@@ -251,7 +251,7 @@ const PAISES = {
     },
   },
   serbia: {
-    nombre: "Serbia", gentilicio: "serbia",
+    nombre: "Serbia", gentilicio: "serbia", bandera: "🇷🇸",
     ligas: {
       primera: {
         nombre: "Superliga Srbije", nivelLiga: 7,
@@ -278,7 +278,7 @@ const PAISES = {
     },
   },
   turquia: {
-    nombre: "Turquía", gentilicio: "turca",
+    nombre: "Turquía", gentilicio: "turca", bandera: "🇹🇷",
     ligas: {
       primera: {
         nombre: "Efeler Ligi", nivelLiga: 8,
@@ -305,7 +305,7 @@ const PAISES = {
     },
   },
   rusia: {
-    nombre: "Rusia", gentilicio: "rusa",
+    nombre: "Rusia", gentilicio: "rusa", bandera: "🇷🇺",
     ligas: {
       primera: {
         nombre: "Superleague", nivelLiga: 8,
@@ -332,7 +332,7 @@ const PAISES = {
     },
   },
   iran: {
-    nombre: "Irán", gentilicio: "iraní",
+    nombre: "Irán", gentilicio: "iraní", bandera: "🇮🇷",
     ligas: {
       primera: {
         nombre: "Iran Volleyball Super League", nivelLiga: 6,
@@ -359,7 +359,7 @@ const PAISES = {
     },
   },
   eslovenia: {
-    nombre: "Eslovenia", gentilicio: "eslovena",
+    nombre: "Eslovenia", gentilicio: "eslovena", bandera: "🇸🇮",
     ligas: {
       primera: {
         nombre: "1. DOL", nivelLiga: 5,

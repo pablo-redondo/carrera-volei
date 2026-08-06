@@ -151,6 +151,40 @@ body {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
+/* Barra de progreso de la carrera, en el centro de la cabecera */
+.cabecera-progreso {
+  flex: 1;
+  max-width: 340px;
+  margin: 0 auto;
+  min-width: 0;
+}
+.cabecera-progreso[hidden] { display: none; }
+.progreso-datos {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--texto-medio);
+  margin-bottom: 5px;
+}
+.progreso-restante { color: var(--texto-tenue); font-weight: 600; letter-spacing: .04em; }
+.progreso-pista {
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .1);
+  overflow: hidden;
+}
+.progreso-relleno {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--grad-acento);
+  transition: width .5s var(--ease);
+}
+
 .cabecera-derecha { display: flex; align-items: center; gap: 8px; }
 
 .cabecera-temporada, .cabecera-overall {
@@ -162,13 +196,16 @@ body {
   border-radius: 999px;
   white-space: nowrap;
 }
+/* En escritorio la temporada ya se ve en la barra de progreso central, así que
+   la píldora se reserva para móvil (donde no hay barra). */
 .cabecera-temporada {
+  display: none;
   color: var(--ambar);
   background: rgba(255, 107, 26, .12);
   border: 1px solid rgba(255, 107, 26, .3);
 }
 .cabecera-overall {
-  display: none;             /* solo en móvil: ver media query */
+  display: inline-flex;
   align-items: center;
   gap: 5px;
   color: var(--texto);
@@ -282,6 +319,12 @@ body {
   line-height: 1.15;
 }
 .jugador-info .sub { font-size: .76rem; color: var(--texto-tenue); line-height: 1.45; }
+.jugador-info .dorsal {
+  font-size: .84rem;
+  font-weight: 800;
+  color: var(--ambar);
+  font-variant-numeric: tabular-nums;
+}
 
 .club-actual {
   display: flex;
@@ -591,6 +634,230 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .ficha-texto { display: flex; flex-direction: column; gap: 3px; }
 .ficha-detalle { font-size: .75rem; line-height: 1.45; color: var(--texto-tenue); }
 
+/* ============ CREACIÓN: identidad, país y cancha ============ */
+/* Las tres columnas comparten altura y su contenido se reparte de arriba
+   abajo, para que ninguna quede con un hueco muerto al final. */
+.creacion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  align-items: stretch;
+}
+.creacion-col {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  padding: 16px;
+}
+.campos-identidad { margin-top: auto; }
+.cancha-info { margin-top: auto; }
+.col-titulo {
+  margin: 0 0 14px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  text-align: center;
+}
+
+/* --- camiseta con nombre y dorsal --- */
+/* Ojo: dentro de una columna flexible, los márgenes laterales "auto" impiden
+   que el elemento se estire y lo dejan sin ancho. Se centra con align-self. */
+.camiseta {
+  display: block;
+  width: 100%;
+  max-width: 190px;
+  align-self: center;
+  margin-bottom: 14px;
+}
+.camiseta-nombre {
+  font-family: var(--fuente);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  fill: #0a0e14;
+}
+.camiseta-dorsal {
+  font-family: var(--fuente);
+  font-size: 62px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  fill: #0a0e14;
+}
+.campos-identidad { display: grid; grid-template-columns: 1fr 84px; gap: 10px; }
+.campo label {
+  display: block;
+  font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--texto-tenue);
+  margin-bottom: 6px;
+}
+.campo input {
+  width: 100%;
+  font-family: inherit; font-size: .95rem; font-weight: 600;
+  color: var(--texto);
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 11px 12px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.campo input:focus {
+  outline: none;
+  border-color: var(--naranja);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .16);
+}
+.campo input.invalido { border-color: var(--rojo); }
+#input-dorsal { text-align: center; font-weight: 800; }
+
+/* --- buscador y lista de países --- */
+.buscador {
+  width: 100%;
+  font-family: inherit; font-size: .9rem;
+  color: var(--texto);
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  margin-bottom: 10px;
+}
+.buscador:focus { outline: none; border-color: var(--naranja); box-shadow: 0 0 0 3px rgba(255, 107, 26, .16); }
+.lista-paises {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 6px;
+  min-height: 200px;
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+.pais-item {
+  display: flex; align-items: center; gap: 9px;
+  font-family: inherit; font-size: .82rem; font-weight: 600;
+  text-align: left;
+  color: var(--texto);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+.pais-item[hidden] { display: none; }
+.pais-item:hover { background: var(--panel-3); }
+.pais-item.elegido {
+  border-color: var(--naranja);
+  background: linear-gradient(150deg, rgba(255, 107, 26, .2), rgba(255, 107, 26, .05));
+}
+.pais-bandera { font-size: 1.15rem; line-height: 1; }
+.pais-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- cancha de voleibol con los puestos --- */
+.cancha {
+  position: relative;
+  width: 100%;
+  align-self: center;
+  aspect-ratio: 1 / 1.12;
+  border-radius: var(--r-md);
+  border: 2px solid rgba(255, 255, 255, .5);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 40%),
+    linear-gradient(180deg, #17518c, #0f3a66);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+/* red en el borde superior */
+.cancha-red {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 13px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.75) 0 1px, transparent 1px 7px);
+  border-bottom: 3px solid #fff;
+}
+/* línea de ataque (3 metros) */
+.cancha-linea-ataque {
+  position: absolute;
+  left: 0; right: 0; top: 42%;
+  border-top: 2px dashed rgba(255, 255, 255, .55);
+}
+.puesto {
+  position: absolute;
+  left: var(--x); top: var(--y);
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-family: inherit;
+  color: #0a0e14;
+  background: rgba(255, 255, 255, .92);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: transform .18s var(--ease), background .18s, box-shadow .25s, border-color .18s;
+}
+.puesto:hover { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .9); }
+.puesto.elegido {
+  background: var(--grad-acento);
+  border-color: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 107, 26, .35), 0 10px 22px -10px rgba(255, 107, 26, 1);
+}
+.puesto-corto { font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
+.puesto-zona { font-size: .52rem; font-weight: 700; opacity: .6; }
+
+.cancha-info {
+  display: flex; flex-direction: column; gap: 4px;
+  min-height: 62px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--texto-tenue);
+}
+.cancha-info b { color: var(--texto); font-size: .86rem; }
+
+/* --- tarjetas de equipo inicial --- */
+.equipos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.tarjeta-equipo {
+  display: flex; flex-direction: column; gap: 5px;
+  text-align: left;
+  font-family: inherit;
+  color: var(--texto);
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  padding: 15px 16px;
+  cursor: pointer;
+  transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
+}
+.tarjeta-equipo:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 107, 26, .45);
+  background: var(--panel-3);
+  box-shadow: 0 14px 28px -20px rgba(255, 107, 26, .9);
+}
+.tarjeta-equipo.elegido {
+  border-color: var(--naranja);
+  background: linear-gradient(158deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .04));
+  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4);
+}
+.equipo-nombre { font-size: .96rem; font-weight: 800; line-height: 1.25; }
+.equipo-liga { font-size: .74rem; color: var(--texto-tenue); }
+.equipo-prestigio { font-size: .82rem; color: var(--oro); letter-spacing: 2px; }
+.equipo-prestigio .tenue { color: rgba(255, 255, 255, .18); }
+
 /* ============================ CREACIÓN ============================ */
 .form-fila { margin-bottom: 24px; }
 .form-fila > label {
@@ -668,6 +935,14 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums;
   background: var(--grad-acento);
   -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* En pantallas anchas el reparto va a dos columnas: si no, cada fila se
+   estira a todo lo ancho y deja un vacío enorme entre el nombre y los botones. */
+#lista-reparto {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 0 28px;
 }
 
 .reparto-atributo {
@@ -863,8 +1138,9 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
   .pantalla { order: 1; }
   .sidebar  { order: 2; position: static; }
 
-  /* la valoración global viaja a la cabecera para tenerla siempre a la vista */
-  .cabecera-overall { display: inline-flex; }
+  /* Sin sitio para la barra de progreso: en su lugar, las dos píldoras. */
+  .cabecera-progreso { display: none; }
+  .cabecera-temporada { display: inline-flex; }
 
   .cabecera { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
   .marca-texto { display: none; }
@@ -891,6 +1167,15 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
   .tarjeta-opcion { padding: 12px 13px; }
   .tarjeta-opcion h3 { font-size: .85rem; }
   .tarjeta-opcion p { font-size: .71rem; }
+
+  /* creación: las tres columnas se apilan */
+  .creacion-grid { grid-template-columns: 1fr; gap: 14px; }
+  .camiseta { max-width: 158px; }
+  /* apiladas, las columnas no comparten altura: sin mínimo, para que la lista
+     no deje un hueco cuando el buscador filtra a un solo país */
+  .lista-paises { min-height: 0; max-height: 226px; }
+  .cancha { max-width: 340px; }
+  .equipos-grid { grid-template-columns: 1fr; }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .opciones { gap: 10px; }

@@ -1,5 +1,8 @@
 import { ATRIBUTOS, POSICIONES, PUNTOS_CREACION, TOPE_CREACION, PAISES } from "./data.js";
-import { calcularOverall, calcularOverallMedio, calcularOverallMaximo } from "./engine.js";
+import {
+  calcularOverall, calcularOverallMedio, calcularOverallMaximo, equiposIniciales,
+  clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO,
+} from "./engine.js";
 
 const $pantalla = () => document.getElementById("pantalla");
 const $sidebar = () => document.getElementById("sidebar");
@@ -92,8 +95,8 @@ function renderSidebar(jugador, opts = {}) {
         </div>
       </div>
       <div class="jugador-info">
-        <h2>${escapar(jugador.nombre)}</h2>
-        <div class="sub">${posicion} · ${jugador.edad} años<br>${escapar(paisJugador.nombre)}</div>
+        <h2>${escapar(jugador.nombre)} <span class="dorsal">#${jugador.dorsal}</span></h2>
+        <div class="sub">${posicion} · ${jugador.edad} años<br>${paisJugador.bandera} ${escapar(paisJugador.nombre)}</div>
       </div>
     </div>
 
@@ -122,10 +125,36 @@ function renderSidebar(jugador, opts = {}) {
   $cabeceraOverall().innerHTML = `${escapar(etiquetaOverall === "GLOBAL" ? "GLOBAL" : "MEDIA")} <b>${overall}</b>`;
 }
 
+/* Pinta la barra central de la cabecera con cualquier progreso (temporadas de
+   la carrera o pasos de la creación), para que no quede un hueco vacío. */
+function mostrarProgresoCabecera({ etiqueta, detalle, porcentaje }) {
+  const progreso = document.getElementById("cabecera-progreso");
+  progreso.hidden = false;
+  document.getElementById("progreso-etiqueta").textContent = etiqueta;
+  document.getElementById("progreso-restante").textContent = detalle;
+  document.getElementById("progreso-relleno").style.width = `${porcentaje}%`;
+}
+
 function actualizarCabeceraTemporada(jugador, temporadaNum) {
   const el = $cabeceraTemporada();
-  if (!jugador) { el.textContent = ""; return; }
+  const progreso = document.getElementById("cabecera-progreso");
+
+  if (!jugador) {
+    el.textContent = "";
+    progreso.hidden = true;
+    return;
+  }
+
   el.textContent = `T${temporadaNum} · ${jugador.edad} años`;
+
+  // Barra de progreso de la carrera (16 → 38 años), visible en escritorio.
+  const total = EDAD_RETIRO_OBLIGATORIO - EDAD_INICIAL;
+  const restantes = Math.max(0, EDAD_RETIRO_OBLIGATORIO - jugador.edad);
+  mostrarProgresoCabecera({
+    etiqueta: `Temporada ${temporadaNum} · ${jugador.edad} años`,
+    detalle: restantes === 0 ? "última temporada" : `${restantes} ${restantes === 1 ? "año" : "años"} por delante`,
+    porcentaje: clampNumero(Math.round(((jugador.edad - EDAD_INICIAL) / total) * 100), 0, 100),
+  });
 }
 
 /* ================= PANTALLA DE INICIO ================= */
@@ -149,102 +178,221 @@ function renderInicio({ hayGuardado }, cb) {
 }
 
 /* ================= CREACIÓN DE PERSONAJE =================
-   Esta pantalla se pinta UNA sola vez y a partir de ahí se actualiza en
-   sitio. Antes se reconstruía el HTML entero en cada clic, lo que relanzaba
-   las animaciones de entrada (que arrancan en opacidad 0) y hacía que la
-   pantalla parpadeara en negro con cada selección. */
+   Dos pasos: primero la identidad (camiseta con dorsal, nacionalidad y
+   posición sobre la cancha) y después el primer equipo y el reparto de
+   atributos. Todo se actualiza en sitio, sin reconstruir la pantalla, para
+   que no reaparezcan las animaciones de entrada en cada clic. */
+
+/* Dónde juega cada posición sobre la media cancha (red arriba).
+   x/y en % dentro de la pista; zona = numeración oficial del voleibol. */
+const PUESTOS_CANCHA = {
+  receptor:  { corto: "REC", x: 20, y: 24, zona: 4 },
+  central:   { corto: "CEN", x: 50, y: 18, zona: 3 },
+  opuesto:   { corto: "OPU", x: 80, y: 24, zona: 2 },
+  libero:    { corto: "LIB", x: 30, y: 74, zona: 5 },
+  colocador: { corto: "COL", x: 76, y: 68, zona: 1 },
+};
+
+function camisetaSvg() {
+  return `
+    <svg class="camiseta" viewBox="0 0 220 250" role="img" aria-label="Camiseta del jugador">
+      <defs>
+        <linearGradient id="gradTela" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#c9d4e2"/>
+        </linearGradient>
+      </defs>
+      <path class="camiseta-tela"
+        d="M78 16 L44 30 L14 64 L48 94 L64 80 L64 220 Q110 234 156 220 L156 80 L172 94 L206 64 L176 30 L142 16 Q110 42 78 16 Z"
+        fill="url(#gradTela)" stroke="#0a0e14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M78 16 Q110 42 142 16" fill="none" stroke="#0a0e14" stroke-width="4" stroke-linejoin="round"/>
+      <text id="camiseta-nombre" class="camiseta-nombre" x="110" y="122" text-anchor="middle">JUGADOR</text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="196" text-anchor="middle">10</text>
+    </svg>`;
+}
+
+function canchaSvg(seleccionada) {
+  const marcas = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
+    <button type="button" class="puesto ${seleccionada === id ? "elegido" : ""}" data-pos="${id}" style="--x:${p.x}%; --y:${p.y}%"
+            aria-label="${POSICIONES[id].nombre}">
+      <span class="puesto-corto">${p.corto}</span>
+      <span class="puesto-zona">${p.zona}</span>
+    </button>`).join("");
+
+  return `
+    <div class="cancha">
+      <div class="cancha-red" aria-hidden="true"></div>
+      <div class="cancha-linea-ataque" aria-hidden="true"></div>
+      ${marcas}
+    </div>`;
+}
+
 function renderCreacion(cb) {
   const estadoLocal = {
     nombre: "",
+    dorsal: String(Math.floor(Math.random() * 99) + 1),
     paisId: null,
     posicionId: null,
+    clubNombre: null,
     reparto: Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 0])),
   };
 
   const puntosUsados = () => Object.values(estadoLocal.reparto).reduce((a, b) => a + b, 0);
-  const listoParaEmpezar = () => Boolean(estadoLocal.posicionId && estadoLocal.paisId && estadoLocal.nombre.trim());
+  const dorsalValido = () => {
+    const n = Number(estadoLocal.dorsal);
+    return Number.isInteger(n) && n >= 1 && n <= 99;
+  };
+  const identidadLista = () => Boolean(estadoLocal.nombre.trim() && dorsalValido() && estadoLocal.paisId && estadoLocal.posicionId);
 
-  const paisesHtml = Object.entries(PAISES).map(([id, p], i) => `
-    <div class="tarjeta-opcion" data-pais="${id}" style="--i:${i}">
-      <h3>${p.nombre}</h3>
-      <p>${p.ligas.primera.nombre}<br>${p.ligas.segunda.nombre}</p>
-    </div>
-  `).join("");
+  /* ---------- PASO 1: identidad ---------- */
+  function pasoIdentidad() {
+    mostrarProgresoCabecera({ etiqueta: "Creando tu jugador/a", detalle: "paso 1 de 2", porcentaje: 50 });
+    const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
+      <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
+        <span class="pais-bandera">${p.bandera}</span>
+        <span class="pais-nombre">${escapar(p.nombre)}</span>
+      </button>`).join("");
 
-  const posicionesHtml = Object.entries(POSICIONES).map(([id, p], i) => `
-    <div class="tarjeta-opcion" data-pos="${id}" style="--i:${i}">
-      <h3>${p.nombre}</h3>
-      <p>${p.descripcion}</p>
-    </div>
-  `).join("");
+    pintarPantalla(`
+      <div class="panel">
+        <div class="panel-cabecera">
+          <div>
+            <span class="eyebrow">Nueva carrera · paso 1 de 2</span>
+            <h2>Define tu identidad</h2>
+          </div>
+        </div>
 
-  pintarPantalla(`
-    <div class="panel">
-      <div class="panel-cabecera">
-        <div>
-          <span class="eyebrow">Nueva carrera</span>
-          <h2>Crea tu jugador/a</h2>
+        <div class="creacion-grid">
+          <section class="creacion-col">
+            <h3 class="col-titulo">Identidad</h3>
+            ${camisetaSvg()}
+            <div class="campos-identidad">
+              <div class="campo campo-ancho">
+                <label for="input-nombre">Nombre</label>
+                <input type="text" id="input-nombre" maxlength="16" placeholder="APELLIDO" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
+              </div>
+              <div class="campo">
+                <label for="input-dorsal">Dorsal</label>
+                <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
+              </div>
+            </div>
+          </section>
+
+          <section class="creacion-col">
+            <h3 class="col-titulo">Nacionalidad</h3>
+            <input type="search" id="buscar-pais" class="buscador" placeholder="🔍 Buscar país" autocomplete="off">
+            <div class="lista-paises" id="lista-paises">${paisesHtml}</div>
+          </section>
+
+          <section class="creacion-col">
+            <h3 class="col-titulo">Posición</h3>
+            ${canchaSvg(estadoLocal.posicionId)}
+            <div class="cancha-info" id="cancha-info">${
+              estadoLocal.posicionId
+                ? `<b>${escapar(POSICIONES[estadoLocal.posicionId].nombre)}</b><span>${escapar(POSICIONES[estadoLocal.posicionId].descripcion)}</span>`
+                : `<b>Elige tu posición</b><span>Pulsa un puesto sobre la cancha para ver qué hace.</span>`
+            }</div>
+          </section>
+        </div>
+
+        <div class="opciones">
+          <button class="principal" id="btn-siguiente" disabled>Confirmar identidad</button>
         </div>
       </div>
+    `);
 
-      <div class="form-fila">
-        <label for="input-nombre">Nombre</label>
-        <input type="text" id="input-nombre" maxlength="24" placeholder="Ej. Laura Martín">
-      </div>
+    const $ = (s) => document.querySelector(s);
+    const btnSiguiente = $("#btn-siguiente");
+    const camisetaNombre = $("#camiseta-nombre");
+    const camisetaDorsal = $("#camiseta-dorsal");
+    const inputDorsal = $("#input-dorsal");
+    const canchaInfo = $("#cancha-info");
 
-      <div class="form-fila">
-        <label>País — empezarás en la 2ª división</label>
-        <div class="tarjetas-grid">${paisesHtml}</div>
-      </div>
+    const refrescarBoton = () => { btnSiguiente.disabled = !identidadLista(); };
 
-      <div class="form-fila">
-        <label>Posición</label>
-        <div class="tarjetas-grid">${posicionesHtml}</div>
-      </div>
+    /* El nombre se comprime si no cabe en el ancho de la camiseta. */
+    const ANCHO_NOMBRE = 132;
+    function ajustarNombreCamiseta(texto) {
+      camisetaNombre.removeAttribute("textLength");
+      camisetaNombre.textContent = texto;
+      if (camisetaNombre.getComputedTextLength() > ANCHO_NOMBRE) {
+        camisetaNombre.setAttribute("textLength", ANCHO_NOMBRE);
+        camisetaNombre.setAttribute("lengthAdjust", "spacingAndGlyphs");
+      }
+    }
 
-      <div class="form-fila" id="bloque-reparto" hidden>
-        <label>Reparto de atributos</label>
-        <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> puntos disponibles</div>
-        <div id="lista-reparto"></div>
-      </div>
+    $("#input-nombre").oninput = (e) => {
+      estadoLocal.nombre = e.target.value;
+      ajustarNombreCamiseta((e.target.value.trim() || "JUGADOR").toUpperCase());
+      refrescarBoton();
+    };
+    ajustarNombreCamiseta((estadoLocal.nombre.trim() || "JUGADOR").toUpperCase());
+    refrescarBoton();
 
-      <div class="opciones">
-        <button class="principal" id="btn-crear" disabled>Comenzar carrera</button>
-      </div>
-    </div>
-  `);
+    inputDorsal.oninput = (e) => {
+      estadoLocal.dorsal = e.target.value;
+      camisetaDorsal.textContent = dorsalValido() ? Number(e.target.value) : "?";
+      inputDorsal.classList.toggle("invalido", e.target.value !== "" && !dorsalValido());
+      refrescarBoton();
+    };
+    inputDorsal.onblur = () => {
+      if (!dorsalValido()) {
+        estadoLocal.dorsal = String(clampNumero(Number(estadoLocal.dorsal) || 1, 1, 99));
+        inputDorsal.value = estadoLocal.dorsal;
+        inputDorsal.classList.remove("invalido");
+        camisetaDorsal.textContent = estadoLocal.dorsal;
+        refrescarBoton();
+      }
+    };
+    camisetaDorsal.textContent = estadoLocal.dorsal;
 
-  const $ = (sel) => document.querySelector(sel);
-  const btnCrear = $("#btn-crear");
-  const bloqueReparto = $("#bloque-reparto");
-  const listaReparto = $("#lista-reparto");
-  const puntosLibres = $("#puntos-libres");
+    $("#buscar-pais").oninput = (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      document.querySelectorAll(".pais-item").forEach((el) => {
+        el.hidden = q !== "" && !el.dataset.nombre.includes(q);
+      });
+    };
 
-  /* Refresca cifras, barras y botones +/- sin tocar la estructura del DOM. */
-  function actualizarValores() {
-    const restantes = PUNTOS_CREACION - puntosUsados();
-    puntosLibres.textContent = restantes;
-
-    const perfil = POSICIONES[estadoLocal.posicionId];
-    listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
-      const id = fila.dataset.fila;
-      const extra = estadoLocal.reparto[id];
-      const valor = perfil.base[id] + extra;
-      fila.querySelector(".valor-attr").textContent = valor;
-      fila.querySelector(".barra-relleno").style.width = `${valor}%`;
-      fila.querySelector('[data-op="menos"]').disabled = extra <= 0;
-      fila.querySelector('[data-op="mas"]').disabled = restantes <= 0 || valor >= TOPE_CREACION;
+    document.querySelectorAll(".pais-item").forEach((el) => {
+      el.onclick = () => {
+        estadoLocal.paisId = el.dataset.pais;
+        estadoLocal.clubNombre = null;      // el equipo depende del país
+        document.querySelectorAll(".pais-item").forEach((o) => o.classList.toggle("elegido", o === el));
+        refrescarBoton();
+      };
     });
 
-    btnCrear.disabled = !listoParaEmpezar();
+    document.querySelectorAll(".puesto").forEach((el) => {
+      el.onclick = () => {
+        const id = el.dataset.pos;
+        estadoLocal.posicionId = id;
+        document.querySelectorAll(".puesto").forEach((o) => o.classList.toggle("elegido", o === el));
+        canchaInfo.innerHTML = `<b>${escapar(POSICIONES[id].nombre)}</b><span>${escapar(POSICIONES[id].descripcion)}</span>`;
+        refrescarBoton();
+      };
+    });
+
+    btnSiguiente.onclick = () => pasoEquipo();
   }
 
-  /* Solo se reconstruye al cambiar de posición: cambian los atributos. */
-  function pintarReparto() {
+  /* ---------- PASO 2: equipo y atributos ---------- */
+  function pasoEquipo() {
+    mostrarProgresoCabecera({ etiqueta: "Creando tu jugador/a", detalle: "paso 2 de 2", porcentaje: 100 });
+    const pais = PAISES[estadoLocal.paisId];
+    const opciones = equiposIniciales(estadoLocal.paisId, 3);
     const perfil = POSICIONES[estadoLocal.posicionId];
     for (const id of Object.keys(estadoLocal.reparto)) estadoLocal.reparto[id] = 0;
 
-    listaReparto.innerHTML = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
+    const equiposHtml = opciones.map((c, i) => `
+      <button type="button" class="tarjeta-equipo" data-club="${escapar(c.nombre)}" style="--i:${i}">
+        <span class="equipo-nombre">${escapar(c.nombre)}</span>
+        <span class="equipo-liga">${escapar(pais.ligas.segunda.nombre)}</span>
+        <span class="equipo-prestigio" aria-label="Prestigio ${c.prestigio} sobre 10">
+          ${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}<span class="tenue">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
+        </span>
+      </button>`).join("");
+
+    const repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
       <div class="reparto-atributo" data-fila="${a.id}">
         <span class="nombre-attr">${a.icono} ${a.nombre}</span>
         <button class="btn-punto" data-op="menos" data-attr="${a.id}">−</button>
@@ -253,50 +401,84 @@ function renderCreacion(cb) {
         <div class="barra-fondo"><div class="barra-relleno" style="width:${perfil.base[a.id]}%"></div></div>
       </div>`).join("");
 
-    bloqueReparto.hidden = false;
+    pintarPantalla(`
+      <div class="panel">
+        <div class="panel-cabecera">
+          <div>
+            <span class="eyebrow">Nueva carrera · paso 2 de 2</span>
+            <h2>Tu primer equipo</h2>
+          </div>
+        </div>
+
+        <p class="narrativa">
+          ${escapar(estadoLocal.nombre.trim())} <b>#${escapar(estadoLocal.dorsal)}</b> ·
+          ${escapar(perfil.nombre)} · ${pais.bandera} ${escapar(pais.nombre)}.
+          Empiezas en <b>${escapar(pais.ligas.segunda.nombre)}</b>: elige dónde firmar tu primer contrato.
+        </p>
+
+        <div class="equipos-grid">${equiposHtml}</div>
+
+        <div class="form-fila" style="margin-top:24px;">
+          <label>Reparto de atributos</label>
+          <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> puntos disponibles</div>
+          <div id="lista-reparto">${repartoHtml}</div>
+        </div>
+
+        <div class="opciones">
+          <button class="principal" id="btn-crear" disabled>Comenzar carrera</button>
+          <button class="secundario" id="btn-atras">Volver a la identidad</button>
+        </div>
+      </div>
+    `);
+
+    const btnCrear = document.getElementById("btn-crear");
+    const listaReparto = document.getElementById("lista-reparto");
+    const puntosLibres = document.getElementById("puntos-libres");
+
+    function actualizarValores() {
+      const restantes = PUNTOS_CREACION - puntosUsados();
+      puntosLibres.textContent = restantes;
+      listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
+        const id = fila.dataset.fila;
+        const extra = estadoLocal.reparto[id];
+        const valor = perfil.base[id] + extra;
+        fila.querySelector(".valor-attr").textContent = valor;
+        fila.querySelector(".barra-relleno").style.width = `${valor}%`;
+        fila.querySelector('[data-op="menos"]').disabled = extra <= 0;
+        fila.querySelector('[data-op="mas"]').disabled = restantes <= 0 || valor >= TOPE_CREACION;
+      });
+      btnCrear.disabled = !estadoLocal.clubNombre;
+    }
+
+    document.querySelectorAll(".tarjeta-equipo").forEach((el) => {
+      el.onclick = () => {
+        estadoLocal.clubNombre = el.dataset.club;
+        document.querySelectorAll(".tarjeta-equipo").forEach((o) => o.classList.toggle("elegido", o === el));
+        btnCrear.disabled = false;
+      };
+    });
+
+    listaReparto.onclick = (e) => {
+      const btn = e.target.closest(".btn-punto");
+      if (!btn || btn.disabled) return;
+      const attr = btn.dataset.attr;
+      if (btn.dataset.op === "mas") {
+        if (puntosUsados() < PUNTOS_CREACION && perfil.base[attr] + estadoLocal.reparto[attr] < TOPE_CREACION) {
+          estadoLocal.reparto[attr]++;
+        }
+      } else if (estadoLocal.reparto[attr] > 0) {
+        estadoLocal.reparto[attr]--;
+      }
+      actualizarValores();
+    };
+
+    document.getElementById("btn-atras").onclick = () => pasoIdentidad();
+    btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
+
     actualizarValores();
   }
 
-  $("#input-nombre").oninput = (e) => {
-    estadoLocal.nombre = e.target.value;
-    btnCrear.disabled = !listoParaEmpezar();
-  };
-
-  document.querySelectorAll("[data-pais]").forEach((el) => {
-    el.onclick = () => {
-      estadoLocal.paisId = el.dataset.pais;
-      document.querySelectorAll("[data-pais]").forEach((o) => o.classList.toggle("seleccionada", o === el));
-      btnCrear.disabled = !listoParaEmpezar();
-    };
-  });
-
-  document.querySelectorAll("[data-pos]").forEach((el) => {
-    el.onclick = () => {
-      if (estadoLocal.posicionId === el.dataset.pos) return;
-      estadoLocal.posicionId = el.dataset.pos;
-      document.querySelectorAll("[data-pos]").forEach((o) => o.classList.toggle("seleccionada", o === el));
-      pintarReparto();
-    };
-  });
-
-  /* Un único listener para todos los +/- (delegación): así los botones
-     recreados al cambiar de posición siguen funcionando. */
-  listaReparto.onclick = (e) => {
-    const btn = e.target.closest(".btn-punto");
-    if (!btn || btn.disabled) return;
-    const attr = btn.dataset.attr;
-    const perfil = POSICIONES[estadoLocal.posicionId];
-    if (btn.dataset.op === "mas") {
-      if (puntosUsados() < PUNTOS_CREACION && perfil.base[attr] + estadoLocal.reparto[attr] < TOPE_CREACION) {
-        estadoLocal.reparto[attr]++;
-      }
-    } else if (estadoLocal.reparto[attr] > 0) {
-      estadoLocal.reparto[attr]--;
-    }
-    actualizarValores();
-  };
-
-  btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
+  pasoIdentidad();
 }
 
 /* ================= PRETEMPORADA: ENTRENAMIENTO ================= */

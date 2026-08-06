@@ -26,8 +26,18 @@ function elegirPonderado(lista) {
   return lista[lista.length - 1];
 }
 
+/* Tres clubes de la 2ª división del país entre los que empezar la carrera. */
+function equiposIniciales(paisId, cuantos = 3) {
+  const clubes = [...PAISES[paisId].ligas.segunda.clubes];
+  const elegidos = [];
+  while (elegidos.length < Math.min(cuantos, clubes.length)) {
+    elegidos.push(clubes.splice(randInt(0, clubes.length - 1), 1)[0]);
+  }
+  return elegidos;
+}
+
 /* ---------------- creación de jugador ---------------- */
-function crearJugador({ nombre, paisId, posicionId, reparto }) {
+function crearJugador({ nombre, dorsal, paisId, posicionId, reparto, clubNombre }) {
   const perfil = POSICIONES[posicionId];
   const atributos = {};
   for (const a of ATRIBUTOS) {
@@ -35,10 +45,11 @@ function crearJugador({ nombre, paisId, posicionId, reparto }) {
   }
 
   const segunda = PAISES[paisId].ligas.segunda;
-  const clubInicial = pick(segunda.clubes);
+  const clubInicial = segunda.clubes.find((c) => c.nombre === clubNombre) || pick(segunda.clubes);
 
   return {
     nombre: nombre || "Jugador/a",
+    dorsal: clamp(Number(dorsal) || randInt(1, 99), 1, 99),
     paisId,
     posicionId,
     edad: EDAD_INICIAL,
@@ -416,7 +427,7 @@ function calcularLegado(jugador) {
 }
 
 export {
-  EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO,
+  EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, equiposIniciales,
   crearJugador, calcularOverall, calcularOverallMedio, calcularOverallMaximo, aplicarEntrenamiento,
   generarEvento, aplicarEfectoEvento, resolverOpcion,
   simularTemporada, aplicarResultadoTemporada,
