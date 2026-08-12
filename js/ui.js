@@ -431,13 +431,17 @@ function renderCreacion(cb) {
         </span>
       </button>`).join("");
 
+    /* Un deslizador por atributo: arrastrar es mucho más cómodo que ir
+       pulsando "+" punto a punto. La escala va de 0 al tope para que la barra
+       represente el valor real del atributo; el tramo inicial es el valor base
+       de la posición y no se puede reducir. */
     const repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
       <div class="reparto-atributo" data-fila="${a.id}">
         <span class="nombre-attr">${a.icono} ${a.nombre}</span>
-        <button class="btn-punto" data-op="menos" data-attr="${a.id}">−</button>
         <span class="valor-attr">${perfil.base[a.id]}</span>
-        <button class="btn-punto" data-op="mas" data-attr="${a.id}">+</button>
-        <div class="barra-fondo"><div class="barra-relleno" style="width:${perfil.base[a.id]}%"></div></div>
+        <input type="range" class="deslizador" data-attr="${a.id}"
+               min="0" max="${TOPE_CREACION}" step="1"
+               value="${perfil.base[a.id]}" aria-label="${a.nombre}">
       </div>`).join("");
 
     pintarPantalla(`
@@ -479,12 +483,16 @@ function renderCreacion(cb) {
       puntosLibres.textContent = restantes;
       listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
         const id = fila.dataset.fila;
-        const extra = estadoLocal.reparto[id];
-        const valor = perfil.base[id] + extra;
+        const base = perfil.base[id];
+        const valor = base + estadoLocal.reparto[id];
+        const deslizador = fila.querySelector(".deslizador");
+
         fila.querySelector(".valor-attr").textContent = valor;
-        fila.querySelector(".barra-relleno").style.width = `${valor}%`;
-        fila.querySelector('[data-op="menos"]').disabled = extra <= 0;
-        fila.querySelector('[data-op="mas"]').disabled = restantes <= 0 || valor >= TOPE_CREACION;
+        deslizador.value = valor;
+        // El tramo hasta "base" es fijo; a partir de ahí, los puntos repartidos.
+        deslizador.style.setProperty("--base", `${(base / TOPE_CREACION) * 100}%`);
+        deslizador.style.setProperty("--relleno", `${(valor / TOPE_CREACION) * 100}%`);
+        fila.classList.toggle("al-maximo", valor >= TOPE_CREACION);
       });
       btnCrear.disabled = !estadoLocal.clubNombre;
     }
@@ -497,17 +505,18 @@ function renderCreacion(cb) {
       };
     });
 
-    listaReparto.onclick = (e) => {
-      const btn = e.target.closest(".btn-punto");
-      if (!btn || btn.disabled) return;
-      const attr = btn.dataset.attr;
-      if (btn.dataset.op === "mas") {
-        if (puntosUsados() < PUNTOS_CREACION && perfil.base[attr] + estadoLocal.reparto[attr] < TOPE_CREACION) {
-          estadoLocal.reparto[attr]++;
-        }
-      } else if (estadoLocal.reparto[attr] > 0) {
-        estadoLocal.reparto[attr]--;
-      }
+    /* Un solo listener para todas las barras. Aunque cada barra ya lleva su
+       propio tope, se vuelve a limitar aquí: así el reparto nunca puede pasar
+       de los puntos disponibles (por teclado, por arrastre rápido, etc.). */
+    listaReparto.oninput = (e) => {
+      const deslizador = e.target.closest(".deslizador");
+      if (!deslizador) return;
+      const attr = deslizador.dataset.attr;
+      const base = perfil.base[attr];
+      const usadosEnOtros = puntosUsados() - estadoLocal.reparto[attr];
+      // No se puede bajar del valor base ni gastar más puntos de los que quedan.
+      const extraMaximo = Math.min(TOPE_CREACION - base, PUNTOS_CREACION - usadosEnOtros);
+      estadoLocal.reparto[attr] = clampNumero(Number(deslizador.value) - base, 0, extraMaximo);
       actualizarValores();
     };
 

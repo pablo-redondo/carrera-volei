@@ -964,10 +964,10 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 
 .reparto-atributo {
   display: grid;
-  grid-template-columns: minmax(94px, 1fr) 36px 42px 36px;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 10px;
-  padding: 10px 0;
+  gap: 2px 10px;
+  padding: 9px 0 11px;
   border-bottom: 1px solid var(--borde);
 }
 .reparto-atributo:last-child { border-bottom: none; }
@@ -975,25 +975,65 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   font-size: .84rem; font-weight: 600;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.reparto-atributo .barra-fondo { grid-column: 1 / -1; grid-row: 2; margin-top: -3px; }
 .reparto-atributo .valor-attr {
-  text-align: center; font-size: 1.02rem; font-weight: 800;
+  text-align: right; font-size: 1.02rem; font-weight: 800;
   font-variant-numeric: tabular-nums; color: var(--ambar);
 }
-.btn-punto {
-  width: 36px; height: 36px;
-  display: grid; place-items: center;
-  font-family: inherit; font-size: 1.2rem; font-weight: 700; line-height: 1;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde-fuerte);
-  border-radius: 10px;
+.reparto-atributo.al-maximo .valor-attr { color: var(--verde); }
+
+/* Barras deslizantes para repartir los puntos */
+.deslizador {
+  grid-column: 1 / -1;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;              /* zona de agarre amplia, sobre todo en móvil */
+  background: transparent;
   cursor: pointer;
-  transition: border-color .2s, background .2s, transform .12s;
+  margin: 0;
 }
-.btn-punto:hover:not(:disabled) { border-color: var(--naranja); background: var(--panel-3); }
-.btn-punto:active:not(:disabled) { transform: scale(.88); }
-.btn-punto:disabled { opacity: .25; cursor: not-allowed; }
+.deslizador:focus { outline: none; }
+.deslizador:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(255, 179, 71, .45); }
+.deslizador:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(255, 179, 71, .45); }
+
+/* --relleno lo fija el JS con el valor actual */
+.deslizador::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 99px;
+  /* tramo base (fijo, apagado) · puntos repartidos (naranja) · vacío */
+  background: linear-gradient(90deg,
+    rgba(255, 107, 26, .42) 0 var(--base, 0%),
+    var(--naranja) var(--base, 0%) var(--relleno, 0%),
+    rgba(255, 255, 255, .1) var(--relleno, 0%) 100%);
+}
+.deslizador::-moz-range-track {
+  height: 6px;
+  border-radius: 99px;
+  /* tramo base (fijo, apagado) · puntos repartidos (naranja) · vacío */
+  background: linear-gradient(90deg,
+    rgba(255, 107, 26, .42) 0 var(--base, 0%),
+    var(--naranja) var(--base, 0%) var(--relleno, 0%),
+    rgba(255, 255, 255, .1) var(--relleno, 0%) 100%);
+}
+.deslizador::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  margin-top: -7px;          /* centra el tirador sobre la pista de 6px */
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--naranja);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .55);
+  transition: transform .15s var(--ease);
+}
+.deslizador::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--naranja);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .55);
+}
+.deslizador:hover::-webkit-slider-thumb { transform: scale(1.12); }
+.deslizador:active::-webkit-slider-thumb { transform: scale(1.2); }
 
 /* ============================ ESTADÍSTICAS ============================ */
 .stats-grid {
