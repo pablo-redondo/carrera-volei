@@ -158,12 +158,31 @@ function aplicarEfectoEvento(jugador, efecto) {
 }
 
 /* Resuelve una opción de evento cuyo desenlace es incierto: cada opción trae
-   varios resultados posibles con su propia probabilidad ("resultados": [{prob,
-   efecto, texto}]), así la misma decisión no siempre acaba igual. */
+   varios resultados posibles con su propia probabilidad ("resultados": [{signo,
+   prob, efecto, texto}]), así la misma decisión no siempre acaba igual.
+   Devuelve el resultado completo para poder mostrar cómo ha salido. */
 function resolverOpcion(jugador, opcion) {
   const resultado = elegirPonderado(opcion.resultados);
   aplicarEfectoEvento(jugador, resultado.efecto);
-  return resultado.texto;
+  return resultado;
+}
+
+/* Reparto de probabilidades de una opción, en porcentaje, para enseñar al
+   jugador qué se juega antes de decidir. */
+function probabilidadesOpcion(opcion) {
+  const total = opcion.resultados.reduce((s, r) => s + r.prob, 0) || 1;
+  const pct = (signo) => opcion.resultados
+    .filter((r) => (r.signo || "neutro") === signo)
+    .reduce((s, r) => s + r.prob, 0) / total * 100;
+
+  const bien = Math.round(pct("bien"));
+  const mal = Math.round(pct("mal"));
+  return {
+    bien,
+    mal,
+    neutro: Math.max(0, 100 - bien - mal),      // absorbe el redondeo
+    segura: opcion.resultados.length === 1,
+  };
 }
 
 /* ---------------- simulación de temporada ---------------- */
@@ -429,7 +448,7 @@ function calcularLegado(jugador) {
 export {
   EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, equiposIniciales,
   crearJugador, calcularOverall, calcularOverallMedio, calcularOverallMaximo, aplicarEntrenamiento,
-  generarEvento, aplicarEfectoEvento, resolverOpcion,
+  generarEvento, aplicarEfectoEvento, resolverOpcion, probabilidadesOpcion,
   simularTemporada, aplicarResultadoTemporada,
   comprobarSeleccionNacional, generarOfertas, ficharPorClub,
   calcularLegado, clamp, randInt,

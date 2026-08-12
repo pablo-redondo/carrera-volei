@@ -103,9 +103,9 @@ function pantallaEventoPretemporada() {
   const evento = generarEvento(EVENTOS_PRETEMPORADA);
   renderEvento(estado.jugador, evento, "Pretemporada", {
     onElegir: (opcion) => {
-      const texto = resolverOpcion(estado.jugador, opcion);
+      const resultado = resolverOpcion(estado.jugador, opcion);
       refrescarCabecera();
-      renderResultadoEvento(texto, {
+      renderResultadoEvento(resultado, {
         onContinuar: () => {
           if (Math.random() < 0.5) pantallaEventoTemporada();
           else pantallaSimularTemporada();
@@ -119,9 +119,9 @@ function pantallaEventoTemporada() {
   const evento = generarEvento(EVENTOS_TEMPORADA);
   renderEvento(estado.jugador, evento, "Mitad de temporada", {
     onElegir: (opcion) => {
-      const texto = resolverOpcion(estado.jugador, opcion);
+      const resultado = resolverOpcion(estado.jugador, opcion);
       refrescarCabecera();
-      renderResultadoEvento(texto, { onContinuar: pantallaSimularTemporada });
+      renderResultadoEvento(resultado, { onContinuar: pantallaSimularTemporada });
     },
   });
 }

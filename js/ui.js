@@ -1,7 +1,7 @@
 import { ATRIBUTOS, POSICIONES, PUNTOS_CREACION, TOPE_CREACION, PAISES } from "./data.js";
 import {
   calcularOverall, calcularOverallMedio, calcularOverallMaximo, equiposIniciales,
-  clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO,
+  clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, probabilidadesOpcion,
 } from "./engine.js";
 
 const $pantalla = () => document.getElementById("pantalla");
@@ -567,10 +567,34 @@ function renderEntrenamiento(jugador, cb) {
 }
 
 /* ================= EVENTO NARRATIVO ================= */
+/* Barra con el reparto de probabilidades de una opción: verde lo que puede
+   salir bien, rojo lo que puede salir mal y gris lo que no cambia nada. */
+function barraProbabilidad(p) {
+  if (p.segura && p.neutro === 100) {
+    return `<span class="prob"><span class="prob-etiqueta neutro">Sin riesgo · nada cambia</span></span>`;
+  }
+  if (p.segura) {
+    const clase = p.bien >= 100 ? "bien" : (p.mal >= 100 ? "mal" : "neutro");
+    return `<span class="prob"><span class="prob-etiqueta ${clase}">Resultado asegurado</span></span>`;
+  }
+  const trozo = (clase, valor) => valor > 0 ? `<span class="prob-trozo ${clase}" style="width:${valor}%"></span>` : "";
+  const dato = (clase, icono, valor) => valor > 0 ? `<span class="prob-dato ${clase}">${icono} ${valor}%</span>` : "";
+  return `
+    <span class="prob">
+      <span class="prob-barra">
+        ${trozo("bien", p.bien)}${trozo("neutro", p.neutro)}${trozo("mal", p.mal)}
+      </span>
+      <span class="prob-datos">
+        ${dato("bien", "✔", p.bien)}${dato("neutro", "•", p.neutro)}${dato("mal", "✖", p.mal)}
+      </span>
+    </span>`;
+}
+
 function renderEvento(jugador, evento, titulo, cb) {
   const opciones = evento.opciones.map((op, i) => `
     <button class="opcion" data-idx="${i}">
       <span class="titulo-opcion">${escapar(op.texto)}</span>
+      ${barraProbabilidad(probabilidadesOpcion(op))}
     </button>
   `).join("");
 
@@ -591,17 +615,100 @@ function renderEvento(jugador, evento, titulo, cb) {
   });
 }
 
-function renderResultadoEvento(mensaje, cb) {
+/* Etiquetas legibles para cada cosa que puede cambiar un evento. */
+const NOMBRES_EFECTO = {
+  moral: { icono: "🙂", nombre: "Moral" },
+  dinero: { icono: "💰", nombre: "Ahorros", sufijo: " €" },
+  reputacion: { icono: "📣", nombre: "Reputación" },
+  riesgoLesion: { icono: "🩹", nombre: "Riesgo de lesión", alRevés: true },
+};
+
+function chipsEfecto(efecto) {
+  const entradas = Object.entries(efecto || {});
+  if (!entradas.length) return `<div class="chips"><span class="chip">Sin cambios</span></div>`;
+
+  const chips = entradas.map(([clave, valor], i) => {
+    const attr = ATRIBUTOS.find((a) => a.id === clave);
+    const meta = attr ? { icono: attr.icono, nombre: attr.nombre } : (NOMBRES_EFECTO[clave] || { icono: "•", nombre: clave });
+    // En el riesgo de lesión, subir es malo: el color se invierte.
+    const positivo = meta.alRevés ? valor < 0 : valor > 0;
+    const signo = valor > 0 ? "+" : "";
+    const cantidad = `${signo}${valor.toLocaleString("es-ES")}${meta.sufijo || ""}`;
+    return `<span style="--i:${i}" class="chip ${positivo ? "verde" : "rojo"}">${meta.icono} ${escapar(meta.nombre)} ${cantidad}</span>`;
+  }).join("");
+
+  return `<div class="chips">${chips}</div>`;
+}
+
+const DESENLACE = {
+  bien:   { icono: "✔", titulo: "¡Ha salido bien!" },
+  mal:    { icono: "✖", titulo: "No ha salido como esperabas" },
+  neutro: { icono: "•", titulo: "Sin sorpresas" },
+};
+
+function renderResultadoEvento(resultado, cb) {
+  const signo = resultado.signo || "neutro";
+  const info = DESENLACE[signo];
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   pintarPantalla(`
     <div class="panel">
       <span class="eyebrow">Consecuencias</span>
-      <p class="narrativa destacada">${escapar(mensaje)}</p>
+      <div class="desenlace ${signo}" id="desenlace">
+        <div class="desenlace-sello" id="desenlace-sello">?</div>
+        <div class="desenlace-cuerpo">
+          <h3 class="desenlace-titulo">Veamos cómo sale…</h3>
+          <p class="desenlace-texto"></p>
+        </div>
+      </div>
+      <div id="desenlace-efectos"></div>
       <div class="opciones">
         <button class="principal" id="btn-continuar">Continuar</button>
       </div>
     </div>
   `);
-  document.getElementById("btn-continuar").onclick = cb.onContinuar;
+
+  const caja = document.getElementById("desenlace");
+  const sello = document.getElementById("desenlace-sello");
+  const titulo = caja.querySelector(".desenlace-titulo");
+  const texto = caja.querySelector(".desenlace-texto");
+  const efectos = document.getElementById("desenlace-efectos");
+  const btn = document.getElementById("btn-continuar");
+
+  let giro = null;
+  let temporizador = null;
+  let revelado = false;
+
+  function revelar() {
+    if (revelado) return;
+    revelado = true;
+    clearInterval(giro);
+    clearTimeout(temporizador);
+    caja.classList.remove("sorteando");
+    caja.classList.add("revelado");
+    sello.textContent = info.icono;
+    titulo.textContent = info.titulo;
+    texto.textContent = resultado.texto;
+    efectos.innerHTML = chipsEfecto(resultado.efecto);
+  }
+
+  if (sinMovimiento) {
+    revelar();
+  } else {
+    // Suspense breve: el sello va alternando antes de fijarse en el desenlace.
+    caja.classList.add("sorteando");
+    const caras = ["✔", "✖", "•"];
+    let n = 0;
+    giro = setInterval(() => { sello.textContent = caras[n++ % caras.length]; }, 110);
+    temporizador = setTimeout(revelar, 1100);
+  }
+
+  // El botón nunca se bloquea: si aún se está sorteando, la primera pulsación
+  // se salta la animación y muestra ya el desenlace.
+  btn.onclick = () => {
+    if (!revelado) revelar();
+    else cb.onContinuar();
+  };
 }
 
 /* ================= RESUMEN DE TEMPORADA ================= */

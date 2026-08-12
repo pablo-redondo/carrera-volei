@@ -407,15 +407,15 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Aceptar el reto",
         resultados: [
-          { prob: 65, efecto: { fisico: 4, moral: -1 }, texto: "El plan te sienta de maravilla: terminas la pretemporada notablemente más fuerte." },
-          { prob: 35, efecto: { fisico: -1, moral: -3, riesgoLesion: 6 }, texto: "Te has pasado de frenada: llegas sobrecargado/a y con molestias de cara al inicio de liga." },
+          { signo: "bien", prob: 65, efecto: { fisico: 4, moral: -1 }, texto: "El plan te sienta de maravilla: terminas la pretemporada notablemente más fuerte." },
+          { signo: "mal", prob: 35, efecto: { fisico: -1, moral: -3, riesgoLesion: 6 }, texto: "Te has pasado de frenada: llegas sobrecargado/a y con molestias de cara al inicio de liga." },
         ],
       },
       {
         texto: "Seguir el plan estándar",
         resultados: [
-          { prob: 80, efecto: { fisico: 1 }, texto: "Cumples con lo justo. Nada que destacar, pero llegas entero/a." },
-          { prob: 20, efecto: { fisico: 2, moral: 1 }, texto: "La rutina sencilla te sienta mejor de lo esperado y llegas fresco/a a la pretemporada." },
+          { signo: "neutro", prob: 80, efecto: { fisico: 1 }, texto: "Cumples con lo justo. Nada que destacar, pero llegas entero/a." },
+          { signo: "bien", prob: 20, efecto: { fisico: 2, moral: 1 }, texto: "La rutina sencilla te sienta mejor de lo esperado y llegas fresco/a a la pretemporada." },
         ],
       },
     ],
@@ -426,14 +426,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Firmar el patrocinio",
         resultados: [
-          { prob: 75, efecto: { dinero: 3000, liderazgo: 1 }, texto: "El acuerdo sale redondo: ingresas un buen dinero y tu imagen crece." },
-          { prob: 25, efecto: { dinero: 800, moral: -2 }, texto: "La campaña resulta un poco cutre y varios compañeros se ríen de los anuncios. El pago es menor de lo prometido." },
+          { signo: "bien", prob: 75, efecto: { dinero: 3000, liderazgo: 1 }, texto: "El acuerdo sale redondo: ingresas un buen dinero y tu imagen crece." },
+          { signo: "mal", prob: 25, efecto: { dinero: 800, moral: -2 }, texto: "La campaña resulta un poco cutre y varios compañeros se ríen de los anuncios. El pago es menor de lo prometido." },
         ],
       },
       {
         texto: "Rechazarlo y centrarte en el juego",
         resultados: [
-          { prob: 100, efecto: { moral: 2 }, texto: "Prefieres que hablen tus actuaciones en la cancha, y así se lo haces saber a tu entorno." },
+          { signo: "bien", prob: 100, efecto: { moral: 2 }, texto: "Prefieres que hablen tus actuaciones en la cancha, y así se lo haces saber a tu entorno." },
         ],
       },
     ],
@@ -444,14 +444,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Dar un paso al frente",
         resultados: [
-          { prob: 70, efecto: { liderazgo: 4, moral: 2 }, texto: "Te conviertes en un referente indiscutible del vestuario." },
-          { prob: 30, efecto: { liderazgo: 2, moral: -2 }, texto: "Aceptas el brazalete, pero el peso extra de la responsabilidad te pasa factura al principio." },
+          { signo: "bien", prob: 70, efecto: { liderazgo: 4, moral: 2 }, texto: "Te conviertes en un referente indiscutible del vestuario." },
+          { signo: "neutro", prob: 30, efecto: { liderazgo: 2, moral: -2 }, texto: "Aceptas el brazalete, pero el peso extra de la responsabilidad te pasa factura al principio." },
         ],
       },
       {
         texto: "Declinar el ofrecimiento",
         resultados: [
-          { prob: 100, efecto: { moral: -1 }, texto: "Prefieres centrarte solo en tu rendimiento, aunque algún veterano lo interpreta como falta de compromiso." },
+          { signo: "neutro", prob: 100, efecto: { moral: -1 }, texto: "Prefieres centrarte solo en tu rendimiento, aunque algún veterano lo interpreta como falta de compromiso." },
         ],
       },
     ],
@@ -462,14 +462,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Hablar con ambición",
         resultados: [
-          { prob: 55, efecto: { liderazgo: 3, reputacion: 4 }, texto: "Tus declaraciones generan expectación positiva y ganas notoriedad." },
-          { prob: 45, efecto: { moral: -3, reputacion: -2 }, texto: "Tus palabras se malinterpretan y acaban generando presión extra y algún titular incómodo." },
+          { signo: "bien", prob: 55, efecto: { liderazgo: 3, reputacion: 4 }, texto: "Tus declaraciones generan expectación positiva y ganas notoriedad." },
+          { signo: "mal", prob: 45, efecto: { moral: -3, reputacion: -2 }, texto: "Tus palabras se malinterpretan y acaban generando presión extra y algún titular incómodo." },
         ],
       },
       {
         texto: "Mantener un perfil bajo",
         resultados: [
-          { prob: 100, efecto: { moral: 1 }, texto: "Prefieres que hablen los resultados y evitas cualquier polémica innecesaria." },
+          { signo: "bien", prob: 100, efecto: { moral: 1 }, texto: "Prefieres que hablen los resultados y evitas cualquier polémica innecesaria." },
         ],
       },
     ],
@@ -480,15 +480,15 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Parar y cuidarte",
         resultados: [
-          { prob: 85, efecto: { fisico: 1, moral: -1 }, texto: "La molestia desaparece sin mayores complicaciones tras un descanso breve." },
-          { prob: 15, efecto: { moral: -3, riesgoLesion: -5 }, texto: "El parón se alarga más de lo previsto y pierdes ritmo de pretemporada, aunque llegas más sano/a." },
+          { signo: "bien", prob: 85, efecto: { fisico: 1, moral: -1 }, texto: "La molestia desaparece sin mayores complicaciones tras un descanso breve." },
+          { signo: "neutro", prob: 15, efecto: { moral: -3, riesgoLesion: -5 }, texto: "El parón se alarga más de lo previsto y pierdes ritmo de pretemporada, aunque llegas más sano/a." },
         ],
       },
       {
         texto: "Seguir entrenando al máximo",
         resultados: [
-          { prob: 40, efecto: { fisico: 2 }, texto: "Aprietas los dientes y sales indemne: la molestia no va a más." },
-          { prob: 60, efecto: { fisico: -4, riesgoLesion: 10, moral: -2 }, texto: "Te has arriesgado de más: la molestia se agrava y el riesgo de lesión aumenta bastante este año." },
+          { signo: "bien", prob: 40, efecto: { fisico: 2 }, texto: "Aprietas los dientes y sales indemne: la molestia no va a más." },
+          { signo: "mal", prob: 60, efecto: { fisico: -4, riesgoLesion: 10, moral: -2 }, texto: "Te has arriesgado de más: la molestia se agrava y el riesgo de lesión aumenta bastante este año." },
         ],
       },
     ],
@@ -499,14 +499,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Aprovechar para foguearte fuera",
         resultados: [
-          { prob: 70, efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, texto: "La experiencia internacional te abre la cabeza y mejoras varios aspectos de tu juego." },
-          { prob: 30, efecto: { fisico: -2, moral: -1 }, texto: "El viaje y el cambio de horarios te pasan factura físicamente." },
+          { signo: "bien", prob: 70, efecto: { ataque: 1, bloqueo: 1, saque: 1, moral: 1 }, texto: "La experiencia internacional te abre la cabeza y mejoras varios aspectos de tu juego." },
+          { signo: "mal", prob: 30, efecto: { fisico: -2, moral: -1 }, texto: "El viaje y el cambio de horarios te pasan factura físicamente." },
         ],
       },
       {
         texto: "Centrarte en la puesta a punto física",
         resultados: [
-          { prob: 100, efecto: { fisico: 2 }, texto: "Priorizas llegar en plena forma al inicio de la liga." },
+          { signo: "bien", prob: 100, efecto: { fisico: 2 }, texto: "Priorizas llegar en plena forma al inicio de la liga." },
         ],
       },
     ],
@@ -517,14 +517,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Escuchar la oferta",
         resultados: [
-          { prob: 60, efecto: { moral: 2, reputacion: 3 }, texto: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos del mundo." },
-          { prob: 40, efecto: { moral: -2 }, texto: "Los rumores llegan al vestuario y generan un ambiente incómodo con tus compañeros." },
+          { signo: "bien", prob: 60, efecto: { moral: 2, reputacion: 3 }, texto: "Aunque sigues en tu club, sientes que estás en el radar de otros equipos del mundo." },
+          { signo: "mal", prob: 40, efecto: { moral: -2 }, texto: "Los rumores llegan al vestuario y generan un ambiente incómodo con tus compañeros." },
         ],
       },
       {
         texto: "Cortar la conversación",
         resultados: [
-          { prob: 100, efecto: { liderazgo: 1 }, texto: "Tu club valora tu compromiso este curso." },
+          { signo: "bien", prob: 100, efecto: { liderazgo: 1 }, texto: "Tu club valora tu compromiso este curso." },
         ],
       },
     ],
@@ -535,14 +535,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Aprovechar su experiencia",
         resultados: [
-          { prob: 80, efecto: { colocacion: 1, defensa: 1, recepcion: 1 }, texto: "Aprendes pequeños detalles que marcan la diferencia en pista." },
-          { prob: 20, efecto: { moral: -1 }, texto: "Sus consejos chocan con lo que te dice el entrenador y acabas hecho/a un lío." },
+          { signo: "bien", prob: 80, efecto: { colocacion: 1, defensa: 1, recepcion: 1 }, texto: "Aprendes pequeños detalles que marcan la diferencia en pista." },
+          { signo: "mal", prob: 20, efecto: { moral: -1 }, texto: "Sus consejos chocan con lo que te dice el entrenador y acabas hecho/a un lío." },
         ],
       },
       {
         texto: "Preferir entrenar por tu cuenta",
         resultados: [
-          { prob: 100, efecto: { fisico: 1 }, texto: "Sigues tu propio método de trabajo." },
+          { signo: "bien", prob: 100, efecto: { fisico: 1 }, texto: "Sigues tu propio método de trabajo." },
         ],
       },
     ],
@@ -553,15 +553,15 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Grabar el vídeo",
         resultados: [
-          { prob: 50, efecto: { dinero: 1200, reputacion: 5, moral: 2 }, texto: "El vídeo se hace viral: ganas seguidores, un pequeño ingreso y caes muy bien a la afición." },
-          { prob: 30, efecto: { moral: -1 }, texto: "El vídeo pasa sin pena ni gloria, aunque no cuesta nada intentarlo." },
-          { prob: 20, efecto: { reputacion: -4, moral: -2 }, texto: "Una broma sale mal y te llueven las críticas en redes durante unos días." },
+          { signo: "bien", prob: 50, efecto: { dinero: 1200, reputacion: 5, moral: 2 }, texto: "El vídeo se hace viral: ganas seguidores, un pequeño ingreso y caes muy bien a la afición." },
+          { signo: "neutro", prob: 30, efecto: { moral: -1 }, texto: "El vídeo pasa sin pena ni gloria, aunque no cuesta nada intentarlo." },
+          { signo: "mal", prob: 20, efecto: { reputacion: -4, moral: -2 }, texto: "Una broma sale mal y te llueven las críticas en redes durante unos días." },
         ],
       },
       {
         texto: "Declinar la propuesta",
         resultados: [
-          { prob: 100, efecto: {}, texto: "Prefieres mantener tu vida privada al margen de las redes." },
+          { signo: "neutro", prob: 100, efecto: {}, texto: "Prefieres mantener tu vida privada al margen de las redes." },
         ],
       },
     ],
@@ -572,14 +572,14 @@ const EVENTOS_PRETEMPORADA = [
       {
         texto: "Aceptar la prima inmediata",
         resultados: [
-          { prob: 100, efecto: { dinero: 1800, liderazgo: -1 }, texto: "Cobras la prima al instante, aunque pierdes algo de margen para negociar en el futuro." },
+          { signo: "bien", prob: 100, efecto: { dinero: 1800, liderazgo: -1 }, texto: "Cobras la prima al instante, aunque pierdes algo de margen para negociar en el futuro." },
         ],
       },
       {
         texto: "Rechazarla y mantener la libertad de negociar",
         resultados: [
-          { prob: 60, efecto: { reputacion: 2 }, texto: "Con el tiempo, tu decisión de no atarte resulta inteligente: mantienes tu valor de mercado." },
-          { prob: 40, efecto: { moral: -1 }, texto: "El club se lo toma como un desplante y la relación se enfría un poco." },
+          { signo: "bien", prob: 60, efecto: { reputacion: 2 }, texto: "Con el tiempo, tu decisión de no atarte resulta inteligente: mantienes tu valor de mercado." },
+          { signo: "mal", prob: 40, efecto: { moral: -1 }, texto: "El club se lo toma como un desplante y la relación se enfría un poco." },
         ],
       },
     ],
@@ -594,14 +594,14 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Respaldar al entrenador en público",
         resultados: [
-          { prob: 70, efecto: { liderazgo: 2, reputacion: 2 }, texto: "El cuerpo técnico valora mucho tu apoyo público." },
-          { prob: 30, efecto: { moral: -2 }, texto: "Parte del vestuario se lo toma mal y notas cierta tensión con algunos compañeros." },
+          { signo: "bien", prob: 70, efecto: { liderazgo: 2, reputacion: 2 }, texto: "El cuerpo técnico valora mucho tu apoyo público." },
+          { signo: "mal", prob: 30, efecto: { moral: -2 }, texto: "Parte del vestuario se lo toma mal y notas cierta tensión con algunos compañeros." },
         ],
       },
       {
         texto: "Mantenerte al margen",
         resultados: [
-          { prob: 100, efecto: {}, texto: "Prefieres no meterte en líos internos y sigues centrado/a en tu juego." },
+          { signo: "neutro", prob: 100, efecto: {}, texto: "Prefieres no meterte en líos internos y sigues centrado/a en tu juego." },
         ],
       },
     ],
@@ -612,14 +612,14 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Aceptar la charla",
         resultados: [
-          { prob: 85, efecto: { liderazgo: 2, moral: 2, reputacion: 1 }, texto: "Disfrutas conectando con jóvenes aficionados/as al vóley y sales con las pilas cargadas." },
-          { prob: 15, efecto: { fisico: -1, moral: -1 }, texto: "El día se alarga más de lo previsto y llegas cansado/a al entrenamiento siguiente." },
+          { signo: "bien", prob: 85, efecto: { liderazgo: 2, moral: 2, reputacion: 1 }, texto: "Disfrutas conectando con jóvenes aficionados/as al vóley y sales con las pilas cargadas." },
+          { signo: "mal", prob: 15, efecto: { fisico: -1, moral: -1 }, texto: "El día se alarga más de lo previsto y llegas cansado/a al entrenamiento siguiente." },
         ],
       },
       {
         texto: "Declinar por falta de tiempo",
         resultados: [
-          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres centrar tu energía en los entrenamientos." },
+          { signo: "neutro", prob: 100, efecto: { fisico: 1 }, texto: "Prefieres centrar tu energía en los entrenamientos." },
         ],
       },
     ],
@@ -630,14 +630,14 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Dar un paso al frente",
         resultados: [
-          { prob: 65, efecto: { moral: 3, reputacion: 3 }, texto: "Aprovechas la ocasión y te ganas la confianza definitiva del cuerpo técnico." },
-          { prob: 35, efecto: { moral: -2, fisico: -2 }, texto: "El exceso de partidos de golpe te pasa factura físicamente y no rindes como esperabas." },
+          { signo: "bien", prob: 65, efecto: { moral: 3, reputacion: 3 }, texto: "Aprovechas la ocasión y te ganas la confianza definitiva del cuerpo técnico." },
+          { signo: "mal", prob: 35, efecto: { moral: -2, fisico: -2 }, texto: "El exceso de partidos de golpe te pasa factura físicamente y no rindes como esperabas." },
         ],
       },
       {
         texto: "Ir con cautela",
         resultados: [
-          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres coger ritmo sin forzar la máquina." },
+          { signo: "neutro", prob: 100, efecto: { fisico: 1 }, texto: "Prefieres coger ritmo sin forzar la máquina." },
         ],
       },
     ],
@@ -648,14 +648,14 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Intentar destacar al máximo",
         resultados: [
-          { prob: 55, efecto: { reputacion: 5, moral: 2 }, texto: "Firmas un partidazo delante del ojeador: tu valor de mercado sube como la espuma." },
-          { prob: 45, efecto: { moral: -3, fisico: -1 }, texto: "La presión te juega una mala pasada y firmas uno de tus peores partidos del año." },
+          { signo: "bien", prob: 55, efecto: { reputacion: 5, moral: 2 }, texto: "Firmas un partidazo delante del ojeador: tu valor de mercado sube como la espuma." },
+          { signo: "mal", prob: 45, efecto: { moral: -3, fisico: -1 }, texto: "La presión te juega una mala pasada y firmas uno de tus peores partidos del año." },
         ],
       },
       {
         texto: "Jugar con normalidad, sin obsesionarte",
         resultados: [
-          { prob: 100, efecto: { moral: 1 }, texto: "Decides no darle más importancia de la cuenta y eso te ayuda a rendir con soltura." },
+          { signo: "bien", prob: 100, efecto: { moral: 1 }, texto: "Decides no darle más importancia de la cuenta y eso te ayuda a rendir con soltura." },
         ],
       },
     ],
@@ -666,14 +666,14 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Salir un rato y desconectar",
         resultados: [
-          { prob: 40, efecto: { moral: 3 }, texto: "La noche te sienta bien: desconectas y llegas al partido con la cabeza despejada." },
-          { prob: 60, efecto: { fisico: -2, moral: -1 }, texto: "Te acuestas más tarde de lo debido y se nota en tus piernas al día siguiente." },
+          { signo: "bien", prob: 40, efecto: { moral: 3 }, texto: "La noche te sienta bien: desconectas y llegas al partido con la cabeza despejada." },
+          { signo: "mal", prob: 60, efecto: { fisico: -2, moral: -1 }, texto: "Te acuestas más tarde de lo debido y se nota en tus piernas al día siguiente." },
         ],
       },
       {
         texto: "Quedarte a descansar",
         resultados: [
-          { prob: 100, efecto: { fisico: 1 }, texto: "Prefieres cuidar tu descanso antes de un partido clave." },
+          { signo: "bien", prob: 100, efecto: { fisico: 1 }, texto: "Prefieres cuidar tu descanso antes de un partido clave." },
         ],
       },
     ],
@@ -684,15 +684,15 @@ const EVENTOS_TEMPORADA = [
       {
         texto: "Pedir explicaciones directamente al entrenador",
         resultados: [
-          { prob: 50, efecto: { liderazgo: 2, moral: 1 }, texto: "La conversación sincera aclara las cosas y refuerza tu papel en el equipo." },
-          { prob: 50, efecto: { moral: -3 }, texto: "La charla se tensa y notas que tu relación con el entrenador se resiente." },
+          { signo: "bien", prob: 50, efecto: { liderazgo: 2, moral: 1 }, texto: "La conversación sincera aclara las cosas y refuerza tu papel en el equipo." },
+          { signo: "mal", prob: 50, efecto: { moral: -3 }, texto: "La charla se tensa y notas que tu relación con el entrenador se resiente." },
         ],
       },
       {
         texto: "Callar y demostrarlo en la pista",
         resultados: [
-          { prob: 70, efecto: { moral: 2, reputacion: 2 }, texto: "Tu actitud profesional en los entrenamientos no pasa desapercibida." },
-          { prob: 30, efecto: { moral: -1 }, texto: "Guardarte la frustración empieza a pesarte con el paso de las semanas." },
+          { signo: "bien", prob: 70, efecto: { moral: 2, reputacion: 2 }, texto: "Tu actitud profesional en los entrenamientos no pasa desapercibida." },
+          { signo: "mal", prob: 30, efecto: { moral: -1 }, texto: "Guardarte la frustración empieza a pesarte con el paso de las semanas." },
         ],
       },
     ],

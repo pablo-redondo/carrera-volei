@@ -578,6 +578,109 @@ button.secundario {
 }
 button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107, 26, .1); transform: translateY(-2px); }
 
+/* ============ PROBABILIDADES DE UNA DECISIÓN ============ */
+.prob { display: block; margin-top: 10px; }
+.prob-barra {
+  display: flex;
+  height: 7px;
+  border-radius: 99px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .08);
+}
+.prob-trozo { display: block; height: 100%; }
+.prob-trozo.bien   { background: linear-gradient(90deg, #1fb673, var(--verde)); }
+.prob-trozo.mal    { background: linear-gradient(90deg, #d93a58, var(--rojo)); }
+.prob-trozo.neutro { background: rgba(255, 255, 255, .22); }
+
+.prob-datos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 7px; }
+.prob-dato {
+  font-size: .74rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.prob-dato.bien   { color: var(--verde); }
+.prob-dato.mal    { color: var(--rojo); }
+.prob-dato.neutro { color: var(--texto-tenue); }
+.prob-etiqueta {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.prob-etiqueta.bien   { color: var(--verde); border-color: rgba(46, 224, 138, .45); background: rgba(46, 224, 138, .1); }
+.prob-etiqueta.mal    { color: var(--rojo);  border-color: rgba(255, 77, 109, .45); background: rgba(255, 77, 109, .1); }
+.prob-etiqueta.neutro { color: var(--texto-tenue); border-color: var(--borde); }
+
+/* ============ DESENLACE DE LA DECISIÓN ============ */
+.desenlace {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 18px 0 4px;
+  padding: 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--borde);
+  background: var(--panel-2);
+  transition: border-color .35s, background .35s;
+}
+.desenlace-sello {
+  flex-shrink: 0;
+  width: 66px; height: 66px;
+  display: grid; place-items: center;
+  font-size: 2rem; font-weight: 800;
+  color: var(--texto-tenue);
+  background: rgba(255, 255, 255, .06);
+  border: 2px solid var(--borde-fuerte);
+  border-radius: 50%;
+}
+.desenlace-cuerpo { min-width: 0; }
+.desenlace-titulo { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; letter-spacing: -.3px; }
+.desenlace-texto { margin: 0; font-size: .92rem; line-height: 1.6; color: var(--texto-medio); }
+
+/* sorteo: el sello late mientras se decide el azar */
+.desenlace.sorteando .desenlace-sello { animation: sorteo .55s ease-in-out infinite; }
+@keyframes sorteo {
+  0%, 100% { transform: scale(1) rotate(-4deg); }
+  50%      { transform: scale(1.14) rotate(4deg); }
+}
+.desenlace.sorteando .desenlace-titulo { opacity: .75; }
+
+/* revelado: el marco y el sello toman el color del desenlace */
+.desenlace.revelado { animation: revelar-caja .45s var(--ease) both; }
+.desenlace.revelado .desenlace-sello { animation: revelar-sello .5s var(--ease) both; }
+@keyframes revelar-caja {
+  0%   { transform: scale(.98); }
+  60%  { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+@keyframes revelar-sello {
+  0%   { transform: scale(.4) rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.18) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.desenlace.revelado.bien {
+  border-color: rgba(46, 224, 138, .45);
+  background: linear-gradient(135deg, rgba(46, 224, 138, .12), rgba(46, 224, 138, .02));
+}
+.desenlace.revelado.bien .desenlace-sello {
+  color: #06301d; background: var(--verde); border-color: #7bf0b8;
+  box-shadow: 0 0 30px -6px rgba(46, 224, 138, .8);
+}
+.desenlace.revelado.mal {
+  border-color: rgba(255, 77, 109, .45);
+  background: linear-gradient(135deg, rgba(255, 77, 109, .12), rgba(255, 77, 109, .02));
+}
+.desenlace.revelado.mal .desenlace-sello {
+  color: #3a0413; background: var(--rojo); border-color: #ff9bb0;
+  box-shadow: 0 0 30px -6px rgba(255, 77, 109, .8);
+}
+.desenlace.revelado.neutro .desenlace-sello {
+  color: var(--texto); background: rgba(255, 255, 255, .12);
+}
+
 /* ============ REJILLA DE ENTRENAMIENTO ============ */
 .rejilla-entreno {
   display: grid;
