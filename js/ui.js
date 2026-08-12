@@ -310,16 +310,20 @@ function renderCreacion(cb) {
 
     const refrescarBoton = () => { btnSiguiente.disabled = !identidadLista(); };
 
-    /* El nombre se comprime si no cabe en el ancho de la camiseta. */
-    const ANCHO_NOMBRE = 132;
-    function ajustarNombreCamiseta(texto) {
-      camisetaNombre.removeAttribute("textLength");
-      camisetaNombre.textContent = texto;
-      if (camisetaNombre.getComputedTextLength() > ANCHO_NOMBRE) {
-        camisetaNombre.setAttribute("textLength", ANCHO_NOMBRE);
-        camisetaNombre.setAttribute("lengthAdjust", "spacingAndGlyphs");
+    /* El cuerpo de la camiseta mide 92 unidades de ancho en el viewBox; el
+       texto se comprime para no desbordarlo por los lados. */
+    const ANCHO_UTIL = 84;
+    function ajustarTextoCamiseta(el, texto) {
+      el.removeAttribute("textLength");
+      el.removeAttribute("lengthAdjust");
+      el.textContent = texto;
+      if (el.getComputedTextLength() > ANCHO_UTIL) {
+        el.setAttribute("textLength", ANCHO_UTIL);
+        el.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
+    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto);
+    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto);
 
     $("#input-nombre").oninput = (e) => {
       estadoLocal.nombre = e.target.value;
@@ -331,7 +335,7 @@ function renderCreacion(cb) {
 
     inputDorsal.oninput = (e) => {
       estadoLocal.dorsal = e.target.value;
-      camisetaDorsal.textContent = dorsalValido() ? Number(e.target.value) : "?";
+      ajustarDorsalCamiseta(dorsalValido() ? String(Number(e.target.value)) : "?");
       inputDorsal.classList.toggle("invalido", e.target.value !== "" && !dorsalValido());
       refrescarBoton();
     };
@@ -340,11 +344,11 @@ function renderCreacion(cb) {
         estadoLocal.dorsal = String(clampNumero(Number(estadoLocal.dorsal) || 1, 1, 99));
         inputDorsal.value = estadoLocal.dorsal;
         inputDorsal.classList.remove("invalido");
-        camisetaDorsal.textContent = estadoLocal.dorsal;
+        ajustarDorsalCamiseta(estadoLocal.dorsal);
         refrescarBoton();
       }
     };
-    camisetaDorsal.textContent = estadoLocal.dorsal;
+    ajustarDorsalCamiseta(estadoLocal.dorsal);
 
     $("#buscar-pais").oninput = (e) => {
       const q = e.target.value.trim().toLowerCase();

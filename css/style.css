@@ -651,7 +651,8 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   border-radius: var(--r-lg);
   padding: 16px;
 }
-.campos-identidad { margin-top: auto; }
+/* La camiseta ya reparte el espacio libre con sus márgenes automáticos, así
+   que los campos no necesitan otro: con dos, el hueco de abajo salía doble. */
 .cancha-info { margin-top: auto; }
 .col-titulo {
   margin: 0 0 14px;
@@ -666,23 +667,28 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 /* --- camiseta con nombre y dorsal --- */
 /* Ojo: dentro de una columna flexible, los márgenes laterales "auto" impiden
    que el elemento se estire y lo dejan sin ancho. Se centra con align-self. */
+/* La camiseta se centra en el espacio libre de la columna (los campos quedan
+   abajo del todo), para que no quede un vacío grande entre ambos. */
 .camiseta {
   display: block;
   width: 100%;
-  max-width: 190px;
+  max-width: 250px;
   align-self: center;
-  margin-bottom: 14px;
+  margin-block: auto;
+  padding-bottom: 14px;
 }
+/* Tamaños en unidades del viewBox: el cuerpo de la camiseta mide 92 de ancho
+   (de x=64 a x=156), así que el texto nunca debe pasar de ~84. */
 .camiseta-nombre {
   font-family: var(--fuente);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: .5px;
   fill: #0a0e14;
 }
 .camiseta-dorsal {
   font-family: var(--fuente);
-  font-size: 62px;
+  font-size: 58px;
   font-weight: 800;
   letter-spacing: -2px;
   fill: #0a0e14;
