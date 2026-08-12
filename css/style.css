@@ -677,21 +677,32 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   margin-block: auto;
   padding-bottom: 14px;
 }
+/* Colores de la equipación: se sobrescriben al elegir selección. */
+.camiseta {
+  --kit-base: #eef2f7;
+  --kit-detalle: #c3cedd;
+  --kit-texto: #14202e;
+}
+.kit-cuerpo   { fill: var(--kit-base); }
+.kit-detalle  { fill: var(--kit-detalle); }
+.kit-brillo   { pointer-events: none; }
+.kit-contorno { fill: none; stroke: #0a0e14; stroke-width: 4; stroke-linejoin: round; }
+
 /* Tamaños en unidades del viewBox: el cuerpo de la camiseta mide 92 de ancho
    (de x=64 a x=156), así que el texto nunca debe pasar de ~84. */
 .camiseta-nombre {
   font-family: var(--fuente);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: .5px;
-  fill: #0a0e14;
+  letter-spacing: .6px;
+  fill: var(--kit-texto);
 }
 .camiseta-dorsal {
   font-family: var(--fuente);
-  font-size: 58px;
+  font-size: 66px;
   font-weight: 800;
   letter-spacing: -2px;
-  fill: #0a0e14;
+  fill: var(--kit-texto);
 }
 .campos-identidad { display: grid; grid-template-columns: 1fr 84px; gap: 10px; }
 .campo label {

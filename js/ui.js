@@ -193,21 +193,35 @@ const PUESTOS_CANCHA = {
   colocador: { corto: "COL", x: 76, y: 68, zona: 1 },
 };
 
+/* Camiseta como una equipación real: el nombre va arqueado en la parte alta
+   de la espalda y el dorsal, grande, centrado debajo. Las piezas (cuerpo,
+   mangas, cuello y banda inferior) se colorean según la selección elegida. */
+const CAMISETA_CONTORNO = "M78 16 L44 30 L14 64 L48 94 L64 80 L64 220 Q110 234 156 220 L156 80 L172 94 L206 64 L176 30 L142 16 Q110 42 78 16 Z";
+
 function camisetaSvg() {
   return `
     <svg class="camiseta" viewBox="0 0 220 250" role="img" aria-label="Camiseta del jugador">
       <defs>
-        <linearGradient id="gradTela" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="#c9d4e2"/>
+        <linearGradient id="brilloTela" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".22"/>
+          <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".16"/>
         </linearGradient>
+        <path id="arco-nombre" d="M67 112 Q110 92 153 112" fill="none"/>
       </defs>
-      <path class="camiseta-tela"
-        d="M78 16 L44 30 L14 64 L48 94 L64 80 L64 220 Q110 234 156 220 L156 80 L172 94 L206 64 L176 30 L142 16 Q110 42 78 16 Z"
-        fill="url(#gradTela)" stroke="#0a0e14" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M78 16 Q110 42 142 16" fill="none" stroke="#0a0e14" stroke-width="4" stroke-linejoin="round"/>
-      <text id="camiseta-nombre" class="camiseta-nombre" x="110" y="122" text-anchor="middle">JUGADOR</text>
-      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="196" text-anchor="middle">10</text>
+
+      <path class="kit-cuerpo" d="${CAMISETA_CONTORNO}"/>
+      <path class="kit-detalle" d="M78 16 L44 30 L14 64 L48 94 L64 80 Z"/>
+      <path class="kit-detalle" d="M142 16 L176 30 L206 64 L172 94 L156 80 Z"/>
+      <path class="kit-detalle" d="M64 200 L156 200 L156 220 Q110 234 64 220 Z"/>
+      <path class="kit-detalle" d="M78 16 Q110 42 142 16 Q110 58 78 16 Z"/>
+      <path class="kit-brillo" d="${CAMISETA_CONTORNO}" fill="url(#brilloTela)"/>
+      <path class="kit-contorno" d="${CAMISETA_CONTORNO}"/>
+
+      <text id="camiseta-nombre" class="camiseta-nombre">
+        <textPath href="#arco-nombre" startOffset="50%" text-anchor="middle">JUGADOR</textPath>
+      </text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="182" text-anchor="middle">10</text>
     </svg>`;
 }
 
@@ -310,26 +324,46 @@ function renderCreacion(cb) {
 
     const refrescarBoton = () => { btnSiguiente.disabled = !identidadLista(); };
 
-    /* El cuerpo de la camiseta mide 92 unidades de ancho en el viewBox; el
-       texto se comprime para no desbordarlo por los lados. */
-    const ANCHO_UTIL = 84;
-    function ajustarTextoCamiseta(el, texto) {
-      el.removeAttribute("textLength");
-      el.removeAttribute("lengthAdjust");
-      el.textContent = texto;
-      if (el.getComputedTextLength() > ANCHO_UTIL) {
-        el.setAttribute("textLength", ANCHO_UTIL);
-        el.setAttribute("lengthAdjust", "spacingAndGlyphs");
+    /* El cuerpo de la camiseta mide 92 unidades de ancho en el viewBox.
+       Primero se reduce el tamaño de letra, pero solo hasta un mínimo legible;
+       si aún no cabe (nombres muy largos), se comprime el texto. */
+    function ajustarTextoCamiseta(el, texto, anchoMaximo, tamanoBase, tamanoMinimo) {
+      const destino = el.querySelector("textPath") || el;
+      destino.textContent = texto;
+      destino.removeAttribute("textLength");
+      destino.removeAttribute("lengthAdjust");
+
+      let tam = tamanoBase;
+      el.style.fontSize = `${tam}px`;
+      while (tam > tamanoMinimo && el.getComputedTextLength() > anchoMaximo) {
+        tam -= 1;
+        el.style.fontSize = `${tam}px`;
+      }
+      if (el.getComputedTextLength() > anchoMaximo) {
+        destino.setAttribute("textLength", anchoMaximo);
+        destino.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
-    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto);
-    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto);
+    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 84, 15, 9);
+    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 84, 66, 40);
+
+    /* Pinta la camiseta con los colores de la selección elegida. */
+    function aplicarKit(paisId) {
+      const svg = document.querySelector(".camiseta");
+      if (!svg) return;
+      const kit = paisId ? PAISES[paisId].kit : null;
+      for (const [prop, valor] of [["--kit-base", kit?.base], ["--kit-detalle", kit?.detalle], ["--kit-texto", kit?.texto]]) {
+        if (valor) svg.style.setProperty(prop, valor);
+        else svg.style.removeProperty(prop);
+      }
+    }
 
     $("#input-nombre").oninput = (e) => {
       estadoLocal.nombre = e.target.value;
       ajustarNombreCamiseta((e.target.value.trim() || "JUGADOR").toUpperCase());
       refrescarBoton();
     };
+    aplicarKit(estadoLocal.paisId);
     ajustarNombreCamiseta((estadoLocal.nombre.trim() || "JUGADOR").toUpperCase());
     refrescarBoton();
 
@@ -362,6 +396,7 @@ function renderCreacion(cb) {
         estadoLocal.paisId = el.dataset.pais;
         estadoLocal.clubNombre = null;      // el equipo depende del país
         document.querySelectorAll(".pais-item").forEach((o) => o.classList.toggle("elegido", o === el));
+        aplicarKit(estadoLocal.paisId);
         refrescarBoton();
       };
     });
