@@ -79,6 +79,9 @@
       </div>
 
       <div class="cabecera-derecha">
+        <button type="button" id="btn-logros" class="btn-logros" aria-label="Ver logros">
+          <span aria-hidden="true">🏅</span><span class="btn-logros-txt">Logros</span>
+        </button>
         <div id="cabecera-overall" class="cabecera-overall"></div>
         <div id="cabecera-temporada" class="cabecera-temporada"></div>
       </div>
@@ -94,6 +97,24 @@
       <span>Simulador de carrera de voleibol — historia ficticia generada por tus decisiones y el azar.</span>
     </footer>
   </div>
+
+  <!-- Modal de logros: vive fuera de #pantalla para poder abrirse desde
+       cualquier punto del juego sin tocar el estado de la partida. -->
+  <div id="modal-logros" class="modal-logros oculto" role="dialog" aria-modal="true" aria-label="Logros">
+    <div class="modal-logros-caja">
+      <div class="modal-logros-cabecera">
+        <div>
+          <span class="eyebrow">Progreso</span>
+          <h2>Logros</h2>
+        </div>
+        <button type="button" id="cerrar-logros" class="cerrar-logros" aria-label="Cerrar logros">✕</button>
+      </div>
+      <div id="logros-contenido" class="modal-logros-cuerpo"></div>
+    </div>
+  </div>
+
+  <!-- Avisos de logro conseguido, apilados en una esquina -->
+  <div id="logros-toast" class="logros-toast-cont" aria-live="polite"></div>
 
   <script type="module" src="js/main.js"></script>
 </body>

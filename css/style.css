@@ -219,6 +219,25 @@ body {
 }
 .cabecera-temporada:empty, .cabecera-overall:empty { display: none; }
 
+.btn-logros {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: var(--texto);
+  background: var(--panel-2);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 999px;
+  padding: 6px 12px 6px 10px;
+  cursor: pointer;
+  transition: transform .18s var(--ease), border-color .2s, background .2s;
+}
+.btn-logros:hover { transform: translateY(-1px); border-color: var(--oro); background: rgba(255, 197, 61, .12); }
+.btn-logros span:first-child { font-size: .92rem; }
+
 /* ============================ LAYOUT ============================ */
 .contenido {
   flex: 1;
@@ -1339,6 +1358,13 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .opciones { gap: 10px; }
+
+  .btn-logros-txt { display: none; }
+  .btn-logros { padding: 7px; }
+  .modal-logros-cabecera { padding: 16px 16px 12px; }
+  .modal-logros-cuerpo { padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
+  .logros-grid { grid-template-columns: 1fr; }
+  .logros-toast-cont { left: 10px; right: 10px; max-width: none; }
 }
 
 @media (max-width: 359px) {
@@ -1346,6 +1372,161 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
   .atributos { grid-template-columns: 1fr; }
   .rejilla-entreno { grid-template-columns: 1fr 1fr; }
 }
+
+/* ============================ LOGROS ============================ */
+.modal-logros {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(4, 6, 10, .68);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: aparecer .25s var(--ease) both;
+  padding: 0;
+}
+.modal-logros.oculto { display: none; }
+body.modal-abierto { overflow: hidden; }
+
+.modal-logros-caja {
+  width: 100%;
+  max-width: 640px;
+  max-height: min(84vh, 760px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-solido);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  box-shadow: var(--sombra-alta);
+  animation: subir-modal .3s var(--ease) both;
+}
+@keyframes subir-modal {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (min-width: 640px) {
+  .modal-logros { align-items: center; padding: 24px; }
+  .modal-logros-caja { border-radius: var(--r-xl); }
+}
+
+.modal-logros-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 22px 14px;
+  border-bottom: 1px solid var(--borde);
+  flex-shrink: 0;
+}
+.modal-logros-cabecera h2 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -.6px; }
+.cerrar-logros {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  font-size: 1rem;
+  color: var(--texto-medio);
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .18s var(--ease), border-color .2s, color .2s;
+}
+.cerrar-logros:hover { color: var(--texto); border-color: var(--borde-fuerte); transform: rotate(90deg); }
+
+.modal-logros-cuerpo {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 22px calc(24px + env(safe-area-inset-bottom));
+}
+
+.logros-progreso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--texto-medio);
+}
+.logros-progreso-pista {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .1);
+  overflow: hidden;
+}
+.logros-progreso-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--grad-oro);
+  transition: width .6s var(--ease);
+}
+.logros-progreso > span { white-space: nowrap; }
+
+.logros-categoria { margin-bottom: 20px; }
+.logros-categoria h3 {
+  margin: 0 0 10px;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--naranja);
+}
+.logros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 9px;
+}
+.logro-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 12px 13px;
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  transition: transform .18s var(--ease), border-color .2s;
+}
+.logro-card:hover { transform: translateY(-2px); }
+.logro-card.conseguido { border-color: rgba(255, 197, 61, .35); background: rgba(255, 197, 61, .07); }
+.logro-card.bloqueado { opacity: .55; }
+.logro-icono { font-size: 1.35rem; line-height: 1.2; flex-shrink: 0; }
+.logro-texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.logro-nombre { font-size: .84rem; font-weight: 800; color: var(--texto); }
+.logro-desc { font-size: .74rem; line-height: 1.4; color: var(--texto-tenue); }
+.logro-meta { font-size: .68rem; font-weight: 700; color: var(--oro); margin-top: 2px; }
+
+/* ---- avisos de logro conseguido ---- */
+.logros-toast-cont {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: min(320px, calc(100vw - 28px));
+}
+.logro-toast {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 16px;
+  background: var(--panel-solido);
+  border: 1px solid rgba(255, 197, 61, .4);
+  border-radius: var(--r-md);
+  box-shadow: var(--sombra-alta);
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
+}
+.logro-toast.visible { opacity: 1; transform: none; }
+.logro-toast-icono { font-size: 1.5rem; flex-shrink: 0; }
+.logro-toast-texto { display: flex; flex-direction: column; gap: 1px; font-size: .8rem; }
+.logro-toast-texto b { font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--oro); }
 
 /* ============================ ACCESIBILIDAD ============================ */
 :focus-visible { outline: 2px solid var(--ambar); outline-offset: 3px; }

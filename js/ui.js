@@ -3,6 +3,7 @@ import {
   calcularOverall, calcularOverallMedio, calcularOverallMaximo, equiposIniciales,
   clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, probabilidadesOpcion,
 } from "./engine.js";
+import { LOGROS, cargarDesbloqueados } from "./logros.js";
 
 const $pantalla = () => document.getElementById("pantalla");
 const $sidebar = () => document.getElementById("sidebar");
@@ -927,8 +928,88 @@ function renderRetiro(jugador, legado, cb) {
   document.getElementById("btn-nueva-carrera").onclick = cb.onNuevaCarrera;
 }
 
+/* ================= LOGROS ================= */
+/* El modal vive fuera de #pantalla (ver index.html), así que se puede abrir
+   desde cualquier momento de la partida sin tocar el estado del juego. */
+function tarjetaLogro(logro, info) {
+  const conseguido = Boolean(info);
+  return `
+    <div class="logro-card ${conseguido ? "conseguido" : "bloqueado"}">
+      <span class="logro-icono">${conseguido ? logro.icono : "🔒"}</span>
+      <span class="logro-texto">
+        <span class="logro-nombre">${escapar(logro.nombre)}</span>
+        <span class="logro-desc">${conseguido ? escapar(logro.descripcion) : "???"}</span>
+        ${conseguido ? `<span class="logro-meta">Conseguido a los ${info.edad} años</span>` : ""}
+      </span>
+    </div>`;
+}
+
+function renderLogros() {
+  const desbloqueados = cargarDesbloqueados();
+  const categorias = [];
+  for (const l of LOGROS) if (!categorias.includes(l.categoria)) categorias.push(l.categoria);
+
+  const bloques = categorias.map((cat) => {
+    const items = LOGROS.filter((l) => l.categoria === cat)
+      .map((l) => tarjetaLogro(l, desbloqueados[l.id])).join("");
+    return `<div class="logros-categoria"><h3>${escapar(cat)}</h3><div class="logros-grid">${items}</div></div>`;
+  }).join("");
+
+  const conseguidos = Object.keys(desbloqueados).length;
+  const total = LOGROS.length;
+
+  document.getElementById("logros-contenido").innerHTML = `
+    <div class="logros-progreso">
+      <div class="logros-progreso-pista"><div class="logros-progreso-relleno" style="width:${Math.round((conseguidos / total) * 100)}%"></div></div>
+      <span>${conseguidos} / ${total} conseguidos</span>
+    </div>
+    ${bloques}
+  `;
+}
+
+function abrirLogros() {
+  renderLogros();
+  document.getElementById("modal-logros").classList.remove("oculto");
+  document.body.classList.add("modal-abierto");
+}
+
+function cerrarLogros() {
+  document.getElementById("modal-logros").classList.add("oculto");
+  document.body.classList.remove("modal-abierto");
+}
+
+/* Engancha los controles del modal una sola vez, al arrancar la aplicación. */
+function inicializarLogrosUI() {
+  document.getElementById("btn-logros").onclick = abrirLogros;
+  document.getElementById("cerrar-logros").onclick = cerrarLogros;
+  document.getElementById("modal-logros").addEventListener("click", (e) => {
+    if (e.target.id === "modal-logros") cerrarLogros();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !document.getElementById("modal-logros").classList.contains("oculto")) cerrarLogros();
+  });
+}
+
+/* Aviso emergente al desbloquear un logro, apilado en la esquina. */
+function mostrarLogroToast(logro) {
+  const cont = document.getElementById("logros-toast");
+  const el = document.createElement("div");
+  el.className = "logro-toast";
+  el.innerHTML = `
+    <span class="logro-toast-icono">${logro.icono}</span>
+    <span class="logro-toast-texto"><b>Logro conseguido</b>${escapar(logro.nombre)}</span>
+  `;
+  cont.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("visible")));
+  setTimeout(() => {
+    el.classList.remove("visible");
+    setTimeout(() => el.remove(), 400);
+  }, 4200);
+}
+
 export {
   renderSidebar, actualizarCabeceraTemporada, renderInicio, renderCreacion,
   renderEntrenamiento, renderEvento, renderResultadoEvento, renderResumenTemporada,
   renderConvocatoria, renderFichajes, renderRetiro,
+  inicializarLogrosUI, mostrarLogroToast,
 };

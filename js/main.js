@@ -8,7 +8,9 @@ import {
   renderSidebar, actualizarCabeceraTemporada, renderInicio, renderCreacion,
   renderEntrenamiento, renderEvento, renderResultadoEvento, renderResumenTemporada,
   renderConvocatoria, renderFichajes, renderRetiro,
+  inicializarLogrosUI, mostrarLogroToast,
 } from "./ui.js";
+import { comprobarLogros } from "./logros.js";
 
 const CLAVE_GUARDADO = "carreraVoley";
 /* Subir esta versión invalida las partidas guardadas con un formato anterior.
@@ -58,6 +60,16 @@ function refrescarCabecera(opts) {
   actualizarCabeceraTemporada(estado.jugador, estado.temporadaNum);
 }
 
+/* ---------------- logros ---------------- */
+/* Comprueba los logros contra el jugador actual y avisa (con un pequeño
+   desfase entre ellos) de los que se acaban de desbloquear. Se llama tras
+   cualquier mutación relevante del jugador; los ya conseguidos se ignoran. */
+function comprobarYNotificarLogros(ctx) {
+  if (!estado.jugador) return;
+  const nuevos = comprobarLogros(estado.jugador, ctx);
+  nuevos.forEach((logro, i) => setTimeout(() => mostrarLogroToast(logro), i * 350));
+}
+
 /* ---------------- flujo del juego ---------------- */
 function pantallaInicio() {
   estado = { jugador: null, temporadaNum: 1 };
@@ -83,6 +95,7 @@ function pantallaCreacion() {
       estado.jugador = crearJugador(datos);
       estado.temporadaNum = 1;
       guardar();
+      comprobarYNotificarLogros({});
       pantallaEntrenamiento();
     },
   });
@@ -131,6 +144,7 @@ function pantallaSimularTemporada() {
   resultado.finanzas = aplicarResultadoTemporada(estado.jugador, resultado);
   refrescarCabecera();
   guardar();
+  comprobarYNotificarLogros({ resultado });
   renderResumenTemporada(estado.jugador, resultado, {
     onContinuar: () => pantallaComprobarSeleccion(),
   });
@@ -139,6 +153,7 @@ function pantallaSimularTemporada() {
 function pantallaComprobarSeleccion() {
   const info = comprobarSeleccionNacional(estado.jugador);
   refrescarCabecera();
+  comprobarYNotificarLogros({ convocatoria: info });
   if (info && info.convocado) {
     guardar();
     renderConvocatoria(estado.jugador, info, { onContinuar: pantallaSiguientePaso });
@@ -163,6 +178,7 @@ function pantallaFichajes() {
   renderFichajes(estado.jugador, ofertas, permiteRetiro, {
     onElegir: (oferta) => {
       ficharPorClub(estado.jugador, oferta);
+      comprobarYNotificarLogros({});
       avanzarTemporada();
     },
     onRetiro: () => pantallaRetirar(),
@@ -187,6 +203,7 @@ function pantallaRetiro() {
   // de toda la trayectoria en vez de la de la última temporada jugada.
   refrescarCabecera({ overallOverride: calcularOverallMedio(estado.jugador), etiquetaOverall: "MEDIA" });
   const legado = calcularLegado(estado.jugador);
+  comprobarYNotificarLogros({ legado });
   renderRetiro(estado.jugador, legado, {
     onNuevaCarrera: () => {
       borrarGuardado();
@@ -196,4 +213,5 @@ function pantallaRetiro() {
 }
 
 /* ---------------- arranque ---------------- */
+inicializarLogrosUI();
 pantallaInicio();
