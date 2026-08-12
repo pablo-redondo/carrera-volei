@@ -207,7 +207,7 @@ function camisetaSvg() {
           <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
           <stop offset="100%" stop-color="#000000" stop-opacity=".16"/>
         </linearGradient>
-        <path id="arco-nombre" d="M67 112 Q110 92 153 112" fill="none"/>
+        <path id="arco-nombre" d="M67 84 Q110 64 153 84" fill="none"/>
       </defs>
 
       <path class="kit-cuerpo" d="${CAMISETA_CONTORNO}"/>
@@ -221,7 +221,7 @@ function camisetaSvg() {
       <text id="camiseta-nombre" class="camiseta-nombre">
         <textPath href="#arco-nombre" startOffset="50%" text-anchor="middle">JUGADOR</textPath>
       </text>
-      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="182" text-anchor="middle">10</text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="162" text-anchor="middle">10</text>
     </svg>`;
 }
 
