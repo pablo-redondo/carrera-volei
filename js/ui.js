@@ -1047,8 +1047,13 @@ function inicializarLogrosUI() {
 }
 
 /* Aviso emergente al desbloquear un logro, apilado en la esquina. */
+const MAX_TOASTS = 3;
+
 function mostrarLogroToast(logro) {
   const cont = document.getElementById("logros-toast");
+  // Una temporada redonda puede desbloquear media docena de logros a la vez;
+  // apilados taparían justo las estadísticas que el jugador quiere leer.
+  while (cont.children.length >= MAX_TOASTS) cont.firstElementChild.remove();
   const el = document.createElement("div");
   el.className = "logro-toast";
   el.innerHTML = `
