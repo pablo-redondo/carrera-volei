@@ -231,4 +231,20 @@ function ico(nombre, clase = "") {
   return `<svg class="ico ${clase}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${nombre}"/></svg>`;
 }
 
-export { escudoClub, emblemaLiga, trofeoSvg, ico, inicialesClub };
+/* Colores del club, para teñir filas y tarjetas con su identidad (el mismo
+   par que usa su escudo, así todo lo del club va a juego). */
+function colorClub(nombre) {
+  return PALETA_ESCUDOS[hash(nombre || "club") % PALETA_ESCUDOS.length];
+}
+
+/* Escala de color de la valoración, al estilo de las tarjetas de un manager:
+   de naranja (promesa) a oro (estrella mundial). */
+function nivelOverall(v) {
+  if (v >= 85) return "elite";
+  if (v >= 78) return "oro";
+  if (v >= 70) return "alto";
+  if (v >= 60) return "medio";
+  return "bajo";
+}
+
+export { escudoClub, emblemaLiga, trofeoSvg, ico, inicialesClub, colorClub, nivelOverall };

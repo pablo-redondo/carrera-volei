@@ -8,7 +8,7 @@ import {
   renderSidebar, actualizarCabeceraTemporada, renderInicio, renderCreacion,
   renderEntrenamiento, renderEvento, renderResultadoEvento, renderResumenTemporada,
   renderConvocatoria, renderFichajes, renderRetiro,
-  inicializarLogrosUI, mostrarLogroToast,
+  inicializarLogrosUI, mostrarLogroToast, renderTrayectoria,
 } from "./ui.js";
 import { comprobarLogros } from "./logros.js";
 
@@ -57,6 +57,7 @@ function borrarGuardado() {
 /* ---------------- refresco de UI persistente ---------------- */
 function refrescarCabecera(opts) {
   renderSidebar(estado.jugador, opts);
+  renderTrayectoria(estado.jugador);
   actualizarCabeceraTemporada(estado.jugador, estado.temporadaNum);
 }
 

@@ -221,10 +221,15 @@
       </div>
     </header>
 
+    <!-- Dos columnas fijas: a la izquierda la ficha del jugador y la decisión
+         del momento; a la derecha la trayectoria completa por edades, que se
+         mantiene siempre visible y llena la altura de la pantalla. -->
     <main class="contenido">
-      <!-- En móvil la pantalla de juego va primero y la ficha debajo (ver CSS) -->
-      <section id="pantalla" class="pantalla"></section>
-      <aside id="sidebar" class="sidebar oculto"></aside>
+      <section class="columna-juego">
+        <div id="ficha" class="ficha oculto"></div>
+        <section id="pantalla" class="pantalla"></section>
+      </section>
+      <aside id="trayectoria" class="trayectoria oculto"></aside>
     </main>
 
     <footer class="pie">

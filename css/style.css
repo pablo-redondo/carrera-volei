@@ -12,12 +12,12 @@
 :root {
   /* superficies — más separación entre niveles: antes el fondo, el panel y
      la tarjeta interior eran casi el mismo gris y todo parecía una lámina. */
-  --bg:          #05070c;
-  --bg-alto:     #0b1018;
-  --panel:       rgba(23, 31, 45, .96);
-  --panel-solido:#171f2d;
-  --panel-2:     rgba(37, 49, 68, .9);
-  --panel-3:     #2d3c53;
+  --bg:          #08090c;
+  --bg-alto:     #0d0f14;
+  --panel:       #101319;
+  --panel-solido:#141821;
+  --panel-2:     #1a1f2a;
+  --panel-3:     #232935;
   --borde:       rgba(255, 255, 255, .1);
   --borde-fuerte:rgba(255, 255, 255, .2);
 
@@ -110,9 +110,8 @@ body {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(900px 520px at 8% -10%, rgba(255, 107, 26, .20), transparent 62%),
-    radial-gradient(760px 460px at 96% 4%, rgba(34, 211, 238, .14), transparent 58%),
-    radial-gradient(700px 500px at 50% 108%, rgba(79, 124, 255, .12), transparent 60%);
+    radial-gradient(1100px 620px at 50% -14%, rgba(255, 107, 26, .07), transparent 64%),
+    radial-gradient(800px 520px at 92% 100%, rgba(79, 124, 255, .05), transparent 62%);
 }
 .fondo-pista::after {
   /* líneas diagonales tipo red de voleibol */
@@ -130,7 +129,7 @@ body {
 #app {
   position: relative;
   z-index: 1;
-  max-width: 1220px;
+  max-width: 1280px;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
@@ -285,25 +284,33 @@ body {
 .btn-logros span:first-child { font-size: .92rem; }
 
 /* ============================ LAYOUT ============================ */
+/* Dos columnas: a la izquierda ficha + decisión, a la derecha la trayectoria
+   completa. La trayectoria siempre trae 23 filas (una por edad), así que la
+   fila del grid nunca se queda más corta que la pantalla y desaparecen los
+   huecos vacíos que dejaba el diseño anterior. */
 .contenido {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;   /* juego · ficha */
-  gap: 22px;
-  padding: 24px 20px 32px;
+  grid-template-columns: minmax(0, 47fr) minmax(0, 53fr);
+  gap: 14px;
+  padding: 14px 16px 18px;
   align-items: stretch;
+  min-height: 0;
 }
-/* La columna de juego ocupa todo el alto disponible y centra su contenido:
-   antes las pantallas cortas se pegaban arriba y dejaban medio viewport
-   vacío por debajo, que era lo que daba sensación de página a medio hacer. */
-.pantalla {
-  min-width: 0;
+.columna-juego {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 16px;
+  gap: 12px;
+  min-width: 0;
 }
-.sidebar-envoltorio { align-self: start; }
+.pantalla {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+}
 
 .pie {
   text-align: center;
@@ -314,178 +321,317 @@ body {
 }
 
 /* ============================ FICHA DEL JUGADOR ============================ */
-.sidebar {
-  position: sticky;
-  top: 74px;
-  align-self: start;
+.ficha {
   background: var(--panel);
   border: 1px solid var(--borde);
-  border-radius: var(--r-xl);
-  padding: 18px;
-  box-shadow: var(--sombra);
-  overflow: hidden;
-  animation: aparecer .5s var(--ease) both;
+  border-radius: var(--r-lg);
+  padding: 12px;
+  animation: aparecer .45s var(--ease) both;
 }
-.sidebar::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: var(--grad-acento);
-}
-.sidebar.oculto { display: none; }
-/* Cuando no hay ficha (portada, creación) el juego ocupa todo el ancho. */
-.contenido:has(> .sidebar.oculto) { grid-template-columns: minmax(0, 1fr); }
-.sidebar > * { position: relative; z-index: 1; }
+.ficha.oculto { display: none; }
 
-.jugador-cabecera {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
-}
+/* --- fila superior: valoración + banner del club --- */
+.ficha-superior { display: flex; gap: 12px; align-items: stretch; }
 
-/* anillo de valoración */
-.overall-ring {
-  --pct: 0;
-  position: relative;
+.ovr-caja {
   flex-shrink: 0;
-  width: 82px; height: 82px;
-  border-radius: 50%;
-  background: conic-gradient(from -90deg, var(--naranja) calc(var(--pct) * 1%), rgba(255, 255, 255, .07) 0);
-  display: grid;
-  place-items: center;
-  box-shadow: var(--glow);
-  transition: --pct 1s var(--ease);
+  width: 82px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  border-radius: var(--r-md);
+  background: linear-gradient(158deg, #566072, #39414f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22);
 }
-.overall-ring::after {
-  content: "";
+.ovr-lbl {
+  font-family: var(--fuente-display);
+  font-size: .62rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .7);
+}
+.ovr-num {
+  font-family: var(--fuente-display);
+  font-size: 2.7rem; font-weight: 800; line-height: .84;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+/* Escala de color de la valoración, como las tarjetas de un manager. */
+.ovr-caja.bajo  { background: linear-gradient(158deg, #d4691f, #a8410d); }
+.ovr-caja.medio { background: linear-gradient(158deg, #c9902a, #96601a); }
+.ovr-caja.alto  { background: linear-gradient(158deg, #667287, #434c5c); }
+.ovr-caja.oro   { background: linear-gradient(158deg, #f0c04a, #c08a1b); }
+.ovr-caja.oro .ovr-num, .ovr-caja.oro .ovr-lbl { color: #2a1c02; }
+.ovr-caja.elite { background: linear-gradient(158deg, #f4f7fb, #b9c6d6); }
+.ovr-caja.elite .ovr-num, .ovr-caja.elite .ovr-lbl { color: #131a24; }
+
+.club-banner {
+  position: relative;
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 10px 13px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background:
+    linear-gradient(100deg, color-mix(in srgb, var(--club-base) 78%, #0b0e14) 0%,
+                            color-mix(in srgb, var(--club-base) 30%, #0b0e14) 62%,
+                            #0b0e14 100%);
+}
+/* Escudo gigante de marca de agua, como el fondo de una ficha de plantilla. */
+.club-marca {
   position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: #0e141d;
+  right: -26px; top: 50%;
+  transform: translateY(-50%);
+  opacity: .17;
+  pointer-events: none;
+  line-height: 0;
 }
-.overall-ring-inner {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; line-height: 1;
+.club-banner > *:not(.club-marca) { position: relative; z-index: 1; }
+
+.club-fila-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-pais, .chip-dorsal {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .64rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, .42);
+  color: rgba(255, 255, 255, .92);
 }
-.overall-ring .num {
-  font-size: 2.3rem;
-  font-weight: 700;
-  line-height: .9;
-  font-variant-numeric: tabular-nums;
-  background: var(--grad-acento);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.overall-ring .lbl {
-  margin-top: 3px;
-  font-size: .47rem;
-  font-weight: 800;
-  letter-spacing: .1em;
-  color: var(--texto-tenue);
-  text-align: center;
+.chip-dorsal { background: var(--naranja); color: #241000; }
+
+/* Se reserva el hueco del bloque EDAD/AHORROS anclado a la derecha: sin
+   esto, un nombre de club largo se metía por debajo en vez de cortarse. */
+.club-fila-chips, .club-fila-nombre, .club-liga { padding-right: 128px; }
+.club-fila-nombre { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.club-fila-nombre b {
+  font-family: var(--fuente-display);
+  font-size: 1.6rem; font-weight: 700; line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, .6);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.jugador-info { min-width: 0; }
-.jugador-info h2 {
-  margin: 0 0 4px;
-  font-size: 1.08rem;
-  font-weight: 800;
-  letter-spacing: -.4px;
-  line-height: 1.15;
+/* Con la clase sola pierde en especificidad contra la regla genérica de
+   .club-banner > * (que fija position:relative) y se colaba debajo del
+   nombre en vez de anclarse arriba a la derecha. */
+.club-banner .club-meta {
+  position: absolute;
+  right: 13px; top: 10px;
+  display: flex; gap: 16px;
+  text-align: right;
+  z-index: 2;
 }
-.jugador-info .sub { font-size: .76rem; color: var(--texto-tenue); line-height: 1.45; }
-.jugador-info .dorsal {
-  font-size: .84rem;
-  font-weight: 800;
-  color: var(--ambar);
+.club-meta span { display: flex; flex-direction: column; gap: 1px; }
+.club-meta i {
+  font-family: var(--fuente-display);
+  font-size: .56rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .6); font-style: normal;
+}
+.club-meta b {
+  font-family: var(--fuente-display);
+  font-size: 1.25rem; font-weight: 700; line-height: 1; color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
-.club-actual {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.club-liga {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .7rem; font-weight: 600;
+  color: rgba(255, 255, 255, .72);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* --- fila de datos acumulados --- */
+.ficha-datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 10px;
+  background: var(--borde);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.dato {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 6px;
+  background: var(--panel-solido);
+}
+.dato i {
+  font-family: var(--fuente-display);
+  font-size: .58rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--texto-tenue); font-style: normal;
+}
+.dato b {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--fuente-display);
+  font-size: 1.15rem; font-weight: 700; line-height: 1; color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+.dato .ico { width: 14px; height: 14px; color: var(--naranja); }
+
+/* --- tira compacta de atributos --- */
+.tira-atributos {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  margin-top: 9px;
+}
+.attr-mini {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 2px 5px;
+  border-radius: var(--r-sm);
   background: var(--panel-2);
   border: 1px solid var(--borde);
-  border-left: 3px solid var(--naranja);
-  border-radius: var(--r-md);
-  padding: 10px 12px;
-  margin-bottom: 4px;
 }
-.club-actual .club-txt { flex: 1; min-width: 0; font-size: .82rem; line-height: 1.4; }
-.club-actual b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.club-actual b { font-weight: 700; }
-.club-actual .liga-linea { display: block; color: var(--texto-tenue); font-size: .73rem; }
-
-.bloque-titulo {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: .62rem;
-  font-weight: 800;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--texto-tenue);
-  margin: 18px 0 11px;
+.attr-mini .ico { width: 14px; height: 14px; color: var(--texto-tenue); }
+.attr-mini b {
+  font-family: var(--fuente-display);
+  font-size: .92rem; font-weight: 700; line-height: 1; color: var(--texto);
+  font-variant-numeric: tabular-nums;
 }
-.bloque-titulo::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--borde), transparent);
-}
-
-.atributos { display: grid; gap: 10px; }
-.barra-atributo .fila {
-  display: flex; justify-content: space-between; align-items: center; gap: 6px;
-  font-size: .74rem; color: var(--texto-medio); margin-bottom: 4px;
-}
-.barra-atributo .fila > span:first-child { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
-.barra-atributo .fila .ico { width: 14px; height: 14px; color: var(--naranja); opacity: .85; vertical-align: 0; }
-.barra-atributo .fila .valor { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--texto); }
-.barra-fondo {
-  height: 5px;
+.attr-barra {
+  display: block; width: 100%; height: 2px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, .08);
+  background: rgba(255, 255, 255, .1);
   overflow: hidden;
 }
-/* Sin animación de entrada: la ficha se repinta varias veces por turno y las
-   barras "rebotaban" cada vez. La transición sí se aprovecha al repartir
-   puntos, donde el ancho cambia sobre el mismo elemento. */
-.barra-relleno {
-  height: 100%;
-  border-radius: 99px;
+.attr-barra span {
+  display: block; height: 100%;
   background: var(--grad-acento);
   transition: width .35s var(--ease);
 }
 
-/* filas de estado */
-.mini-stats { display: flex; flex-direction: column; }
-.mini-stat {
-  display: grid;
-  grid-template-columns: 20px 1fr auto;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 2px;
-  border-bottom: 1px solid var(--borde);
+/* --- vitrina en miniatura --- */
+.vitrina-mini {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin-top: 9px;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  min-height: 46px;
+}
+.vitrina-mini.vacia {
+  justify-content: center;
+  color: var(--texto-tenue);
+  font-family: var(--fuente-display);
+  font-size: .68rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+}
+.vitrina-mini.vacia .trofeo { opacity: .3; }
+
+/* ============================ TRAYECTORIA ============================ */
+.trayectoria {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  animation: aparecer .5s var(--ease) both;
+}
+.trayectoria.oculto { display: none; }
+/* Sin jugador (portada, creación) el juego ocupa las dos columnas. */
+.contenido:has(> .trayectoria.oculto) { grid-template-columns: minmax(0, 1fr); }
+
+.tabla-envoltorio-tray { flex: 1; overflow-y: auto; min-height: 0; }
+
+table.tabla-trayectoria {
+  width: 100%;
+  border-collapse: collapse;
   font-size: .8rem;
 }
-.mini-stat:last-child { border-bottom: none; }
-.mini-icono { display: inline-flex; justify-content: center; color: var(--texto-tenue); }
-.mini-icono .ico { width: 17px; height: 17px; vertical-align: 0; }
-.mini-label { color: var(--texto-tenue); }
-.mini-valor { font-weight: 800; color: var(--texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.tabla-trayectoria thead th {
+  position: sticky; top: 0; z-index: 2;
+  font-family: var(--fuente-display);
+  font-size: .6rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--texto-tenue);
+  text-align: left;
+  padding: 9px 8px;
+  background: var(--panel-solido);
+  border-bottom: 1px solid var(--borde);
+}
+table.tabla-trayectoria td {
+  padding: 0 8px;
+  height: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, .045);
+}
+/* Tinte con el color del club: cada etapa de la carrera se distingue de un
+   vistazo, que es lo que convierte la tabla en una línea de tiempo legible. */
+table.tabla-trayectoria tbody tr[style*="--club-base"] {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--club-base) 42%, transparent) 0%,
+    color-mix(in srgb, var(--club-base) 12%, transparent) 55%,
+    transparent 100%);
+}
+table.tabla-trayectoria tbody tr:hover { background-color: rgba(255, 255, 255, .06); }
+
+.col-edad { width: 46px; }
+.col-ovr  { width: 48px; }
+.col-num  { width: 46px; text-align: right; font-variant-numeric: tabular-nums; color: var(--texto-medio); }
+th.col-num { text-align: right; }
+
+.edad-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 20px;
+  border-radius: 5px;
+  font-family: var(--fuente-display);
+  font-size: .82rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, .07);
+  color: var(--texto-tenue);
+}
+.edad-badge.jugada { background: rgba(255, 255, 255, .16); color: var(--texto); }
+
+.club-celda { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.club-celda .escudo { filter: none; }
+.club-nom {
+  font-weight: 600; color: var(--texto);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fila-trofeo { flex-shrink: 0; line-height: 0; }
+
+.ovr-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; height: 20px; padding: 0 6px;
+  border-radius: 5px;
+  font-family: var(--fuente-display);
+  font-size: .84rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #16110a;
+}
+.ovr-pill.bajo  { background: #d4691f; color: #fff; }
+.ovr-pill.medio { background: #d19a2e; }
+.ovr-pill.alto  { background: #78849a; color: #fff; }
+.ovr-pill.oro   { background: #f0c04a; }
+.ovr-pill.elite { background: #eef3f9; }
+
+.fila-vacia td { color: var(--texto-tenue); }
+.fila-vacia.en-curso {
+  background: linear-gradient(90deg, rgba(255, 107, 26, .16), transparent 70%);
+}
+.fila-vacia.en-curso .edad-badge { background: var(--naranja); color: #241000; }
+.fila-vacia .tenue { font-size: .75rem; font-style: italic; }
+
+.tray-pie {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--borde);
+  background: var(--panel-solido);
+  font-size: .78rem;
+}
+.tray-pie .ico { width: 17px; height: 17px; color: var(--cian); }
+.tray-pie-datos { display: flex; gap: 16px; color: var(--texto-medio); font-variant-numeric: tabular-nums; }
+.tray-pie-datos i {
+  font-family: var(--fuente-display);
+  font-size: .58rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--texto-tenue); font-style: normal; margin-right: 4px;
+}
+
 
 /* ============================ PANELES ============================ */
 .panel {
   position: relative;
-  background:
-    radial-gradient(680px 240px at 12% -10%, rgba(255, 107, 26, .07), transparent 62%),
-    var(--panel);
+  background: var(--panel);
   border: 1px solid var(--borde);
-  border-radius: var(--r-xl);
-  padding: 26px;
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
   box-shadow: var(--sombra);
   animation: aparecer .45s var(--ease) both;
   overflow: hidden;
@@ -512,7 +658,7 @@ body {
 }
 .panel h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 3.6vw, 2rem);
+  font-size: clamp(1.25rem, 2.6vw, 1.65rem);
   font-weight: 700;
   line-height: 1.02;
 }
@@ -1726,10 +1872,11 @@ body.modal-abierto { overflow: hidden; }
 
 /* ============================ MÓVIL ============================ */
 @media (max-width: 900px) {
+  /* Solo espaciado: el paso a una columna se decide más abajo (779 px), que
+     a 834 px todavía caben la decisión y la trayectoria una al lado de otra. */
   .contenido {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 14px 13px 24px;
+    gap: 12px;
+    padding: 12px 12px 20px;
   }
 
   /* La pantalla de juego SIEMPRE arriba; la ficha del jugador, debajo. */
@@ -1797,26 +1944,9 @@ body.modal-abierto { overflow: hidden; }
 }
 
 /* ============================ TABLET ============================ */
-/* Entre 620 y 900 px la ficha del jugador ya no cabe en columna lateral,
-   pero sobra ancho de sobra: en vez de apilarlo todo en una tira estrecha
-   (que obligaba a un scroll larguísimo), la ficha se reparte en rejilla. */
+/* Las reglas que repartían la antigua ficha lateral en rejilla se han
+   eliminado: esa ficha ya no existe (ahora va arriba, a ancho completo). */
 @media (min-width: 620px) and (max-width: 900px) {
-  .sidebar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4px 24px;
-    align-items: start;
-  }
-  /* Filas explícitas en las dos columnas: si se dejan implícitas, la columna
-     derecha hereda el hueco que ocupan los atributos y "Estado" queda
-     flotando a media altura. */
-  .jugador-cabecera { grid-column: 1; grid-row: 1; margin-bottom: 6px; }
-  .club-actual      { grid-column: 2; grid-row: 1; margin-bottom: 6px; }
-  .bloque-titulo[data-bloque="atributos"] { grid-column: 1; grid-row: 2; }
-  .atributos { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
-  .bloque-titulo[data-bloque="estado"]    { grid-column: 2; grid-row: 2; }
-  .mini-stats { grid-column: 2; grid-row: 3; }
-
   .creacion-grid { grid-template-columns: 1fr 1fr; }
   .creacion-col:nth-child(3) { grid-column: 1 / -1; }
   .cancha { max-width: 420px; margin-inline: auto; }
@@ -1828,11 +1958,6 @@ body.modal-abierto { overflow: hidden; }
   .rejilla-entreno { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* En pantallas medianas con dos columnas, la ficha se estrecha para no
-   comerse el espacio de la pantalla de juego. */
-@media (min-width: 901px) and (max-width: 1120px) {
-  .contenido { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; }
-}
 
 @media (max-width: 359px) {
   .tarjetas-grid { grid-template-columns: 1fr; }
@@ -1850,4 +1975,116 @@ body.modal-abierto { overflow: hidden; }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+}
+
+/* ============================ TARJETAS DE DECISIÓN ============================ */
+/* Dos apuestas lado a lado con sus desenlaces y probabilidades a la vista,
+   para poder comparar antes de elegir. */
+.opciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 11px;
+  margin-top: 16px;
+}
+.opcion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px;
+  font-family: inherit;
+  text-align: center;
+  color: var(--texto);
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  animation: subir .45s var(--ease) both;
+  animation-delay: calc(.06s * var(--i, 0));
+  transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
+}
+.opcion-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, .55);
+  background: var(--panel-3);
+  box-shadow: 0 16px 30px -20px rgba(0, 0, 0, 1);
+}
+.opcion-card:active { transform: translateY(-1px) scale(.99); }
+
+.oc-titulo {
+  font-family: var(--fuente-display);
+  font-size: 1.05rem; font-weight: 700; line-height: 1.15;
+  min-height: 2.3em;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Ilustración de la opción: silueta de remate sobre un degradado, en el
+   sitio que en la referencia ocupa una foto. */
+.oc-arte {
+  display: block;
+  height: 84px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(150deg, var(--panel-3), #0d1119);
+  overflow: hidden;
+  position: relative;
+}
+.oc-arte svg {
+  position: absolute;
+  right: -6px; bottom: -10px;
+  width: 96px; height: 96px;
+  color: rgba(255, 255, 255, .13);
+  transition: transform .3s var(--ease), color .25s;
+}
+.opcion-card:hover .oc-arte svg { transform: scale(1.08) translateY(-3px); color: rgba(255, 140, 60, .3); }
+
+.oc-desenlaces { display: flex; flex-direction: column; gap: 5px; }
+.oc-des {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .74rem;
+  border: 1px solid transparent;
+  text-align: left;
+}
+.oc-des b { font-weight: 700; }
+.oc-des i {
+  font-family: var(--fuente-display);
+  font-style: normal; font-weight: 700; font-size: .88rem;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.oc-des.bien   { color: var(--verde); background: rgba(46, 224, 138, .1);  border-color: rgba(46, 224, 138, .32); }
+.oc-des.mal    { color: var(--rojo);  background: rgba(255, 77, 109, .1);  border-color: rgba(255, 77, 109, .32); }
+.oc-des.neutro { color: var(--texto-tenue); background: rgba(255, 255, 255, .05); border-color: var(--borde); }
+
+/* ============================ AJUSTES ESTRECHOS ============================ */
+/* Banner estrecho: pasa por debajo de 1000 px, tanto en una columna como
+   en dos (con dos columnas la izquierda se queda en ~370 px). */
+@media (max-width: 1000px) {
+  /* EDAD/AHORROS anclados arriba a la derecha se montaban encima del nombre
+     del club en cuanto el banner se estrechaba: pasan a fila propia. */
+  .club-banner .club-meta {
+    position: static;
+    justify-content: flex-start;
+    text-align: left;
+    margin-top: 2px;
+  }
+  .club-fila-chips, .club-fila-nombre, .club-liga { padding-right: 0; }
+  .club-fila-nombre b { font-size: 1.3rem; }
+  .club-marca { right: -40px; opacity: .13; }
+  .tira-atributos { grid-template-columns: repeat(4, 1fr); }
+  .opciones-grid { grid-template-columns: 1fr; }
+  .oc-titulo { min-height: 0; }
+}
+
+/* Una sola columna: por debajo de 780 px la tabla de trayectoria ya no cabe
+   al lado de la decisión. */
+@media (max-width: 779px) {
+  .contenido { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  /* Son 23 filas: apiladas y sin tope la página se hacía larguísima. */
+  .trayectoria { max-height: 62vh; }
+}
+
+@media (max-width: 420px) {
+  .ficha-superior { flex-direction: column; }
+  .ovr-caja { width: 100%; flex-direction: row; gap: 10px; padding: 8px; }
+  .ovr-num { font-size: 2.1rem; }
 }
