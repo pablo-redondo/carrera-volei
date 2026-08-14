@@ -4,6 +4,7 @@ import {
   clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, probabilidadesOpcion,
 } from "./engine.js";
 import { LOGROS, cargarDesbloqueados } from "./logros.js";
+import { escudoClub, emblemaLiga, trofeoSvg, ico } from "./graficos.js";
 
 const $pantalla = () => document.getElementById("pantalla");
 const $sidebar = () => document.getElementById("sidebar");
@@ -82,7 +83,7 @@ function renderSidebar(jugador, opts = {}) {
     const v = jugador.atributos[a.id];
     return `
       <div class="barra-atributo">
-        <div class="fila"><span>${a.icono} ${a.nombre}</span><span class="valor">${v}</span></div>
+        <div class="fila"><span>${ico(a.id)} ${a.nombre}</span><span class="valor">${v}</span></div>
         <div class="barra-fondo"><div class="barra-relleno" style="width:${v}%"></div></div>
       </div>`;
   }).join("");
@@ -102,23 +103,24 @@ function renderSidebar(jugador, opts = {}) {
     </div>
 
     <div class="club-actual">
-      ${balonSvg("club-balon")}
+      ${escudoClub(jugador.club.nombre, 40)}
       <span class="club-txt">
         <b>${escapar(jugador.club.nombre)}</b>
         <span class="liga-linea">${escapar(ligaClub.nombre)} · ${etiquetaDivision(jugador.club.division)}</span>
       </span>
+      ${emblemaLiga(jugador.club.paisId, jugador.club.division, 30)}
     </div>
 
-    <div class="bloque-titulo">Atributos</div>
+    <div class="bloque-titulo" data-bloque="atributos">Atributos</div>
     <div class="atributos">${barras}</div>
 
-    <div class="bloque-titulo">Estado</div>
+    <div class="bloque-titulo" data-bloque="estado">Estado</div>
     <div class="mini-stats">
-      <div class="mini-stat"><span class="mini-icono">💰</span><span class="mini-label">Ahorros</span><span class="mini-valor">${jugador.dinero.toLocaleString("es-ES")} €</span></div>
-      <div class="mini-stat"><span class="mini-icono">📣</span><span class="mini-label">Reputación</span><span class="mini-valor">${jugador.reputacion}/100</span></div>
-      <div class="mini-stat"><span class="mini-icono">🙂</span><span class="mini-label">Moral</span><span class="mini-valor">${jugador.moral}/100</span></div>
-      <div class="mini-stat"><span class="mini-icono">🏆</span><span class="mini-label">Títulos</span><span class="mini-valor">${jugador.titulos.length}</span></div>
-      <div class="mini-stat"><span class="mini-icono">🌐</span><span class="mini-label">Selección</span><span class="mini-valor">${jugador.convocatoriasSeleccion}</span></div>
+      <div class="mini-stat"><span class="mini-icono">${ico("dinero")}</span><span class="mini-label">Ahorros</span><span class="mini-valor">${jugador.dinero.toLocaleString("es-ES")} €</span></div>
+      <div class="mini-stat"><span class="mini-icono">${ico("reputacion")}</span><span class="mini-label">Reputación</span><span class="mini-valor">${jugador.reputacion}/100</span></div>
+      <div class="mini-stat"><span class="mini-icono">${ico("moral")}</span><span class="mini-label">Moral</span><span class="mini-valor">${jugador.moral}/100</span></div>
+      <div class="mini-stat"><span class="mini-icono">${ico("titulo")}</span><span class="mini-label">Títulos</span><span class="mini-valor">${jugador.titulos.length}</span></div>
+      <div class="mini-stat"><span class="mini-icono">${ico("seleccion")}</span><span class="mini-label">Selección</span><span class="mini-valor">${jugador.convocatoriasSeleccion}</span></div>
     </div>
   `;
 
@@ -425,10 +427,13 @@ function renderCreacion(cb) {
 
     const equiposHtml = opciones.map((c, i) => `
       <button type="button" class="tarjeta-equipo" data-club="${escapar(c.nombre)}" style="--i:${i}">
-        <span class="equipo-nombre">${escapar(c.nombre)}</span>
-        <span class="equipo-liga">${escapar(pais.ligas.segunda.nombre)}</span>
-        <span class="equipo-prestigio" aria-label="Prestigio ${c.prestigio} sobre 10">
-          ${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}<span class="tenue">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
+        ${escudoClub(c.nombre, 54)}
+        <span class="equipo-datos">
+          <span class="equipo-nombre">${escapar(c.nombre)}</span>
+          <span class="equipo-liga">${escapar(pais.ligas.segunda.nombre)}</span>
+          <span class="equipo-prestigio" aria-label="Prestigio ${c.prestigio} sobre 10">
+            ${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}<span class="tenue">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
+          </span>
         </span>
       </button>`).join("");
 
@@ -438,7 +443,7 @@ function renderCreacion(cb) {
        de la posición y no se puede reducir. */
     const repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
       <div class="reparto-atributo" data-fila="${a.id}">
-        <span class="nombre-attr">${a.icono} ${a.nombre}</span>
+        <span class="nombre-attr">${ico(a.id)} ${a.nombre}</span>
         <span class="valor-attr">${perfil.base[a.id]}</span>
         <input type="range" class="deslizador" data-attr="${a.id}"
                min="0" max="${TOPE_CREACION}" step="1"
@@ -463,8 +468,10 @@ function renderCreacion(cb) {
         <div class="equipos-grid">${equiposHtml}</div>
 
         <div class="form-fila" style="margin-top:24px;">
-          <label>Reparto de atributos</label>
-          <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> puntos disponibles</div>
+          <div class="reparto-cabecera">
+            <label>Reparto de atributos</label>
+            <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> <span>puntos disponibles</span></div>
+          </div>
           <div id="lista-reparto">${repartoHtml}</div>
         </div>
 
@@ -535,7 +542,7 @@ function renderEntrenamiento(jugador, cb) {
   const entrenables = ATRIBUTOS.filter((a) => POSICIONES[jugador.posicionId].pesos[a.id] > 0);
   const opciones = entrenables.map((a, i) => `
     <button class="ficha-entreno" data-foco="${a.id}" style="--i:${i}">
-      <span class="ficha-icono">${a.icono}</span>
+      <span class="ficha-icono">${ico(a.id)}</span>
       <span class="ficha-nombre">${a.nombre}</span>
       <span class="ficha-valor">${jugador.atributos[a.id]}</span>
     </button>
@@ -553,7 +560,7 @@ function renderEntrenamiento(jugador, cb) {
       <div class="rejilla-entreno">
         ${opciones}
         <button class="ficha-entreno ancha" data-foco="descanso" style="--i:${entrenables.length}">
-          <span class="ficha-icono">😴</span>
+          <span class="ficha-icono">${ico("descanso")}</span>
           <span class="ficha-texto">
             <span class="ficha-nombre">Descanso y recuperación</span>
             <span class="ficha-detalle">Mejora tu físico y tu moral, reduciendo el riesgo de lesión.</span>
@@ -618,10 +625,10 @@ function renderEvento(jugador, evento, titulo, cb) {
 
 /* Etiquetas legibles para cada cosa que puede cambiar un evento. */
 const NOMBRES_EFECTO = {
-  moral: { icono: "🙂", nombre: "Moral" },
-  dinero: { icono: "💰", nombre: "Ahorros", sufijo: " €" },
-  reputacion: { icono: "📣", nombre: "Reputación" },
-  riesgoLesion: { icono: "🩹", nombre: "Riesgo de lesión", alRevés: true },
+  moral: { icono: ico("moral"), nombre: "Moral" },
+  dinero: { icono: ico("dinero"), nombre: "Ahorros", sufijo: " €" },
+  reputacion: { icono: ico("reputacion"), nombre: "Reputación" },
+  riesgoLesion: { icono: ico("lesion"), nombre: "Riesgo de lesión", alRevés: true },
 };
 
 function chipsEfecto(efecto) {
@@ -630,7 +637,7 @@ function chipsEfecto(efecto) {
 
   const chips = entradas.map(([clave, valor], i) => {
     const attr = ATRIBUTOS.find((a) => a.id === clave);
-    const meta = attr ? { icono: attr.icono, nombre: attr.nombre } : (NOMBRES_EFECTO[clave] || { icono: "•", nombre: clave });
+    const meta = attr ? { icono: ico(attr.id), nombre: attr.nombre } : (NOMBRES_EFECTO[clave] || { icono: "", nombre: clave });
     // En el riesgo de lesión, subir es malo: el color se invierte.
     const positivo = meta.alRevés ? valor < 0 : valor > 0;
     const signo = valor > 0 ? "+" : "";
@@ -718,14 +725,28 @@ function renderResumenTemporada(jugador, resultado, cb) {
   // ya apunta a la división NUEVA — para el resumen usamos la que realmente se jugó.
   const liga = PAISES[jugador.club.paisId].ligas[resultado.divisionJugada];
   const chips = [];
-  if (resultado.esCampeon) chips.push(`<span class="chip oro destaca">🏆 Campeón/a de ${escapar(liga.nombre)}</span>`);
-  if (resultado.copa) chips.push(`<span class="chip oro">🥇 Copa</span>`);
-  if (resultado.ascensoDivision) chips.push(`<span class="chip verde destaca">⬆️ ¡Asciende a 1ª división!</span>`);
-  if (resultado.descensoDivision) chips.push(`<span class="chip rojo">⬇️ Desciende a 2ª división</span>`);
-  if (resultado.temporadaDificil && !resultado.descensoDivision) chips.push(`<span class="chip rojo">📉 Temporada difícil</span>`);
-  if (resultado.lesionado) chips.push(`<span class="chip rojo">🩹 Lesión</span>`);
-  chips.push(`<span class="chip azul">${resultado.titular ? "⭐ Titular habitual" : "🪑 Rol suplente"}</span>`);
+  if (resultado.esCampeon) chips.push(`<span class="chip oro destaca">${ico("titulo")} Campeón/a de ${escapar(liga.nombre)}</span>`);
+  if (resultado.copa) chips.push(`<span class="chip oro">${ico("titulo")} Copa</span>`);
+  if (resultado.ascensoDivision) chips.push(`<span class="chip verde destaca">${ico("flecha-arriba")} ¡Asciende a 1ª división!</span>`);
+  if (resultado.descensoDivision) chips.push(`<span class="chip rojo">${ico("flecha-abajo")} Desciende a 2ª división</span>`);
+  if (resultado.temporadaDificil && !resultado.descensoDivision) chips.push(`<span class="chip rojo">${ico("flecha-abajo")} Temporada difícil</span>`);
+  if (resultado.lesionado) chips.push(`<span class="chip rojo">${ico("lesion")} Lesión</span>`);
+  chips.push(`<span class="chip azul">${ico(resultado.titular ? "liderazgo" : "descanso")} ${resultado.titular ? "Titular habitual" : "Rol suplente"}</span>`);
   const chipsHtml = chips.map((c, i) => c.replace('class="chip', `style="--i:${i}" class="chip`)).join("");
+
+  // Si se ha ganado algo, la vitrina enseña el trofeo en grande: es el
+  // momento culminante de la temporada y merece más que una etiqueta.
+  const trofeos = [];
+  if (resultado.esCampeon) trofeos.push({ svg: trofeoSvg("liga", 74), titulo: escapar(liga.nombre), sub: "Campeón/a de liga" });
+  if (resultado.copa) trofeos.push({ svg: trofeoSvg("copa", 74), titulo: "Copa nacional", sub: "Título de copa" });
+  const vitrinaHtml = trofeos.length ? `
+    <div class="vitrina">
+      ${trofeos.map((t, i) => `
+        <div class="vitrina-pieza" style="--i:${i}">
+          ${t.svg}
+          <span class="vitrina-txt"><b>${t.titulo}</b><span>${t.sub}</span></span>
+        </div>`).join("")}
+    </div>` : "";
 
   const s = resultado.stats;
   const esLibero = jugador.posicionId === "libero";
@@ -745,9 +766,9 @@ function renderResumenTemporada(jugador, resultado, cb) {
     finanzasHtml = `
       <div class="bloque-titulo">Finanzas de la temporada</div>
       <div class="chips">
-        <span class="chip ${fin.neto >= 0 ? "verde" : "rojo"}">💶 ${signo}${fin.neto.toLocaleString("es-ES")} € netos</span>
+        <span class="chip ${fin.neto >= 0 ? "verde" : "rojo"}">${ico("dinero")} ${signo}${fin.neto.toLocaleString("es-ES")} € netos</span>
       </div>
-      ${fin.evento ? `<p class="narrativa destacada">💸 ${escapar(fin.evento.texto)} (${fin.evento.delta >= 0 ? "+" : ""}${fin.evento.delta.toLocaleString("es-ES")} €)</p>` : ""}
+      ${fin.evento ? `<p class="narrativa destacada">${escapar(fin.evento.texto)} (${fin.evento.delta >= 0 ? "+" : ""}${fin.evento.delta.toLocaleString("es-ES")} €)</p>` : ""}
     `;
   }
 
@@ -758,9 +779,11 @@ function renderResumenTemporada(jugador, resultado, cb) {
           <span class="eyebrow">Fin de temporada · ${jugador.edad} años</span>
           <h2>${resultado.posicion}º de ${resultado.nClubes} en ${escapar(liga.nombre)}</h2>
         </div>
+        ${emblemaLiga(jugador.club.paisId, resultado.divisionJugada, 46)}
       </div>
       <p class="narrativa"><b>${escapar(jugador.club.nombre)}</b> cierra la temporada en la <b>${resultado.posicion}ª posición</b>.</p>
       ${resultado.fraseFinal ? `<p class="narrativa destacada">${resultado.fraseFinal}</p>` : ""}
+      ${vitrinaHtml}
       <div class="chips">${chipsHtml}</div>
       <div class="stats-grid">${tiles}</div>
       ${finanzasHtml}
@@ -777,19 +800,29 @@ function renderConvocatoria(jugador, info, cb) {
   const paisJugador = PAISES[jugador.paisId];
   let extra = "";
   if (info.torneoResultado) {
+    const res = info.torneoResultado.resultado;
+    const hayMedalla = /oro|plata|bronce/i.test(res);
     extra = `
       <p class="narrativa destacada">
         Compites en <b>${escapar(info.torneoResultado.torneo)}</b> con la selección ${escapar(paisJugador.gentilicio)}.
       </p>
-      <div class="chips"><span class="chip oro destaca">${escapar(info.torneoResultado.resultado)}</span></div>`;
+      ${hayMedalla ? `
+        <div class="vitrina">
+          <div class="vitrina-pieza" style="--i:0">
+            ${trofeoSvg(res, 80)}
+            <span class="vitrina-txt"><b>${escapar(res.replace(/^[^\p{L}]+/u, ""))}</b><span>${escapar(info.torneoResultado.torneo)}</span></span>
+          </div>
+        </div>`
+        : `<div class="chips"><span class="chip azul">${escapar(res)}</span></div>`}`;
   }
   pintarPantalla(`
     <div class="panel">
       <div class="panel-cabecera">
         <div>
           <span class="eyebrow">Selección nacional</span>
-          <h2>📣 Te llaman</h2>
+          <h2>Te llaman</h2>
         </div>
+        ${ico("seleccion", "ico-cabecera")}
       </div>
       <p class="narrativa">¡Recibes una convocatoria de la selección ${escapar(paisJugador.gentilicio)}!</p>
       ${extra}
@@ -808,14 +841,18 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
     const ligaOferta = paisOferta.ligas[o.division];
     const insignias = [];
     if (o.esActual) insignias.push(`<span class="chip">Tu club</span>`);
-    if (o.ascenso) insignias.push(`<span class="chip verde">⬆️ Ascenso a 1ª</span>`);
-    if (o.internacional) insignias.push(`<span class="chip azul">🌍 ${escapar(paisOferta.nombre)}</span>`);
+    if (o.ascenso) insignias.push(`<span class="chip verde">${ico("flecha-arriba")} Ascenso a 1ª</span>`);
+    if (o.internacional) insignias.push(`<span class="chip azul">${paisOferta.bandera} ${escapar(paisOferta.nombre)}</span>`);
 
     return `
-    <button class="opcion" data-idx="${i}">
-      <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}</span>
-      <span class="detalle-opcion">${escapar(ligaOferta.nombre)} · ${etiquetaDivision(o.division)} · ${o.salario.toLocaleString("es-ES")} €/temporada</span>
-      ${insignias.length ? `<span class="chips">${insignias.join("")}</span>` : ""}
+    <button class="opcion oferta" data-idx="${i}" style="--i:${i}">
+      ${escudoClub(o.club, 52)}
+      <span class="oferta-datos">
+        <span class="titulo-opcion">${o.esActual ? "Renovar con " : "Fichar por "}${escapar(o.club)}</span>
+        <span class="detalle-opcion">${escapar(ligaOferta.nombre)} · ${etiquetaDivision(o.division)}</span>
+        ${insignias.length ? `<span class="chips">${insignias.join("")}</span>` : ""}
+      </span>
+      <span class="oferta-salario"><b>${o.salario.toLocaleString("es-ES")} €</b><span>por temporada</span></span>
     </button>`;
   }).join("");
 
@@ -832,7 +869,7 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
       ${permiteRetiro ? `
         <div class="opciones" style="margin-top:20px;">
           <button class="opcion" id="btn-retiro">
-            <span class="titulo-opcion">🏁 Poner fin a tu carrera profesional</span>
+            <span class="titulo-opcion">Poner fin a tu carrera profesional</span>
             <span class="detalle-opcion">Te retiras del vóley profesional y cierras tu palmarés.</span>
           </button>
         </div>` : ""}
@@ -856,21 +893,41 @@ function renderRetiro(jugador, legado, cb) {
       .map((d) => `${escapar(pais.ligas[d].nombre)} <span class="tenue">(${etiquetaDivision(d)})</span>`)
       .join(" → ");
     return `<tr>
-      <td>${escapar(c.club)}<br><span class="tenue">${escapar(pais.nombre)}</span></td>
+      <td><span class="celda-club">${escudoClub(c.club, 30)}<span>${escapar(c.club)}<br><span class="tenue">${escapar(pais.nombre)}</span></span></span></td>
       <td>${competiciones}</td>
       <td>${c.desdeEdad} años</td>
     </tr>`;
   }).join("");
 
-  const titulos = jugador.titulos.length
-    ? `<div class="chips">${jugador.titulos.map((t, i) =>
-        `<span style="--i:${i}" class="chip oro">🏆 ${t.tipo} — ${escapar(t.liga)} · ${t.edad} años</span>`).join("")}</div>`
-    : `<p class="narrativa">No conseguiste títulos, pero cada temporada dejó su huella.</p>`;
+  // Palmarés como vitrina de trofeos. Solo entran los metales de verdad:
+  // llegar a semifinales es un mérito, pero no es un trofeo y desentonaba
+  // ver una copa junto a un "fase de grupos".
+  const esMedalla = (texto) => /oro|plata|bronce/i.test(texto);
+  const piezas = [
+    ...jugador.titulos.map((t) => ({
+      svg: trofeoSvg(t.tipo, 62), titulo: t.tipo, sub: `${escapar(t.liga)} · ${t.edad} años`,
+    })),
+    ...jugador.torneosInternacionales.filter((t) => esMedalla(t.resultado)).map((t) => ({
+      svg: trofeoSvg(t.resultado, 62),
+      titulo: escapar(t.resultado.replace(/^[^\p{L}]+/u, "").trim()),
+      sub: `${escapar(t.torneo)} · ${t.edad} años`,
+    })),
+  ];
 
-  const medallas = jugador.torneosInternacionales.length
-    ? `<div class="chips">${jugador.torneosInternacionales.map((t, i) =>
-        `<span style="--i:${i}" class="chip azul">${escapar(t.torneo)}: ${escapar(t.resultado)} · ${t.edad} años</span>`).join("")}</div>`
+  // Participaciones sin medalla: se listan aparte, como méritos.
+  const sinMedalla = jugador.torneosInternacionales.filter((t) => !esMedalla(t.resultado));
+  const otrasHtml = sinMedalla.length
+    ? `<div class="chips">${sinMedalla.map((t, i) =>
+        `<span style="--i:${i}" class="chip azul">${ico("seleccion")} ${escapar(t.torneo)}: ${escapar(t.resultado)} · ${t.edad} años</span>`).join("")}</div>`
     : "";
+
+  const palmares = (piezas.length
+    ? `<div class="vitrina amplia">${piezas.map((p, i) => `
+        <div class="vitrina-pieza" style="--i:${i}">
+          ${p.svg}
+          <span class="vitrina-txt"><b>${p.titulo}</b><span>${p.sub}</span></span>
+        </div>`).join("")}</div>`
+    : `<p class="narrativa">No conseguiste títulos, pero cada temporada dejó su huella.</p>`) + otrasHtml;
 
   const esLibero = jugador.posicionId === "libero";
   const datos = [
@@ -906,8 +963,7 @@ function renderRetiro(jugador, legado, cb) {
     <div class="panel">
       <span class="eyebrow">Vitrina</span>
       <h2>Palmarés</h2>
-      ${titulos}
-      ${medallas}
+      ${palmares}
     </div>
 
     <div class="panel">
@@ -935,7 +991,7 @@ function tarjetaLogro(logro, info) {
   const conseguido = Boolean(info);
   return `
     <div class="logro-card ${conseguido ? "conseguido" : "bloqueado"}">
-      <span class="logro-icono">${conseguido ? logro.icono : "🔒"}</span>
+      <span class="logro-icono">${conseguido ? logro.icono : ico("candado")}</span>
       <span class="logro-texto">
         <span class="logro-nombre">${escapar(logro.nombre)}</span>
         <span class="logro-desc">${conseguido ? escapar(logro.descripcion) : "???"}</span>
