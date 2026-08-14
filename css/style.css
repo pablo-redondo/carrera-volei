@@ -1349,122 +1349,6 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
 }
 .trofeo-hero { width: 62px; height: 62px; color: var(--oro); filter: drop-shadow(0 10px 24px rgba(255, 197, 61, .5)); }
 
-/* ============================ TABLET ============================ */
-/* Entre 620 y 900 px la ficha del jugador ya no cabe en columna lateral,
-   pero sobra ancho de sobra: en vez de apilarlo todo en una tira estrecha
-   (que obligaba a un scroll larguísimo), la ficha se reparte en rejilla. */
-@media (min-width: 620px) and (max-width: 900px) {
-  .sidebar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4px 24px;
-    align-items: start;
-  }
-  /* Filas explícitas en las dos columnas: si se dejan implícitas, la columna
-     derecha hereda el hueco que ocupan los atributos y "Estado" queda
-     flotando a media altura. */
-  .jugador-cabecera { grid-column: 1; grid-row: 1; margin-bottom: 6px; }
-  .club-actual      { grid-column: 2; grid-row: 1; margin-bottom: 6px; }
-  .bloque-titulo[data-bloque="atributos"] { grid-column: 1; grid-row: 2; }
-  .atributos { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
-  .bloque-titulo[data-bloque="estado"]    { grid-column: 2; grid-row: 2; }
-  .mini-stats { grid-column: 2; grid-row: 3; }
-
-  .creacion-grid { grid-template-columns: 1fr 1fr; }
-  .creacion-col:nth-child(3) { grid-column: 1 / -1; }
-  .cancha { max-width: 420px; margin-inline: auto; }
-  .lista-paises { max-height: 300px; }
-
-  .equipos-grid { grid-template-columns: repeat(3, 1fr); }
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .vitrina { grid-template-columns: 1fr 1fr; }
-  .rejilla-entreno { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* En pantallas medianas con dos columnas, la ficha se estrecha para no
-   comerse el espacio de la pantalla de juego. */
-@media (min-width: 901px) and (max-width: 1120px) {
-  .contenido { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; }
-}
-
-/* ============================ MÓVIL ============================ */
-@media (max-width: 900px) {
-  .contenido {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 14px 13px 24px;
-  }
-
-  /* La pantalla de juego SIEMPRE arriba; la ficha del jugador, debajo. */
-  .pantalla { order: 1; }
-  .sidebar  { order: 2; position: static; }
-
-  /* Sin sitio para la barra de progreso: en su lugar, las dos píldoras. */
-  .cabecera-progreso { display: none; }
-  .cabecera-temporada { display: inline-flex; }
-
-  .cabecera { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
-  .marca-texto { display: none; }
-  .marca-balon { width: 27px; height: 27px; }
-  .cabecera-temporada { font-size: .66rem; padding: 5px 10px; }
-
-  .panel { padding: 19px 16px; border-radius: var(--r-lg); }
-  .panel h2 { font-size: 1.2rem; }
-  .hero { padding: 32px 18px 34px; border-radius: var(--r-lg); }
-  .hero .acciones { max-width: none; }
-
-  .sidebar { padding: 16px; border-radius: var(--r-lg); }
-  .atributos { grid-template-columns: 1fr 1fr; gap: 11px 15px; }
-
-  .rejilla-entreno { grid-template-columns: repeat(3, 1fr); gap: 9px; }
-  .ficha-entreno { min-height: 86px; padding: 11px 6px; gap: 4px; }
-  .ficha-icono { font-size: 1.35rem; }
-  .ficha-nombre { font-size: .71rem; }
-  .ficha-valor { font-size: .72rem; }
-  .ficha-entreno.ancha { min-height: 60px; padding: 12px 15px; }
-  .ficha-entreno.ancha .ficha-nombre { font-size: .83rem; }
-
-  .tarjetas-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
-  .tarjeta-opcion { padding: 12px 13px; }
-  .tarjeta-opcion h3 { font-size: .85rem; }
-  .tarjeta-opcion p { font-size: .71rem; }
-
-  /* creación: las tres columnas se apilan */
-  .creacion-grid { grid-template-columns: 1fr; gap: 14px; }
-  .camiseta { max-width: 158px; }
-  /* apiladas, las columnas no comparten altura: sin mínimo, para que la lista
-     no deje un hueco cuando el buscador filtra a un solo país */
-  .lista-paises { min-height: 0; max-height: 226px; }
-  .cancha { max-width: 340px; }
-  .equipos-grid { grid-template-columns: 1fr; }
-
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .opciones { gap: 10px; }
-
-  .btn-logros-txt { display: none; }
-  .btn-logros { padding: 7px; }
-
-  /* La oferta pasa a dos filas: escudo + datos arriba, salario debajo. */
-  button.opcion.oferta { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
-  .oferta-salario {
-    grid-column: 1 / -1;
-    flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 7px;
-    padding-top: 10px; margin-top: 2px;
-    border-top: 1px solid var(--borde);
-  }
-  .vitrina { grid-template-columns: 1fr; }
-  .modal-logros-cabecera { padding: 16px 16px 12px; }
-  .modal-logros-cuerpo { padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
-  .logros-grid { grid-template-columns: 1fr; }
-  .logros-toast-cont { left: 10px; right: 10px; max-width: none; }
-}
-
-@media (max-width: 359px) {
-  .tarjetas-grid { grid-template-columns: 1fr; }
-  .atributos { grid-template-columns: 1fr; }
-  .rejilla-entreno { grid-template-columns: 1fr 1fr; }
-}
-
 /* ============================ GRÁFICOS DE MARCA ============================ */
 /* Iconos de trazo: heredan el color del contexto y se alinean con el texto. */
 .ico {
@@ -1720,6 +1604,122 @@ body.modal-abierto { overflow: hidden; }
 .logro-toast-icono { font-size: 1.5rem; flex-shrink: 0; }
 .logro-toast-texto { display: flex; flex-direction: column; gap: 1px; font-size: .8rem; }
 .logro-toast-texto b { font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--oro); }
+
+/* ============================ TABLET ============================ */
+/* Entre 620 y 900 px la ficha del jugador ya no cabe en columna lateral,
+   pero sobra ancho de sobra: en vez de apilarlo todo en una tira estrecha
+   (que obligaba a un scroll larguísimo), la ficha se reparte en rejilla. */
+@media (min-width: 620px) and (max-width: 900px) {
+  .sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px 24px;
+    align-items: start;
+  }
+  /* Filas explícitas en las dos columnas: si se dejan implícitas, la columna
+     derecha hereda el hueco que ocupan los atributos y "Estado" queda
+     flotando a media altura. */
+  .jugador-cabecera { grid-column: 1; grid-row: 1; margin-bottom: 6px; }
+  .club-actual      { grid-column: 2; grid-row: 1; margin-bottom: 6px; }
+  .bloque-titulo[data-bloque="atributos"] { grid-column: 1; grid-row: 2; }
+  .atributos { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .bloque-titulo[data-bloque="estado"]    { grid-column: 2; grid-row: 2; }
+  .mini-stats { grid-column: 2; grid-row: 3; }
+
+  .creacion-grid { grid-template-columns: 1fr 1fr; }
+  .creacion-col:nth-child(3) { grid-column: 1 / -1; }
+  .cancha { max-width: 420px; margin-inline: auto; }
+  .lista-paises { max-height: 300px; }
+
+  .equipos-grid { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .vitrina { grid-template-columns: 1fr 1fr; }
+  .rejilla-entreno { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* En pantallas medianas con dos columnas, la ficha se estrecha para no
+   comerse el espacio de la pantalla de juego. */
+@media (min-width: 901px) and (max-width: 1120px) {
+  .contenido { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; }
+}
+
+/* ============================ MÓVIL ============================ */
+@media (max-width: 900px) {
+  .contenido {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 14px 13px 24px;
+  }
+
+  /* La pantalla de juego SIEMPRE arriba; la ficha del jugador, debajo. */
+  .pantalla { order: 1; }
+  .sidebar  { order: 2; position: static; }
+
+  /* Sin sitio para la barra de progreso: en su lugar, las dos píldoras. */
+  .cabecera-progreso { display: none; }
+  .cabecera-temporada { display: inline-flex; }
+
+  .cabecera { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .marca-texto { display: none; }
+  .marca-balon { width: 27px; height: 27px; }
+  .cabecera-temporada { font-size: .66rem; padding: 5px 10px; }
+
+  .panel { padding: 19px 16px; border-radius: var(--r-lg); }
+  .panel h2 { font-size: 1.2rem; }
+  .hero { padding: 32px 18px 34px; border-radius: var(--r-lg); }
+  .hero .acciones { max-width: none; }
+
+  .sidebar { padding: 16px; border-radius: var(--r-lg); }
+  .atributos { grid-template-columns: 1fr 1fr; gap: 11px 15px; }
+
+  .rejilla-entreno { grid-template-columns: repeat(3, 1fr); gap: 9px; }
+  .ficha-entreno { min-height: 86px; padding: 11px 6px; gap: 4px; }
+  .ficha-icono { font-size: 1.35rem; }
+  .ficha-nombre { font-size: .71rem; }
+  .ficha-valor { font-size: .72rem; }
+  .ficha-entreno.ancha { min-height: 60px; padding: 12px 15px; }
+  .ficha-entreno.ancha .ficha-nombre { font-size: .83rem; }
+
+  .tarjetas-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
+  .tarjeta-opcion { padding: 12px 13px; }
+  .tarjeta-opcion h3 { font-size: .85rem; }
+  .tarjeta-opcion p { font-size: .71rem; }
+
+  /* creación: las tres columnas se apilan */
+  .creacion-grid { grid-template-columns: 1fr; gap: 14px; }
+  .camiseta { max-width: 158px; }
+  /* apiladas, las columnas no comparten altura: sin mínimo, para que la lista
+     no deje un hueco cuando el buscador filtra a un solo país */
+  .lista-paises { min-height: 0; max-height: 226px; }
+  .cancha { max-width: 340px; }
+  .equipos-grid { grid-template-columns: 1fr; }
+
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .opciones { gap: 10px; }
+
+  .btn-logros-txt { display: none; }
+  .btn-logros { padding: 7px; }
+
+  /* La oferta pasa a dos filas: escudo + datos arriba, salario debajo. */
+  button.opcion.oferta { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+  .oferta-salario {
+    grid-column: 1 / -1;
+    flex-direction: row; align-items: baseline; justify-content: flex-start; gap: 7px;
+    padding-top: 10px; margin-top: 2px;
+    border-top: 1px solid var(--borde);
+  }
+  .vitrina { grid-template-columns: 1fr; }
+  .modal-logros-cabecera { padding: 16px 16px 12px; }
+  .modal-logros-cuerpo { padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
+  .logros-grid { grid-template-columns: 1fr; }
+  .logros-toast-cont { left: 10px; right: 10px; max-width: none; }
+}
+
+@media (max-width: 359px) {
+  .tarjetas-grid { grid-template-columns: 1fr; }
+  .atributos { grid-template-columns: 1fr; }
+  .rejilla-entreno { grid-template-columns: 1fr 1fr; }
+}
 
 /* ============================ ACCESIBILIDAD ============================ */
 :focus-visible { outline: 2px solid var(--ambar); outline-offset: 3px; }
