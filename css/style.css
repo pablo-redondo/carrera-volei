@@ -10,15 +10,16 @@
 }
 
 :root {
-  /* superficies */
-  --bg:          #070a10;
+  /* superficies — más separación entre niveles: antes el fondo, el panel y
+     la tarjeta interior eran casi el mismo gris y todo parecía una lámina. */
+  --bg:          #05070c;
   --bg-alto:     #0b1018;
-  --panel:       rgba(19, 26, 37, .94);
-  --panel-solido:#141b26;
-  --panel-2:     rgba(31, 41, 56, .85);
-  --panel-3:     #253143;
-  --borde:       rgba(255, 255, 255, .09);
-  --borde-fuerte:rgba(255, 255, 255, .16);
+  --panel:       rgba(23, 31, 45, .96);
+  --panel-solido:#171f2d;
+  --panel-2:     rgba(37, 49, 68, .9);
+  --panel-3:     #2d3c53;
+  --borde:       rgba(255, 255, 255, .1);
+  --borde-fuerte:rgba(255, 255, 255, .2);
 
   /* texto */
   --texto:       #f2f6fa;
@@ -49,6 +50,39 @@
 
   --ease: cubic-bezier(.22, 1, .36, 1);
   --fuente: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Condensada para titulares y cifras: es la tipografía de dorsal y de
+     rótulo de retransmisión, y es lo que da carácter deportivo. */
+  --fuente-display: "Barlow Condensed", "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---- Escala tipográfica ----
+   Titulares y números grandes en condensada, en mayúsculas y muy apretados;
+   el texto corrido se queda en Inter, que es la que se lee bien en párrafo. */
+.hero h1,
+.panel h2,
+.modal-logros-cabecera h2,
+.legado-titulo,
+.overall-ring .num,
+.stat-valor,
+.camiseta-dorsal,
+.oferta-salario b,
+.puntos-restantes b,
+.reparto-atributo .valor-attr,
+.equipo-nombre,
+.vitrina-txt b,
+.jugador-info h2 {
+  font-family: var(--fuente-display);
+  letter-spacing: 0;
+}
+.hero h1, .panel h2, .modal-logros-cabecera h2, .legado-titulo {
+  text-transform: uppercase;
+  letter-spacing: -.005em;
+}
+.eyebrow, .bloque-titulo, .stat-label, .col-titulo,
+.progreso-datos, .cabecera-temporada, .cabecera-overall,
+.logros-categoria h3, .oferta-salario span, .campo label {
+  font-family: var(--fuente-display);
+  letter-spacing: .12em;
 }
 
 * { box-sizing: border-box; }
@@ -114,10 +148,20 @@ body {
   gap: 10px;
   padding: 12px 20px;
   padding-top: max(12px, env(safe-area-inset-top));
-  background: rgba(7, 10, 16, .72);
+  background: rgba(8, 11, 18, .82);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border-bottom: 1px solid var(--borde);
+}
+/* Filo de color bajo la cabecera: separa la barra del contenido sin
+   recurrir a otra línea gris más. */
+.cabecera::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--naranja), var(--ambar) 28%, transparent 62%);
+  opacity: .75;
 }
 
 .marca {
@@ -137,10 +181,12 @@ body {
 }
 
 .marca-texto {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -.2px;
-  color: var(--texto-medio);
+  font-family: var(--fuente-display);
+  font-size: 1.32rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--texto);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -324,9 +370,9 @@ body {
   display: flex; flex-direction: column; align-items: center; line-height: 1;
 }
 .overall-ring .num {
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -1.5px;
+  font-size: 2.3rem;
+  font-weight: 700;
+  line-height: .9;
   font-variant-numeric: tabular-nums;
   background: var(--grad-acento);
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -466,19 +512,30 @@ body {
 }
 .panel h2 {
   margin: 0;
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -.7px;
-  line-height: 1.15;
+  font-size: clamp(1.5rem, 3.6vw, 2rem);
+  font-weight: 700;
+  line-height: 1.02;
 }
+/* Rótulo con barra inclinada delante, como los sobreimpresos de una
+   retransmisión: es el detalle que rompe la monotonía de cajas rectas. */
 .panel .eyebrow {
-  display: block;
-  font-size: .64rem;
-  font-weight: 800;
-  letter-spacing: .16em;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: .68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  color: var(--naranja);
-  margin-bottom: 6px;
+  color: var(--ambar);
+  margin-bottom: 7px;
+}
+.panel .eyebrow::before {
+  content: "";
+  width: 16px; height: 10px;
+  flex-shrink: 0;
+  background: var(--grad-acento);
+  transform: skewX(-20deg);
+  border-radius: 1px;
+  box-shadow: 0 0 14px -2px rgba(255, 107, 26, .9);
 }
 
 @keyframes aparecer {
@@ -542,22 +599,24 @@ button.opcion {
   font-family: inherit;
   font-size: .94rem;
   color: var(--texto);
-  background: var(--panel-2);
+  background: linear-gradient(100deg, var(--panel-3), var(--panel-2) 62%);
   border: 1px solid var(--borde);
   border-radius: var(--r-md);
-  padding: 14px 18px 14px 20px;
+  padding: 15px 18px 15px 22px;
   cursor: pointer;
   overflow: hidden;
   transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
 }
+/* Bisel lateral inclinado que se despliega al pasar por encima. */
 button.opcion::before {
   content: "";
   position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
+  left: -3px; top: -2px; bottom: -2px;
+  width: 7px;
   background: var(--grad-acento);
-  transform: scaleY(0);
+  transform: skewX(-14deg) scaleY(0);
   transition: transform .28s var(--ease);
+  box-shadow: 0 0 18px -2px rgba(255, 107, 26, .9);
 }
 button.opcion:hover {
   background: var(--panel-3);
@@ -565,7 +624,7 @@ button.opcion:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 26px -18px rgba(255, 107, 26, .95);
 }
-button.opcion:hover::before { transform: scaleY(1); }
+button.opcion:hover::before { transform: skewX(-14deg) scaleY(1); }
 button.opcion:active { transform: translateY(0) scale(.99); }
 button.opcion .titulo-opcion { display: block; font-weight: 650; line-height: 1.35; }
 button.opcion .detalle-opcion {
@@ -738,16 +797,28 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 5px;
-  min-height: 96px;
-  padding: 13px 9px;
+  min-height: 108px;
+  padding: 15px 9px;
   font-family: inherit;
   color: var(--texto);
-  background: var(--panel-2);
+  background:
+    radial-gradient(90px 60px at 50% 0%, rgba(255, 107, 26, .14), transparent 72%),
+    linear-gradient(168deg, var(--panel-3), var(--panel-2));
   border: 1px solid var(--borde);
   border-radius: var(--r-md);
   cursor: pointer;
   overflow: hidden;
   transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
+}
+/* Marca de agua diagonal: rompe el plano de la tarjeta sin añadir ruido. */
+.ficha-entreno::after {
+  content: "";
+  position: absolute;
+  right: -34px; top: -34px;
+  width: 84px; height: 84px;
+  background: rgba(255, 255, 255, .04);
+  transform: rotate(45deg);
+  pointer-events: none;
 }
 .ficha-entreno::before {
   content: "";
@@ -771,11 +842,17 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   color: var(--naranja);
   transition: transform .25s var(--ease), color .2s;
 }
-.ficha-icono .ico { width: 26px; height: 26px; vertical-align: 0; }
+.ficha-icono .ico { width: 30px; height: 30px; vertical-align: 0; }
 .ficha-entreno:hover .ficha-icono { transform: scale(1.14) translateY(-1px); color: var(--ambar); }
-.ficha-nombre { font-size: .8rem; font-weight: 700; text-align: center; line-height: 1.25; }
+.ficha-nombre {
+  font-size: .72rem; font-weight: 700; text-align: center; line-height: 1.2;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--texto-medio);
+}
 .ficha-valor {
-  font-size: .76rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  font-family: var(--fuente-display);
+  font-size: 1.5rem; font-weight: 700; line-height: .9;
+  font-variant-numeric: tabular-nums;
   background: var(--grad-acento);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
@@ -784,7 +861,12 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   flex-direction: row; justify-content: flex-start;
   gap: 13px; min-height: 64px; padding: 13px 18px; text-align: left;
 }
-.ficha-entreno.ancha .ficha-nombre { text-align: left; }
+/* En la tarjeta ancha el rótulo es una frase, no una etiqueta: sin
+   versalitas ni espaciado extra, que ahí estorban la lectura. */
+.ficha-entreno.ancha .ficha-nombre {
+  text-align: left; text-transform: none; letter-spacing: 0;
+  font-size: .92rem; color: var(--texto);
+}
 .ficha-texto { display: flex; flex-direction: column; gap: 3px; }
 .ficha-detalle { font-size: .75rem; line-height: 1.45; color: var(--texto-tenue); }
 
@@ -1209,19 +1291,29 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 }
 .stat-tile {
   position: relative;
-  background: var(--panel-2);
+  background: linear-gradient(165deg, var(--panel-3), var(--panel-2));
   border: 1px solid var(--borde);
   border-radius: var(--r-md);
-  padding: 16px 12px;
+  padding: 18px 12px 15px;
   text-align: center;
   overflow: hidden;
   transition: transform .2s var(--ease), border-color .2s;
 }
+/* Bisel superior de color: marca la tarjeta como "dato" y da relieve. */
+.stat-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--grad-acento);
+  opacity: .85;
+}
+.stat-tile.fria::before { background: var(--grad-frio); }
 .stat-tile:hover { transform: translateY(-3px); border-color: var(--borde-fuerte); }
 .stat-valor {
   display: block;
-  font-size: 1.6rem; font-weight: 800; letter-spacing: -1px;
-  font-variant-numeric: tabular-nums; line-height: 1.1;
+  font-size: 2.4rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; line-height: .92;
   background: var(--grad-acento);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
@@ -1271,16 +1363,36 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center;
   gap: 18px;
-  padding: 40px 20px 44px;
+  padding: 56px 24px 60px;
   border-radius: var(--r-xl);
   border: 1px solid var(--borde);
   background:
-    radial-gradient(600px 300px at 50% 0%, rgba(255, 107, 26, .18), transparent 70%),
-    var(--panel);
+    radial-gradient(760px 380px at 50% -8%, rgba(255, 107, 26, .3), transparent 68%),
+    radial-gradient(520px 300px at 88% 108%, rgba(34, 211, 238, .16), transparent 66%),
+    linear-gradient(168deg, #1b2334, #0d131d 62%);
   overflow: hidden;
   box-shadow: var(--sombra-alta);
   animation: aparecer .5s var(--ease) both;
 }
+/* Franjas diagonales de acento en la esquina: motivo gráfico deportivo que
+   quita la sensación de rectángulo vacío. */
+.hero .franjas {
+  position: absolute;
+  top: -30px; left: -60px;
+  width: 260px; height: 200px;
+  display: flex; gap: 10px;
+  transform: skewX(-20deg);
+  opacity: .5;
+  pointer-events: none;
+}
+.hero .franjas i {
+  flex: 1;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 107, 26, .85), transparent 78%);
+}
+.hero .franjas i:nth-child(2) { opacity: .6; }
+.hero .franjas i:nth-child(3) { opacity: .35; }
+.hero .franjas i:nth-child(4) { opacity: .18; }
 .hero:only-child { min-height: 62vh; }
 /* pista de voleibol dibujada al fondo del héroe */
 .hero::before {
@@ -1322,10 +1434,10 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
 
 .hero h1 {
   margin: 0;
-  font-size: clamp(1.75rem, 6vw, 2.7rem);
-  font-weight: 800;
-  letter-spacing: -1.4px;
-  line-height: 1.1;
+  font-size: clamp(2.6rem, 9vw, 4.6rem);
+  font-weight: 700;
+  line-height: .94;
+  text-wrap: balance;
 }
 .hero h1 .resalte {
   background: var(--grad-acento);
@@ -1608,43 +1720,9 @@ body.modal-abierto { overflow: hidden; }
 .logro-toast-texto { display: flex; flex-direction: column; gap: 1px; font-size: .8rem; }
 .logro-toast-texto b { font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--oro); }
 
-/* ============================ TABLET ============================ */
-/* Entre 620 y 900 px la ficha del jugador ya no cabe en columna lateral,
-   pero sobra ancho de sobra: en vez de apilarlo todo en una tira estrecha
-   (que obligaba a un scroll larguísimo), la ficha se reparte en rejilla. */
-@media (min-width: 620px) and (max-width: 900px) {
-  .sidebar {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4px 24px;
-    align-items: start;
-  }
-  /* Filas explícitas en las dos columnas: si se dejan implícitas, la columna
-     derecha hereda el hueco que ocupan los atributos y "Estado" queda
-     flotando a media altura. */
-  .jugador-cabecera { grid-column: 1; grid-row: 1; margin-bottom: 6px; }
-  .club-actual      { grid-column: 2; grid-row: 1; margin-bottom: 6px; }
-  .bloque-titulo[data-bloque="atributos"] { grid-column: 1; grid-row: 2; }
-  .atributos { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
-  .bloque-titulo[data-bloque="estado"]    { grid-column: 2; grid-row: 2; }
-  .mini-stats { grid-column: 2; grid-row: 3; }
-
-  .creacion-grid { grid-template-columns: 1fr 1fr; }
-  .creacion-col:nth-child(3) { grid-column: 1 / -1; }
-  .cancha { max-width: 420px; margin-inline: auto; }
-  .lista-paises { max-height: 300px; }
-
-  .equipos-grid { grid-template-columns: repeat(3, 1fr); }
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .vitrina { grid-template-columns: 1fr 1fr; }
-  .rejilla-entreno { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* En pantallas medianas con dos columnas, la ficha se estrecha para no
-   comerse el espacio de la pantalla de juego. */
-@media (min-width: 901px) and (max-width: 1120px) {
-  .contenido { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; }
-}
+/* Nota de orden: MÓVIL (<=900) va primero y TABLET (620-900) después,
+   porque ambos bloques casan en 620-900 px con la misma especificidad y
+   debe ganar el de tablet en su tramo. */
 
 /* ============================ MÓVIL ============================ */
 @media (max-width: 900px) {
@@ -1716,6 +1794,44 @@ body.modal-abierto { overflow: hidden; }
   .modal-logros-cuerpo { padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
   .logros-grid { grid-template-columns: 1fr; }
   .logros-toast-cont { left: 10px; right: 10px; max-width: none; }
+}
+
+/* ============================ TABLET ============================ */
+/* Entre 620 y 900 px la ficha del jugador ya no cabe en columna lateral,
+   pero sobra ancho de sobra: en vez de apilarlo todo en una tira estrecha
+   (que obligaba a un scroll larguísimo), la ficha se reparte en rejilla. */
+@media (min-width: 620px) and (max-width: 900px) {
+  .sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px 24px;
+    align-items: start;
+  }
+  /* Filas explícitas en las dos columnas: si se dejan implícitas, la columna
+     derecha hereda el hueco que ocupan los atributos y "Estado" queda
+     flotando a media altura. */
+  .jugador-cabecera { grid-column: 1; grid-row: 1; margin-bottom: 6px; }
+  .club-actual      { grid-column: 2; grid-row: 1; margin-bottom: 6px; }
+  .bloque-titulo[data-bloque="atributos"] { grid-column: 1; grid-row: 2; }
+  .atributos { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .bloque-titulo[data-bloque="estado"]    { grid-column: 2; grid-row: 2; }
+  .mini-stats { grid-column: 2; grid-row: 3; }
+
+  .creacion-grid { grid-template-columns: 1fr 1fr; }
+  .creacion-col:nth-child(3) { grid-column: 1 / -1; }
+  .cancha { max-width: 420px; margin-inline: auto; }
+  .lista-paises { max-height: 300px; }
+
+  .equipos-grid { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .vitrina { grid-template-columns: 1fr 1fr; }
+  .rejilla-entreno { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* En pantallas medianas con dos columnas, la ficha se estrecha para no
+   comerse el espacio de la pantalla de juego. */
+@media (min-width: 901px) and (max-width: 1120px) {
+  .contenido { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; }
 }
 
 @media (max-width: 359px) {

@@ -167,6 +167,7 @@ function renderInicio({ hayGuardado }, cb) {
   $cabeceraOverall().textContent = "";
   pintarPantalla(`
     <div class="hero">
+      <span class="franjas" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       ${balonSvg("balon-hero")}
       <h1>Vive tu <span class="resalte">carrera de vóley</span></h1>
       <p>Crea tu jugador o jugadora, elige selección y posición, y recorre una carrera completa —de los 16 a los 38 años— desde la segunda división hasta las mejores ligas del mundo.</p>
@@ -948,6 +949,7 @@ function renderRetiro(jugador, legado, cb) {
 
   pintarPantalla(`
     <div class="hero">
+      <span class="franjas" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <svg class="trofeo-hero" viewBox="0 0 100 100" aria-hidden="true"><use href="#ico-trofeo"/></svg>
       <h1>Fin de tu carrera</h1>
       <div class="legado-titulo">${escapar(legado.titulo)}</div>
