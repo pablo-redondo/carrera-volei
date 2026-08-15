@@ -1036,36 +1036,36 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .creacion-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.05fr) minmax(0, 1.05fr);
-  gap: 16px;
+  gap: 24px;
   align-items: stretch;
   padding: 18px 22px;
 }
 .creacion-col {
   display: flex;
   flex-direction: column;
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-lg);
-  padding: 14px;
   min-width: 0;
+  padding: 0 0 0 20px;
+  border-left: 1px solid var(--borde);
 }
+.creacion-col:first-child { padding-left: 0; border-left: none; }
 .cancha-info { margin-top: auto; }
 /* La camiseta ocupa el hueco libre de su columna y se centra dentro: antes
    se quedaba pequeña arriba y dejaba un vacío enorme sobre los campos. */
 .camiseta-caja {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
-  padding: 6px 0 14px;
+  padding: 10px 0 16px;
   min-height: 0;
+  background: radial-gradient(60% 55% at 50% 46%, rgba(255, 107, 26, .13), transparent 70%);
 }
 .col-titulo {
-  margin: 0 0 14px;
-  font-size: .68rem;
+  margin: 0 0 12px;
+  font-size: .66rem;
   font-weight: 800;
-  letter-spacing: .14em;
+  letter-spacing: .13em;
   text-transform: uppercase;
   color: var(--texto-tenue);
-  text-align: center;
+  text-align: left;
 }
 
 /* --- camiseta con nombre y dorsal --- */
@@ -1166,17 +1166,18 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   scrollbar-width: thin;
 }
 .pais-item {
-  display: flex; align-items: center; gap: 9px;
-  font-family: inherit; font-size: .82rem; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+  font-family: inherit; font-size: .84rem; font-weight: 600;
   text-align: left;
   color: var(--texto);
-  background: transparent;
-  border: 1px solid transparent;
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
   border-radius: var(--r-sm);
-  padding: 9px 10px;
+  padding: 10px 12px;
   cursor: pointer;
-  transition: background .18s, border-color .18s;
+  transition: background .18s, border-color .18s, transform .18s var(--ease);
 }
+.pais-item:hover { transform: translateY(-1px); }
 .pais-item[hidden] { display: none; }
 .pais-item:hover { background: var(--panel-3); }
 .pais-item.elegido {
@@ -1196,10 +1197,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   border-radius: var(--r-md);
   border: 2px solid rgba(255, 255, 255, .5);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 40%),
-    linear-gradient(180deg, #17518c, #0f3a66);
+    linear-gradient(180deg, rgba(255, 122, 40, .22) 0%, rgba(255, 122, 40, .05) 32%, transparent 33%),
+    linear-gradient(180deg, #123a63, #0a2440 70%, #081c33);
   overflow: hidden;
   margin-bottom: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 14px 30px -22px #000;
 }
 /* red en el borde superior */
 .cancha-red {
@@ -1243,10 +1245,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .cancha-info {
   display: flex; flex-direction: column; gap: 4px;
   min-height: 62px;
-  background: var(--panel);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-sm);
-  padding: 11px 13px;
+  background: var(--panel-2);
+  border: none;
+  border-left: 2px solid var(--naranja);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 11px 14px;
   font-size: .78rem;
   line-height: 1.5;
   color: var(--texto-tenue);
@@ -2126,7 +2129,10 @@ body.modal-abierto { overflow: hidden; }
 .panel-creacion { flex: 0 0 auto; }
 
 @media (max-width: 900px) {
-  .creacion-grid { grid-template-columns: 1fr; padding: 14px; gap: 12px; }
+  .creacion-grid { grid-template-columns: 1fr; padding: 14px; gap: 18px; }
+  /* Apiladas, el filete separador va arriba y no a la izquierda. */
+  .creacion-col { padding: 18px 0 0; border-left: none; border-top: 1px solid var(--borde); }
+  .creacion-col:first-child { padding-top: 0; border-top: none; }
   .creacion-cabecera { padding: 14px 16px 12px; }
   .creacion-pie { padding: 12px 16px; flex-direction: column-reverse; }
   .creacion-pie .secundario, .creacion-pie .principal { width: 100%; min-width: 0; }
@@ -2140,6 +2146,5 @@ body.modal-abierto { overflow: hidden; }
    Se le pone tope de ancho, con lo que baja de alto, y las filas de la
    lista se reparten el espacio restante. */
 .cancha { max-width: 300px; margin-inline: auto; }
-.camiseta-caja { max-height: 290px; }
 .pais-item { padding: 11px 10px; }
 .lista-paises { align-content: space-between; gap: 7px; }
