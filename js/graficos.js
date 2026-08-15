@@ -231,6 +231,36 @@ function ico(nombre, clase = "") {
   return `<svg class="ico ${clase}" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${nombre}"/></svg>`;
 }
 
+/* ---------------- Banderas ----------------
+   Dibujadas en SVG y no con emoji: los emoji de bandera son pares de
+   "indicadores regionales" que Windows no sabe componer y que en Linux
+   dependen de tener instalada una fuente de color concreta. Sin ella el
+   navegador los pinta como dos letras sueltas ("ES", "IT"), que es
+   exactamente lo que se veía en la lista de nacionalidades. */
+const BANDERAS = {
+  espana:    `<rect width="30" height="20" fill="#aa151b"/><rect y="5" width="30" height="10" fill="#f1bf00"/>`,
+  polonia:   `<rect width="30" height="20" fill="#fff"/><rect y="10" width="30" height="10" fill="#dc143c"/>`,
+  italia:    `<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#008c45"/><rect x="20" width="10" height="20" fill="#cd212a"/>`,
+  francia:   `<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#002395"/><rect x="20" width="10" height="20" fill="#ed2939"/>`,
+  brasil:    `<rect width="30" height="20" fill="#009b3a"/><path d="M15 2 28 10 15 18 2 10Z" fill="#ffdf00"/><circle cx="15" cy="10" r="4.2" fill="#002776"/><path d="M11 8.9a11 11 0 0 1 8 1.5" stroke="#fff" stroke-width=".9" fill="none"/>`,
+  argentina: `<rect width="30" height="20" fill="#74acdf"/><rect y="6.7" width="30" height="6.6" fill="#fff"/><circle cx="15" cy="10" r="2.1" fill="#f6b40e"/>`,
+  japon:     `<rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="5.4" fill="#bc002d"/>`,
+  serbia:    `<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.7" fill="#c6363c"/><rect y="6.7" width="30" height="6.6" fill="#0c4076"/>`,
+  turquia:   `<rect width="30" height="20" fill="#e30a17"/><circle cx="11.5" cy="10" r="4.6" fill="#fff"/><circle cx="13.2" cy="10" r="3.7" fill="#e30a17"/><path d="m18.4 10 3.4-1.1-2.1 2.9v-3.6l2.1 2.9z" fill="#fff"/>`,
+  rusia:     `<rect width="30" height="20" fill="#fff"/><rect y="6.7" width="30" height="6.6" fill="#0039a6"/><rect y="13.3" width="30" height="6.7" fill="#d52b1e"/>`,
+  iran:      `<rect width="30" height="20" fill="#fff"/><rect width="30" height="6.7" fill="#239f40"/><rect y="13.3" width="30" height="6.7" fill="#da0000"/>`,
+  // Eslovenia comparte franjas con Rusia: el escudo es lo que las distingue.
+  eslovenia: `<rect width="30" height="20" fill="#fff"/><rect y="6.7" width="30" height="6.6" fill="#0039a6"/><rect y="13.3" width="30" height="6.7" fill="#d52b1e"/><path d="M5 3.4h5.4v4.2c0 2-1.1 3.2-2.7 3.8-1.6-.6-2.7-1.8-2.7-3.8z" fill="#0039a6" stroke="#fff" stroke-width=".6"/><path d="m7.7 5.2 1.5 2.6H6.2z" fill="#fff"/>`,
+};
+
+function banderaSvg(paisId, ancho = 22) {
+  const piezas = BANDERAS[paisId];
+  const nombre = PAISES[paisId]?.nombre || "";
+  if (!piezas) return "";
+  return `<svg class="bandera" viewBox="0 0 30 20" width="${ancho}" height="${Math.round(ancho / 1.5)}"
+       role="img" aria-label="${nombre}"><g>${piezas}</g><rect width="30" height="20" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1"/></svg>`;
+}
+
 /* Colores del club, para teñir filas y tarjetas con su identidad (el mismo
    par que usa su escudo, así todo lo del club va a juego). */
 function colorClub(nombre) {
@@ -247,4 +277,4 @@ function nivelOverall(v) {
   return "bajo";
 }
 
-export { escudoClub, emblemaLiga, trofeoSvg, ico, inicialesClub, colorClub, nivelOverall };
+export { escudoClub, emblemaLiga, trofeoSvg, ico, inicialesClub, colorClub, nivelOverall, banderaSvg };

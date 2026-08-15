@@ -92,6 +92,7 @@ function pantallaInicio() {
 function pantallaCreacion() {
   refrescarCabecera();
   renderCreacion({
+    onCancelar: pantallaInicio,
     onCrear: (datos) => {
       estado.jugador = crearJugador(datos);
       estado.temporadaNum = 1;

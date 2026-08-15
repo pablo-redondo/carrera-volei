@@ -4,7 +4,7 @@ import {
   clamp as clampNumero, EDAD_INICIAL, EDAD_RETIRO_OBLIGATORIO, probabilidadesOpcion,
 } from "./engine.js";
 import { LOGROS, cargarDesbloqueados } from "./logros.js";
-import { escudoClub, emblemaLiga, trofeoSvg, ico, colorClub, nivelOverall } from "./graficos.js";
+import { escudoClub, emblemaLiga, trofeoSvg, ico, colorClub, nivelOverall, banderaSvg } from "./graficos.js";
 
 const $pantalla = () => document.getElementById("pantalla");
 const $ficha = () => document.getElementById("ficha");
@@ -116,7 +116,7 @@ function renderSidebar(jugador, opts = {}) {
       <div class="club-banner" style="--club-base:${color.base}; --club-acento:${color.acento}">
         <span class="club-marca" aria-hidden="true">${escudoClub(jugador.club.nombre, 150)}</span>
         <div class="club-fila-chips">
-          <span class="chip-pais">${paisJugador.bandera} ${escapar(paisJugador.nombre)}</span>
+          <span class="chip-pais">${banderaSvg(jugador.paisId, 18)} ${escapar(paisJugador.nombre)}</span>
           <span class="chip-dorsal">#${jugador.dorsal} ${PUESTOS_CANCHA[jugador.posicionId].corto}</span>
         </div>
         <div class="club-fila-nombre">
@@ -226,7 +226,7 @@ function renderTrayectoria(jugador) {
       </table>
     </div>
     <div class="tray-pie">
-      <span class="club-celda">${ico("seleccion")}<span class="club-nom">${paisJugador.bandera} ${escapar(paisJugador.nombre)}</span></span>
+      <span class="club-celda">${ico("seleccion")}<span class="club-nom">${banderaSvg(jugador.paisId, 18)} ${escapar(paisJugador.nombre)}</span></span>
       <span class="tray-pie-datos">
         <span><i>Conv.</i> ${jugador.convocatoriasSeleccion}</span>
         <span><i>Medallas</i> ${medallas}</span>
@@ -357,7 +357,9 @@ function renderCreacion(cb) {
   const estadoLocal = {
     nombre: "",
     dorsal: String(Math.floor(Math.random() * 99) + 1),
-    paisId: null,
+    // Arranca con una selección puesta para que la camiseta salga ya con
+    // colores; en blanco daba la sensación de pantalla a medio cargar.
+    paisId: "espana",
     posicionId: null,
     clubNombre: null,
     reparto: Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 0])),
@@ -375,30 +377,28 @@ function renderCreacion(cb) {
     mostrarProgresoCabecera({ etiqueta: "Creando tu jugador/a", detalle: "paso 1 de 2", porcentaje: 50 });
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
-        <span class="pais-bandera">${p.bandera}</span>
+        <span class="pais-bandera">${banderaSvg(id, 24)}</span>
         <span class="pais-nombre">${escapar(p.nombre)}</span>
       </button>`).join("");
 
     pintarPantalla(`
-      <div class="panel">
-        <div class="panel-cabecera">
-          <div>
-            <span class="eyebrow">Nueva carrera · paso 1 de 2</span>
-            <h2>Define tu identidad</h2>
-          </div>
-        </div>
+      <div class="panel panel-creacion">
+        <header class="creacion-cabecera">
+          <span class="eyebrow">Nueva carrera · paso 1 de 2</span>
+          <h2>Define tu identidad</h2>
+        </header>
 
         <div class="creacion-grid">
           <section class="creacion-col">
             <h3 class="col-titulo">Identidad</h3>
-            ${camisetaSvg()}
+            <div class="camiseta-caja">${camisetaSvg()}</div>
             <div class="campos-identidad">
               <div class="campo campo-ancho">
-                <label for="input-nombre">Nombre</label>
+                <label for="input-nombre">Apellido</label>
                 <input type="text" id="input-nombre" maxlength="16" placeholder="APELLIDO" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
               </div>
               <div class="campo">
-                <label for="input-dorsal">Dorsal</label>
+                <label for="input-dorsal">Número</label>
                 <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
               </div>
             </div>
@@ -406,7 +406,10 @@ function renderCreacion(cb) {
 
           <section class="creacion-col">
             <h3 class="col-titulo">Nacionalidad</h3>
-            <input type="search" id="buscar-pais" class="buscador" placeholder="🔍 Buscar país" autocomplete="off">
+            <div class="buscador-caja">
+              ${ico("buscar", "buscador-lupa")}
+              <input type="search" id="buscar-pais" class="buscador" placeholder="Buscar país" autocomplete="off">
+            </div>
             <div class="lista-paises" id="lista-paises">${paisesHtml}</div>
           </section>
 
@@ -421,11 +424,13 @@ function renderCreacion(cb) {
           </section>
         </div>
 
-        <div class="opciones">
+        <footer class="creacion-pie">
+          <button class="secundario" id="btn-volver">Volver</button>
           <button class="principal" id="btn-siguiente" disabled>Confirmar identidad</button>
-        </div>
+        </footer>
       </div>
     `);
+    document.getElementById("btn-volver").onclick = () => cb.onCancelar();
 
     const $ = (s) => document.querySelector(s);
     const btnSiguiente = $("#btn-siguiente");
@@ -570,7 +575,7 @@ function renderCreacion(cb) {
 
         <p class="narrativa">
           ${escapar(estadoLocal.nombre.trim())} <b>#${escapar(estadoLocal.dorsal)}</b> ·
-          ${escapar(perfil.nombre)} · ${pais.bandera} ${escapar(pais.nombre)}.
+          ${escapar(perfil.nombre)} · ${banderaSvg(estadoLocal.paisId, 18)} ${escapar(pais.nombre)}.
           Empiezas en <b>${escapar(pais.ligas.segunda.nombre)}</b>: elige dónde firmar tu primer contrato.
         </p>
 
@@ -980,7 +985,7 @@ function renderFichajes(jugador, ofertas, permiteRetiro, cb) {
     const insignias = [];
     if (o.esActual) insignias.push(`<span class="chip">Tu club</span>`);
     if (o.ascenso) insignias.push(`<span class="chip verde">${ico("flecha-arriba")} Ascenso a 1ª</span>`);
-    if (o.internacional) insignias.push(`<span class="chip azul">${paisOferta.bandera} ${escapar(paisOferta.nombre)}</span>`);
+    if (o.internacional) insignias.push(`<span class="chip azul">${banderaSvg(o.paisId, 16)} ${escapar(paisOferta.nombre)}</span>`);
 
     return `
     <button class="opcion oferta" data-idx="${i}" style="--i:${i}">

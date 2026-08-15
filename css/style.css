@@ -1019,11 +1019,26 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 /* ============ CREACIÓN: identidad, país y cancha ============ */
 /* Las tres columnas comparten altura y su contenido se reparte de arriba
    abajo, para que ninguna quede con un hueco muerto al final. */
+/* Panel a pantalla completa con cabecera, tres columnas y pie de acciones. */
+.panel-creacion { display: flex; flex-direction: column; padding: 0; }
+.creacion-cabecera {
+  padding: 18px 22px 15px;
+  border-bottom: 1px solid var(--borde);
+}
+.creacion-cabecera h2 { margin: 0; }
+.creacion-pie {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px 22px;
+  border-top: 1px solid var(--borde);
+}
+.creacion-pie .secundario, .creacion-pie .principal { min-width: 190px; min-height: 46px; padding: 12px 24px; }
+
 .creacion-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.05fr) minmax(0, 1.05fr);
+  gap: 16px;
   align-items: stretch;
+  padding: 18px 22px;
 }
 .creacion-col {
   display: flex;
@@ -1031,11 +1046,18 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   background: var(--panel-2);
   border: 1px solid var(--borde);
   border-radius: var(--r-lg);
-  padding: 16px;
+  padding: 14px;
+  min-width: 0;
 }
-/* La camiseta ya reparte el espacio libre con sus márgenes automáticos, así
-   que los campos no necesitan otro: con dos, el hueco de abajo salía doble. */
 .cancha-info { margin-top: auto; }
+/* La camiseta ocupa el hueco libre de su columna y se centra dentro: antes
+   se quedaba pequeña arriba y dejaba un vacío enorme sobre los campos. */
+.camiseta-caja {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 6px 0 14px;
+  min-height: 0;
+}
 .col-titulo {
   margin: 0 0 14px;
   font-size: .68rem;
@@ -1054,10 +1076,10 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .camiseta {
   display: block;
   width: 100%;
-  max-width: 250px;
-  align-self: center;
-  margin-block: auto;
-  padding-bottom: 14px;
+  max-width: 100%;
+  height: 100%;
+  max-height: 300px;
+  object-fit: contain;
 }
 /* Colores de la equipación: se sobrescriben al elegir selección. */
 .camiseta {
@@ -1112,6 +1134,15 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 #input-dorsal { text-align: center; font-weight: 800; }
 
 /* --- buscador y lista de países --- */
+.buscador-caja { position: relative; margin-bottom: 10px; }
+.buscador-lupa {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px;
+  color: var(--texto-tenue);
+  pointer-events: none;
+}
 .buscador {
   width: 100%;
   font-family: inherit; font-size: .9rem;
@@ -1119,9 +1150,9 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   background: var(--panel);
   border: 1px solid var(--borde);
   border-radius: var(--r-sm);
-  padding: 11px 13px;
-  margin-bottom: 10px;
+  padding: 11px 13px 11px 36px;
 }
+.buscador::-webkit-search-cancel-button { filter: invert(.6); }
 .buscador:focus { outline: none; border-color: var(--naranja); box-shadow: 0 0 0 3px rgba(255, 107, 26, .16); }
 .lista-paises {
   flex: 1;
@@ -1129,8 +1160,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   grid-template-columns: 1fr 1fr;
   align-content: start;
   gap: 6px;
-  min-height: 200px;
-  max-height: 420px;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: thin;
@@ -1153,7 +1183,8 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   border-color: var(--naranja);
   background: linear-gradient(150deg, rgba(255, 107, 26, .2), rgba(255, 107, 26, .05));
 }
-.pais-bandera { font-size: 1.15rem; line-height: 1; }
+.pais-bandera { display: inline-flex; line-height: 0; flex-shrink: 0; }
+.bandera { display: block; border-radius: 2px; }
 .pais-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* --- cancha de voleibol con los puestos --- */
@@ -2088,3 +2119,27 @@ body.modal-abierto { overflow: hidden; }
   .ovr-caja { width: 100%; flex-direction: row; gap: 10px; padding: 8px; }
   .ovr-num { font-size: 2.1rem; }
 }
+
+/* El panel de creación se ajusta a su contenido en vez de estirarse a toda
+   la altura de la ventana: estirado, las columnas cortas (camiseta y cancha)
+   se quedaban con 180 px de vacío interior debajo de su contenido. */
+.panel-creacion { flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  .creacion-grid { grid-template-columns: 1fr; padding: 14px; gap: 12px; }
+  .creacion-cabecera { padding: 14px 16px 12px; }
+  .creacion-pie { padding: 12px 16px; flex-direction: column-reverse; }
+  .creacion-pie .secundario, .creacion-pie .principal { width: 100%; min-width: 0; }
+  .camiseta-caja { max-height: 230px; }
+  .lista-paises { max-height: 260px; }
+}
+
+/* --- Equilibrado de las tres columnas de creación ---
+   La cancha marcaba la altura de la fila (su alto sale del ancho por
+   aspect-ratio) y dejaba a la lista de países un vacío de ~250 px debajo.
+   Se le pone tope de ancho, con lo que baja de alto, y las filas de la
+   lista se reparten el espacio restante. */
+.cancha { max-width: 300px; margin-inline: auto; }
+.camiseta-caja { max-height: 290px; }
+.pais-item { padding: 11px 10px; }
+.lista-paises { align-content: space-between; gap: 7px; }
