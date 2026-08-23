@@ -118,6 +118,7 @@ function renderSidebar(jugador, opts = {}) {
         <div class="club-fila-chips">
           <span class="chip-pais">${banderaSvg(jugador.paisId, 18)} ${escapar(paisJugador.nombre)}</span>
           <span class="chip-dorsal">#${jugador.dorsal} ${PUESTOS_CANCHA[jugador.posicionId].corto}</span>
+          <span class="chip-pais">${jugador.manoHabil === "izquierda" ? "Zurdo/a" : "Diestro/a"}</span>
         </div>
         <div class="club-fila-nombre">
           ${escudoClub(jugador.club.nombre, 34)}
@@ -368,6 +369,7 @@ function renderCreacion(cb) {
     // colores; en blanco daba la sensación de pantalla a medio cargar.
     paisId: "espana",
     posicionId: null,
+    manoHabil: "derecha",
     clubNombre: null,
     reparto: Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 0])),
   };
@@ -409,6 +411,13 @@ function renderCreacion(cb) {
                 <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
               </div>
             </div>
+            <div class="campo campo-mano">
+              <label>Mano hábil</label>
+              <div class="selector-mano" id="selector-mano">
+                <button type="button" data-mano="izquierda" class="${estadoLocal.manoHabil === "izquierda" ? "elegida" : ""}">Izquierda</button>
+                <button type="button" data-mano="derecha" class="${estadoLocal.manoHabil === "derecha" ? "elegida" : ""}">Derecha</button>
+              </div>
+            </div>
           </section>
 
           <section class="creacion-col">
@@ -417,7 +426,9 @@ function renderCreacion(cb) {
               ${ico("buscar", "buscador-lupa")}
               <input type="search" id="buscar-pais" class="buscador" placeholder="Buscar país" autocomplete="off">
             </div>
-            <div class="lista-paises" id="lista-paises">${paisesHtml}</div>
+            <div class="lista-paises-caja">
+              <div class="lista-paises" id="lista-paises">${paisesHtml}</div>
+            </div>
           </section>
 
           <section class="creacion-col">
@@ -534,6 +545,14 @@ function renderCreacion(cb) {
         refrescarBoton();
       };
     });
+
+    document.getElementById("selector-mano").onclick = (e) => {
+      const btn = e.target.closest("[data-mano]");
+      if (!btn) return;
+      estadoLocal.manoHabil = btn.dataset.mano;
+      document.querySelectorAll("#selector-mano [data-mano]")
+        .forEach((o) => o.classList.toggle("elegida", o === btn));
+    };
 
     btnSiguiente.onclick = () => pasoEquipo();
   }

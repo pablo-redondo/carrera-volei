@@ -1010,10 +1010,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 0 0 0 20px;
-  border-left: 1px solid var(--borde);
 }
-.creacion-col:first-child { padding-left: 0; border-left: none; }
 .cancha-info { margin-top: auto; }
 /* La camiseta ocupa el hueco libre de su columna y se centra dentro: antes
    se quedaba pequeña arriba y dejaba un vacío enorme sobre los campos. */
@@ -1025,13 +1022,14 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   background: radial-gradient(60% 55% at 50% 46%, rgba(255, 107, 26, .13), transparent 70%);
 }
 .col-titulo {
-  margin: 0 0 12px;
-  font-size: .66rem;
-  font-weight: 800;
-  letter-spacing: .13em;
-  text-transform: uppercase;
-  color: var(--texto-tenue);
-  text-align: left;
+  margin: 0 0 14px;
+  font-family: var(--fuente);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  text-transform: none;
+  color: var(--texto);
+  text-align: center;
 }
 
 /* --- camiseta con nombre y dorsal --- */
@@ -2160,3 +2158,77 @@ body.modal-abierto { overflow: hidden; }
 .cancha-marco { width: 100%; max-width: 262px; margin-inline: auto; }
 .pais-item { padding: 11px 10px; }
 .lista-paises { align-content: start; gap: 8px; }
+
+/* ============ CREACIÓN: ajustes de la referencia ============ */
+/* La lista de países vive dentro de su propia caja, con el buscador fuera
+   y encima, y su barra de desplazamiento a la vista. */
+.lista-paises-caja {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  padding: 8px;
+}
+.lista-paises { padding-right: 6px; }
+.lista-paises::-webkit-scrollbar { width: 6px; }
+.lista-paises::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .22);
+  border-radius: 99px;
+}
+.lista-paises::-webkit-scrollbar-track { background: transparent; }
+/* Dentro de la caja, cada país es una fila, no una tarjeta con marco. */
+.pais-item {
+  background: transparent;
+  border-color: transparent;
+}
+.pais-item:hover { background: var(--panel-3); transform: none; }
+.pais-item.elegido {
+  background: var(--panel-3);
+  border-color: rgba(255, 255, 255, .75);
+}
+
+/* Selector de mano hábil: dos opciones, la activa en claro. */
+.campo-mano { margin-top: 10px; }
+.selector-mano {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+}
+.selector-mano button {
+  font-family: inherit;
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--texto-tenue);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 10px 8px;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.selector-mano button:hover { color: var(--texto); }
+.selector-mano button.elegida {
+  background: var(--texto);
+  color: #10131a;
+}
+
+/* Con las tres columnas en paralelo la pista aprovecha el ancho de la suya y
+   la descripción va justo debajo (con el tope anterior quedaba un hueco de
+   ~100 px entre ambas). Solo a partir de 901 px: apiladas, la pista ocuparía
+   todo el ancho de la pantalla. */
+@media (min-width: 901px) {
+  .creacion-col .cancha-marco { max-width: none; }
+}
+.cancha-info { margin-top: 0; }
+
+/* Sin flechas de incremento en el dorsal: la referencia usa un campo limpio
+   y el stepper del navegador desentona (y se cuela sobre el borde). */
+#input-dorsal::-webkit-outer-spin-button,
+#input-dorsal::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#input-dorsal { -moz-appearance: textfield; appearance: textfield; }

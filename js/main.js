@@ -16,7 +16,7 @@ const CLAVE_GUARDADO = "carreraVoley";
 /* Subir esta versión invalida las partidas guardadas con un formato anterior.
    Sin esto, una partida vieja (con ligas o divisiones que ya no existen) hacía
    que la pantalla reventara al cargarla y el juego se quedaba colgado. */
-const VERSION_GUARDADO = 5;
+const VERSION_GUARDADO = 6;
 
 let estado = { jugador: null, temporadaNum: 1 };
 

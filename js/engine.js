@@ -37,7 +37,7 @@ function equiposIniciales(paisId, cuantos = 3) {
 }
 
 /* ---------------- creación de jugador ---------------- */
-function crearJugador({ nombre, dorsal, paisId, posicionId, reparto, clubNombre }) {
+function crearJugador({ nombre, dorsal, paisId, posicionId, reparto, clubNombre, manoHabil }) {
   const perfil = POSICIONES[posicionId];
   const atributos = {};
   for (const a of ATRIBUTOS) {
@@ -52,6 +52,10 @@ function crearJugador({ nombre, dorsal, paisId, posicionId, reparto, clubNombre 
     dorsal: clamp(Number(dorsal) || randInt(1, 99), 1, 99),
     paisId,
     posicionId,
+    // En voleibol la mano hábil marca el perfil del jugador (los zurdos son
+    // especialmente valorados como opuestos), aunque aquí es identidad, no
+    // una ventaja mecánica.
+    manoHabil: manoHabil === "izquierda" ? "izquierda" : "derecha",
     edad: EDAD_INICIAL,
     atributos,
     moral: 70,
