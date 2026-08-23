@@ -1039,6 +1039,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
    abajo del todo), para que no quede un vacío grande entre ambos. */
 .camiseta {
   display: block;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .55));
   width: 100%;
   max-width: 100%;
   height: 100%;
@@ -1054,7 +1055,9 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .kit-cuerpo   { fill: var(--kit-base); }
 .kit-detalle  { fill: var(--kit-detalle); }
 .kit-brillo   { pointer-events: none; }
-.kit-contorno { fill: none; stroke: #0a0e14; stroke-width: 4; stroke-linejoin: round; }
+.kit-contorno { fill: none; stroke: #0a0e14; stroke-width: 3.5; stroke-linejoin: round; }
+.kit-cuello { fill: none; stroke: var(--kit-detalle); stroke-width: 7; stroke-linecap: round; }
+.kit-pliegues { fill: none; stroke: #000; stroke-opacity: .13; stroke-width: 2.4; stroke-linecap: round; }
 
 /* Tamaños en unidades del viewBox: el cuerpo de la camiseta mide 92 de ancho
    (de x=64 a x=156), así que el texto nunca debe pasar de ~84. */
@@ -1173,10 +1176,8 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   position: relative;
   height: 22px;
   margin: 0 7px;
-  border-top: 3px solid rgba(255, 255, 255, .9);
-  background:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.42) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(0deg, rgba(255,255,255,.42) 0 1px, transparent 1px 8px);
+  border-top: 3px solid rgba(255, 255, 255, .92);
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0 1px, transparent 1px 9px);
 }
 .cancha-red span {
   position: absolute;
@@ -1195,9 +1196,9 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   border: 2px solid rgba(255, 255, 255, .8);
   border-top: none;
   border-radius: 0 0 var(--r-sm) var(--r-sm);
-  background: linear-gradient(180deg, #14406e, #0d2c4d 55%, #0a2140);
+  background: #123a63;
   overflow: hidden;
-  box-shadow: inset 0 14px 30px -20px rgba(0, 0, 0, .95), 0 16px 34px -26px #000;
+  box-shadow: 0 16px 34px -26px #000;
 }
 /* Zona de ataque: los tres primeros metros, en tono cálido como en las
    pistas de competición. */
@@ -1205,7 +1206,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   position: absolute;
   inset: 0 0 auto 0;
   height: 33.3%;
-  background: linear-gradient(180deg, rgba(255, 122, 40, .28), rgba(255, 122, 40, .1));
+  background: rgba(255, 255, 255, .07);
 }
 .cancha-linea-ataque {
   position: absolute;
@@ -1221,12 +1222,12 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   left: var(--x); top: var(--y);
   transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 1px;
-  min-width: 56px;
-  padding: 6px 9px;
+  min-width: 52px;
+  padding: 5px 8px;
   font-family: inherit;
   color: var(--texto);
-  background: rgba(11, 17, 27, .9);
-  border: 1px solid rgba(255, 255, 255, .28);
+  background: rgba(8, 13, 21, .82);
+  border: 1px solid rgba(255, 255, 255, .22);
   border-radius: var(--r-sm);
   cursor: pointer;
   transition: transform .18s var(--ease), background .2s, border-color .2s, box-shadow .25s;

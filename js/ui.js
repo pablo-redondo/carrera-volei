@@ -282,60 +282,76 @@ const PUESTOS_CANCHA = {
 /* Camiseta como una equipación real: el nombre va arqueado en la parte alta
    de la espalda y el dorsal, grande, centrado debajo. Las piezas (cuerpo,
    mangas, cuello y banda inferior) se colorean según la selección elegida. */
-/* Silueta de la camiseta. La anterior trazaba las mangas con rectas en pico
-   y parecía más una capa que una equipación; esta usa curvas para el hombro,
-   la sisa y el bajo, con las proporciones de una camiseta real. */
+/* Silueta de la camiseta: diseño plano, sin degradados ni franjas, con el
+   cuerpo en el color principal y solo cuello, puños y bajo en el de detalle.
+   Las versiones anteriores llenaban el pecho de bloques de color y el
+   resultado parecía un manchón en vez de una equipación. */
 const CAMISETA_CONTORNO = [
-  "M110 27",
-  "C98 27 88 24 80 18",
-  "C68 22 57 28 47 36",
-  "C35 46 26 58 20 72",
-  "C18 77 20 82 25 85",
-  "L48 100", "C53 103 59 101 62 96", "L68 86",
-  "L66 211", "C66 220 71 225 80 227",
-  "C100 231 120 231 140 227", "C149 225 154 220 154 211",
-  "L152 86", "L158 96", "C161 101 167 103 172 100",
-  "L195 85", "C200 82 202 77 200 72",
-  "C194 58 185 46 173 36",
-  "C163 28 152 22 140 18",
-  "C132 24 122 27 110 27", "Z",
+  "M100 24",
+  "C89 24 79 21 71 16",
+  "L33 37", "C26 41 24 49 27 56",
+  "L44 88", "C47 94 55 96 61 92", "L66 88",
+  "L66 204", "C66 212 71 217 79 218",
+  "C93 221 107 221 121 218", "C129 217 134 212 134 204",
+  "L134 88", "L139 92", "C145 96 153 94 156 88",
+  "L173 56", "C176 49 174 41 167 37",
+  "L129 16", "C121 21 111 24 100 24", "Z",
 ].join(" ");
 
 function camisetaSvg() {
   return `
-    <svg class="camiseta" viewBox="0 0 220 250" role="img" aria-label="Camiseta del jugador">
+    <svg class="camiseta" viewBox="0 0 200 240" role="img" aria-label="Camiseta del jugador">
       <defs>
-        <linearGradient id="brilloTela" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity=".26"/>
-          <stop offset="48%" stop-color="#ffffff" stop-opacity=".02"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity=".24"/>
-        </linearGradient>
         <clipPath id="recorte-camiseta"><path d="${CAMISETA_CONTORNO}"/></clipPath>
-        <path id="arco-nombre" d="M66 80 Q110 62 154 80" fill="none"/>
+        <!-- Volumen en blanco y negro translúcido, no en color: así el
+             sombreado vale para cualquier equipación sin retocarlo. -->
+        <linearGradient id="volumenCamiseta" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#000" stop-opacity=".34"/>
+          <stop offset="16%"  stop-color="#000" stop-opacity=".08"/>
+          <stop offset="38%"  stop-color="#fff" stop-opacity=".17"/>
+          <stop offset="58%"  stop-color="#fff" stop-opacity=".05"/>
+          <stop offset="84%"  stop-color="#000" stop-opacity=".14"/>
+          <stop offset="100%" stop-color="#000" stop-opacity=".36"/>
+        </linearGradient>
+        <linearGradient id="caidaCamiseta" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#fff" stop-opacity=".2"/>
+          <stop offset="26%"  stop-color="#fff" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#000" stop-opacity=".26"/>
+        </linearGradient>
       </defs>
 
       <path class="kit-cuerpo" d="${CAMISETA_CONTORNO}"/>
 
       <g clip-path="url(#recorte-camiseta)">
-        <!-- canesú de hombros y franjas laterales, como una equipación real -->
-        <path class="kit-detalle" d="M0 0 H220 V44 C170 30 50 30 0 44 Z"/>
-        <path class="kit-detalle" d="M66 86 h12 V240 h-12 Z M142 86 h12 V240 h-12 Z" opacity=".55"/>
-        <path class="kit-detalle" d="M0 205 H220 V250 H0 Z"/>
-        <!-- puños de manga -->
-        <path class="kit-detalle" d="M18 74 L52 96 L44 108 L10 86 Z"/>
-        <path class="kit-detalle" d="M202 74 L168 96 L176 108 L210 86 Z"/>
+        <!-- bajo y puños. Los puños se trazan hacia DENTRO de la manga: hacia
+             fuera quedaban fuera del recorte y desaparecían por completo. -->
+        <rect class="kit-detalle" x="0" y="202" width="200" height="40"/>
+        <path class="kit-detalle" d="M27 56 L44 88 L55 82 L38 50 Z"/>
+        <path class="kit-detalle" d="M173 56 L156 88 L145 82 L162 50 Z"/>
       </g>
 
-      <!-- cuello redondo -->
-      <path class="kit-detalle" d="M80 18 C88 24 98 27 110 27 C122 27 132 24 140 18
-                                   C133 30 122 36 110 36 C98 36 87 30 80 18 Z"/>
-      <path class="kit-brillo" d="${CAMISETA_CONTORNO}" fill="url(#brilloTela)"/>
+      <g clip-path="url(#recorte-camiseta)">
+        <!-- sombreado de volumen y pliegues de la tela -->
+        <path d="${CAMISETA_CONTORNO}" fill="url(#volumenCamiseta)"/>
+        <path d="${CAMISETA_CONTORNO}" fill="url(#caidaCamiseta)"/>
+        <g class="kit-pliegues">
+          <path d="M78 96 C74 132 76 170 80 202"/>
+          <path d="M122 96 C126 132 124 170 120 202"/>
+          <path d="M92 150 C90 172 90 188 92 204"/>
+          <path d="M108 150 C110 172 110 188 108 204"/>
+          <path d="M40 62 C48 70 55 78 60 88"/>
+          <path d="M160 62 C152 70 145 78 140 88"/>
+        </g>
+      </g>
+
+      <!-- cuello: banda fina siguiendo el escote. Relleno macizo parecía un
+           babero blanco en vez de un cuello. -->
+      <path class="kit-cuello" clip-path="url(#recorte-camiseta)"
+            d="M74 18 C82 30 92 34 100 34 C108 34 118 30 126 18"/>
       <path class="kit-contorno" d="${CAMISETA_CONTORNO}"/>
 
-      <text id="camiseta-nombre" class="camiseta-nombre">
-        <textPath href="#arco-nombre" startOffset="50%" text-anchor="middle">JUGADOR</textPath>
-      </text>
-      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="158" text-anchor="middle">10</text>
+      <text id="camiseta-nombre" class="camiseta-nombre" x="100" y="70" text-anchor="middle">JUGADOR</text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="100" y="155" text-anchor="middle">10</text>
     </svg>`;
 }
 
@@ -463,7 +479,7 @@ function renderCreacion(cb) {
        Primero se reduce el tamaño de letra, pero solo hasta un mínimo legible;
        si aún no cabe (nombres muy largos), se comprime el texto. */
     function ajustarTextoCamiseta(el, texto, anchoMaximo, tamanoBase, tamanoMinimo) {
-      const destino = el.querySelector("textPath") || el;
+      const destino = el;
       destino.textContent = texto;
       destino.removeAttribute("textLength");
       destino.removeAttribute("lengthAdjust");
@@ -479,8 +495,8 @@ function renderCreacion(cb) {
         destino.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
-    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 84, 15, 9);
-    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 84, 66, 40);
+    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 62, 15, 8);
+    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 62, 62, 36);
 
     /* Pinta la camiseta con los colores de la selección elegida. */
     function aplicarKit(paisId) {
