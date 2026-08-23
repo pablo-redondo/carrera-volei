@@ -79,7 +79,7 @@
   letter-spacing: -.005em;
 }
 .eyebrow, .bloque-titulo, .stat-label, .col-titulo,
-.progreso-datos, .cabecera-temporada, .cabecera-overall,
+.cabecera-temporada, .cabecera-overall,
 .logros-categoria h3, .oferta-salario span, .campo label {
   font-family: var(--fuente-display);
   letter-spacing: .12em;
@@ -196,40 +196,6 @@ body {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-/* Barra de progreso de la carrera, en el centro de la cabecera */
-.cabecera-progreso {
-  flex: 1;
-  max-width: 340px;
-  margin: 0 auto;
-  min-width: 0;
-}
-.cabecera-progreso[hidden] { display: none; }
-.progreso-datos {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: .66rem;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--texto-medio);
-  margin-bottom: 5px;
-}
-.progreso-restante { color: var(--texto-tenue); font-weight: 600; letter-spacing: .04em; }
-.progreso-pista {
-  height: 4px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, .1);
-  overflow: hidden;
-}
-.progreso-relleno {
-  height: 100%;
-  border-radius: 99px;
-  background: var(--grad-acento);
-  transition: width .5s var(--ease);
-}
-
 .cabecera-derecha { display: flex; align-items: center; gap: 8px; }
 
 .cabecera-temporada, .cabecera-overall {
@@ -241,8 +207,8 @@ body {
   border-radius: 999px;
   white-space: nowrap;
 }
-/* En escritorio la temporada ya se ve en la barra de progreso central, así que
-   la píldora se reserva para móvil (donde no hay barra). */
+/* La píldora de temporada se reserva para móvil: en escritorio la edad ya
+   se lee en la ficha y la temporada en curso va marcada en la trayectoria. */
 .cabecera-temporada {
   display: none;
   color: var(--ambar);
@@ -1917,8 +1883,6 @@ body.modal-abierto { overflow: hidden; }
   .pantalla { order: 1; }
   .sidebar  { order: 2; position: static; }
 
-  /* Sin sitio para la barra de progreso: en su lugar, las dos píldoras. */
-  .cabecera-progreso { display: none; }
   .cabecera-temporada { display: inline-flex; }
 
   .cabecera { padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }

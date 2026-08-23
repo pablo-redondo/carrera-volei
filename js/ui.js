@@ -235,36 +235,9 @@ function renderTrayectoria(jugador) {
   `;
 }
 
-/* Pinta la barra central de la cabecera con cualquier progreso (temporadas de
-   la carrera o pasos de la creación), para que no quede un hueco vacío. */
-function mostrarProgresoCabecera({ etiqueta, detalle, porcentaje }) {
-  const progreso = document.getElementById("cabecera-progreso");
-  progreso.hidden = false;
-  document.getElementById("progreso-etiqueta").textContent = etiqueta;
-  document.getElementById("progreso-restante").textContent = detalle;
-  document.getElementById("progreso-relleno").style.width = `${porcentaje}%`;
-}
-
 function actualizarCabeceraTemporada(jugador, temporadaNum) {
   const el = $cabeceraTemporada();
-  const progreso = document.getElementById("cabecera-progreso");
-
-  if (!jugador) {
-    el.textContent = "";
-    progreso.hidden = true;
-    return;
-  }
-
-  el.textContent = `T${temporadaNum} · ${jugador.edad} años`;
-
-  // Barra de progreso de la carrera (16 → 38 años), visible en escritorio.
-  const total = EDAD_RETIRO_OBLIGATORIO - EDAD_INICIAL;
-  const restantes = Math.max(0, EDAD_RETIRO_OBLIGATORIO - jugador.edad);
-  mostrarProgresoCabecera({
-    etiqueta: `Temporada ${temporadaNum} · ${jugador.edad} años`,
-    detalle: restantes === 0 ? "última temporada" : `${restantes} ${restantes === 1 ? "año" : "años"} por delante`,
-    porcentaje: clampNumero(Math.round(((jugador.edad - EDAD_INICIAL) / total) * 100), 0, 100),
-  });
+  el.textContent = jugador ? `T${temporadaNum} · ${jugador.edad} años` : "";
 }
 
 /* ================= PANTALLA DE INICIO ================= */
@@ -374,7 +347,6 @@ function renderCreacion(cb) {
 
   /* ---------- PASO 1: identidad ---------- */
   function pasoIdentidad() {
-    mostrarProgresoCabecera({ etiqueta: "Creando tu jugador/a", detalle: "paso 1 de 2", porcentaje: 50 });
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
         <span class="pais-bandera">${banderaSvg(id, 24)}</span>
@@ -533,7 +505,6 @@ function renderCreacion(cb) {
 
   /* ---------- PASO 2: equipo y atributos ---------- */
   function pasoEquipo() {
-    mostrarProgresoCabecera({ etiqueta: "Creando tu jugador/a", detalle: "paso 2 de 2", porcentaje: 100 });
     const pais = PAISES[estadoLocal.paisId];
     const opciones = equiposIniciales(estadoLocal.paisId, 3);
     const perfil = POSICIONES[estadoLocal.posicionId];
