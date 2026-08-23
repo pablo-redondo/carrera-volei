@@ -289,12 +289,12 @@ const PUESTOS_CANCHA = {
 const CAMISETA_CONTORNO = [
   "M100 24",
   "C89 24 79 21 71 16",
-  "L33 37", "C26 41 24 49 27 56",
-  "L44 88", "C47 94 55 96 61 92", "L66 88",
-  "L66 204", "C66 212 71 217 79 218",
-  "C93 221 107 221 121 218", "C129 217 134 212 134 204",
-  "L134 88", "L139 92", "C145 96 153 94 156 88",
-  "L173 56", "C176 49 174 41 167 37",
+  "L31 37", "C24 41 22 49 25 56",
+  "L42 88", "C45 94 53 96 59 92", "L64 86",
+  "L58 204", "C58 212 63 217 71 218",
+  "C90 221 110 221 129 218", "C137 217 142 212 142 204",
+  "L136 86", "L141 92", "C147 96 155 94 158 88",
+  "L175 56", "C178 49 176 41 169 37",
   "L129 16", "C121 21 111 24 100 24", "Z",
 ].join(" ");
 
@@ -326,8 +326,8 @@ function camisetaSvg() {
         <!-- bajo y puños. Los puños se trazan hacia DENTRO de la manga: hacia
              fuera quedaban fuera del recorte y desaparecían por completo. -->
         <rect class="kit-detalle" x="0" y="202" width="200" height="40"/>
-        <path class="kit-detalle" d="M27 56 L44 88 L55 82 L38 50 Z"/>
-        <path class="kit-detalle" d="M173 56 L156 88 L145 82 L162 50 Z"/>
+        <path class="kit-detalle" d="M25 56 L42 88 L53 82 L36 50 Z"/>
+        <path class="kit-detalle" d="M175 56 L158 88 L147 82 L164 50 Z"/>
       </g>
 
       <g clip-path="url(#recorte-camiseta)">
@@ -335,12 +335,12 @@ function camisetaSvg() {
         <path d="${CAMISETA_CONTORNO}" fill="url(#volumenCamiseta)"/>
         <path d="${CAMISETA_CONTORNO}" fill="url(#caidaCamiseta)"/>
         <g class="kit-pliegues">
-          <path d="M78 96 C74 132 76 170 80 202"/>
-          <path d="M122 96 C126 132 124 170 120 202"/>
-          <path d="M92 150 C90 172 90 188 92 204"/>
-          <path d="M108 150 C110 172 110 188 108 204"/>
-          <path d="M40 62 C48 70 55 78 60 88"/>
-          <path d="M160 62 C152 70 145 78 140 88"/>
+          <path d="M76 96 C71 132 72 170 74 202"/>
+          <path d="M124 96 C129 132 128 170 126 202"/>
+          <path d="M91 150 C89 172 89 188 90 204"/>
+          <path d="M109 150 C111 172 111 188 110 204"/>
+          <path d="M38 62 C46 70 53 78 58 88"/>
+          <path d="M162 62 C154 70 147 78 142 88"/>
         </g>
       </g>
 
@@ -459,12 +459,10 @@ function renderCreacion(cb) {
         </div>
 
         <footer class="creacion-pie">
-          <button class="secundario" id="btn-volver">Volver</button>
           <button class="principal" id="btn-siguiente" disabled>Confirmar identidad</button>
         </footer>
       </div>
     `);
-    document.getElementById("btn-volver").onclick = () => cb.onCancelar();
 
     const $ = (s) => document.querySelector(s);
     const btnSiguiente = $("#btn-siguiente");
@@ -495,8 +493,8 @@ function renderCreacion(cb) {
         destino.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
-    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 62, 15, 8);
-    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 62, 62, 36);
+    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 68, 16, 8);
+    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 68, 66, 36);
 
     /* Pinta la camiseta con los colores de la selección elegida. */
     function aplicarKit(paisId) {

@@ -993,7 +993,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 }
 .creacion-cabecera h2 { margin: 0; }
 .creacion-pie {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; align-items: center; justify-content: center;
   padding: 15px 22px;
   border-top: 1px solid var(--borde);
 }
@@ -1023,11 +1023,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 }
 .col-titulo {
   margin: 0 0 14px;
-  font-family: var(--fuente);
-  font-size: 1rem;
+  font-family: var(--fuente-display);
+  font-size: 1.3rem;
   font-weight: 700;
-  letter-spacing: -.2px;
-  text-transform: none;
+  letter-spacing: 0;
+  text-transform: uppercase;
   color: var(--texto);
   text-align: center;
 }
@@ -2145,8 +2145,8 @@ body.modal-abierto { overflow: hidden; }
   .creacion-col { padding: 18px 0 0; border-left: none; border-top: 1px solid var(--borde); }
   .creacion-col:first-child { padding-top: 0; border-top: none; }
   .creacion-cabecera { padding: 14px 16px 12px; }
-  .creacion-pie { padding: 12px 16px; flex-direction: column-reverse; }
-  .creacion-pie .secundario, .creacion-pie .principal { width: 100%; min-width: 0; }
+  .creacion-pie { padding: 12px 16px; }
+  .creacion-pie .principal { width: 100%; min-width: 0; }
   .camiseta-caja { max-height: 230px; }
   .lista-paises { max-height: 260px; }
 }
