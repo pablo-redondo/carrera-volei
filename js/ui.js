@@ -281,48 +281,82 @@ const PUESTOS_CANCHA = {
 /* Camiseta como una equipación real: el nombre va arqueado en la parte alta
    de la espalda y el dorsal, grande, centrado debajo. Las piezas (cuerpo,
    mangas, cuello y banda inferior) se colorean según la selección elegida. */
-const CAMISETA_CONTORNO = "M78 16 L44 30 L14 64 L48 94 L64 80 L64 220 Q110 234 156 220 L156 80 L172 94 L206 64 L176 30 L142 16 Q110 42 78 16 Z";
+/* Silueta de la camiseta. La anterior trazaba las mangas con rectas en pico
+   y parecía más una capa que una equipación; esta usa curvas para el hombro,
+   la sisa y el bajo, con las proporciones de una camiseta real. */
+const CAMISETA_CONTORNO = [
+  "M110 27",
+  "C98 27 88 24 80 18",
+  "C68 22 57 28 47 36",
+  "C35 46 26 58 20 72",
+  "C18 77 20 82 25 85",
+  "L48 100", "C53 103 59 101 62 96", "L68 86",
+  "L66 211", "C66 220 71 225 80 227",
+  "C100 231 120 231 140 227", "C149 225 154 220 154 211",
+  "L152 86", "L158 96", "C161 101 167 103 172 100",
+  "L195 85", "C200 82 202 77 200 72",
+  "C194 58 185 46 173 36",
+  "C163 28 152 22 140 18",
+  "C132 24 122 27 110 27", "Z",
+].join(" ");
 
 function camisetaSvg() {
   return `
     <svg class="camiseta" viewBox="0 0 220 250" role="img" aria-label="Camiseta del jugador">
       <defs>
-        <linearGradient id="brilloTela" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ffffff" stop-opacity=".22"/>
-          <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity=".16"/>
+        <linearGradient id="brilloTela" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".26"/>
+          <stop offset="48%" stop-color="#ffffff" stop-opacity=".02"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".24"/>
         </linearGradient>
-        <path id="arco-nombre" d="M67 84 Q110 64 153 84" fill="none"/>
+        <clipPath id="recorte-camiseta"><path d="${CAMISETA_CONTORNO}"/></clipPath>
+        <path id="arco-nombre" d="M66 80 Q110 62 154 80" fill="none"/>
       </defs>
 
       <path class="kit-cuerpo" d="${CAMISETA_CONTORNO}"/>
-      <path class="kit-detalle" d="M78 16 L44 30 L14 64 L48 94 L64 80 Z"/>
-      <path class="kit-detalle" d="M142 16 L176 30 L206 64 L172 94 L156 80 Z"/>
-      <path class="kit-detalle" d="M64 200 L156 200 L156 220 Q110 234 64 220 Z"/>
-      <path class="kit-detalle" d="M78 16 Q110 42 142 16 Q110 58 78 16 Z"/>
+
+      <g clip-path="url(#recorte-camiseta)">
+        <!-- canesú de hombros y franjas laterales, como una equipación real -->
+        <path class="kit-detalle" d="M0 0 H220 V44 C170 30 50 30 0 44 Z"/>
+        <path class="kit-detalle" d="M66 86 h12 V240 h-12 Z M142 86 h12 V240 h-12 Z" opacity=".55"/>
+        <path class="kit-detalle" d="M0 205 H220 V250 H0 Z"/>
+        <!-- puños de manga -->
+        <path class="kit-detalle" d="M18 74 L52 96 L44 108 L10 86 Z"/>
+        <path class="kit-detalle" d="M202 74 L168 96 L176 108 L210 86 Z"/>
+      </g>
+
+      <!-- cuello redondo -->
+      <path class="kit-detalle" d="M80 18 C88 24 98 27 110 27 C122 27 132 24 140 18
+                                   C133 30 122 36 110 36 C98 36 87 30 80 18 Z"/>
       <path class="kit-brillo" d="${CAMISETA_CONTORNO}" fill="url(#brilloTela)"/>
       <path class="kit-contorno" d="${CAMISETA_CONTORNO}"/>
 
       <text id="camiseta-nombre" class="camiseta-nombre">
         <textPath href="#arco-nombre" startOffset="50%" text-anchor="middle">JUGADOR</textPath>
       </text>
-      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="162" text-anchor="middle">10</text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="110" y="158" text-anchor="middle">10</text>
     </svg>`;
 }
 
+/* Media cancha vista desde arriba, con la red arriba (postes incluidos),
+   la zona de ataque delimitada por la línea de 3 metros y los seis puestos
+   colocados sobre sus zonas reglamentarias. */
 function canchaSvg(seleccionada) {
   const marcas = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
     <button type="button" class="puesto ${seleccionada === id ? "elegido" : ""}" data-pos="${id}" style="--x:${p.x}%; --y:${p.y}%"
             aria-label="${POSICIONES[id].nombre}">
       <span class="puesto-corto">${p.corto}</span>
-      <span class="puesto-zona">${p.zona}</span>
+      <span class="puesto-zona">Zona ${p.zona}</span>
     </button>`).join("");
 
   return `
-    <div class="cancha">
-      <div class="cancha-red" aria-hidden="true"></div>
-      <div class="cancha-linea-ataque" aria-hidden="true"></div>
-      ${marcas}
+    <div class="cancha-marco">
+      <div class="cancha-red" aria-hidden="true"><span></span><span></span></div>
+      <div class="cancha">
+        <div class="cancha-zona-ataque" aria-hidden="true"></div>
+        <div class="cancha-linea-ataque" aria-hidden="true"></div>
+        ${marcas}
+      </div>
     </div>`;
 }
 
@@ -349,8 +383,9 @@ function renderCreacion(cb) {
   function pasoIdentidad() {
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
-        <span class="pais-bandera">${banderaSvg(id, 24)}</span>
+        <span class="pais-bandera">${banderaSvg(id, 26)}</span>
         <span class="pais-nombre">${escapar(p.nombre)}</span>
+        <span class="pais-check" aria-hidden="true">${ico("check")}</span>
       </button>`).join("");
 
     pintarPantalla(`

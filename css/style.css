@@ -1139,11 +1139,23 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   background: var(--panel-2);
   border: 1px solid var(--borde);
   border-radius: var(--r-sm);
-  padding: 10px 12px;
+  padding: 10px 11px;
   cursor: pointer;
   transition: background .18s, border-color .18s, transform .18s var(--ease);
 }
-.pais-item:hover { transform: translateY(-1px); }
+.pais-item:hover { transform: translateY(-1px); border-color: var(--borde-fuerte); }
+/* Marca de elegido, para que se vea cuál está activo sin depender solo del
+   color del borde. */
+.pais-check {
+  margin-left: auto;
+  display: inline-flex;
+  color: var(--naranja);
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity .18s, transform .18s var(--ease);
+}
+.pais-check .ico { width: 15px; height: 15px; }
+.pais-item.elegido .pais-check { opacity: 1; transform: none; }
 .pais-item[hidden] { display: none; }
 .pais-item:hover { background: var(--panel-3); }
 .pais-item.elegido {
@@ -1154,59 +1166,92 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .bandera { display: block; border-radius: 2px; }
 .pais-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* --- cancha de voleibol con los puestos --- */
+/* --- media cancha vista desde arriba --- */
+.cancha-marco { margin-bottom: 12px; }
+
+/* La red va por encima del borde de la pista, con sus dos postes: antes era
+   una banda rayada pegada al borde superior y no se leía como una red. */
+.cancha-red {
+  position: relative;
+  height: 22px;
+  margin: 0 7px;
+  border-top: 3px solid rgba(255, 255, 255, .9);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.42) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.42) 0 1px, transparent 1px 8px);
+}
+.cancha-red span {
+  position: absolute;
+  top: -5px;
+  width: 4px; height: 30px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #e2e9f2, #78859a);
+}
+.cancha-red span:first-child { left: -7px; }
+.cancha-red span:last-child  { right: -7px; }
+
 .cancha {
   position: relative;
   width: 100%;
-  align-self: center;
-  aspect-ratio: 1 / 1.12;
-  border-radius: var(--r-md);
-  border: 2px solid rgba(255, 255, 255, .5);
-  background:
-    linear-gradient(180deg, rgba(255, 122, 40, .22) 0%, rgba(255, 122, 40, .05) 32%, transparent 33%),
-    linear-gradient(180deg, #123a63, #0a2440 70%, #081c33);
+  aspect-ratio: 1 / 1;
+  border: 2px solid rgba(255, 255, 255, .8);
+  border-top: none;
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
+  background: linear-gradient(180deg, #14406e, #0d2c4d 55%, #0a2140);
   overflow: hidden;
-  margin-bottom: 12px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 14px 30px -22px #000;
+  box-shadow: inset 0 14px 30px -20px rgba(0, 0, 0, .95), 0 16px 34px -26px #000;
 }
-/* red en el borde superior */
-.cancha-red {
+/* Zona de ataque: los tres primeros metros, en tono cálido como en las
+   pistas de competición. */
+.cancha-zona-ataque {
   position: absolute;
   inset: 0 0 auto 0;
-  height: 13px;
-  background:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.75) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(0deg, rgba(255,255,255,.75) 0 1px, transparent 1px 7px);
-  border-bottom: 3px solid #fff;
+  height: 33.3%;
+  background: linear-gradient(180deg, rgba(255, 122, 40, .28), rgba(255, 122, 40, .1));
 }
-/* línea de ataque (3 metros) */
 .cancha-linea-ataque {
   position: absolute;
-  left: 0; right: 0; top: 42%;
-  border-top: 2px dashed rgba(255, 255, 255, .55);
+  left: 0; right: 0; top: 33.3%;
+  height: 2px;
+  background: rgba(255, 255, 255, .8);
 }
+
+/* Puestos como fichas, en la línea del resto de la interfaz: los círculos
+   blancos sueltos desentonaban con las tarjetas del resto de la app. */
 .puesto {
   position: absolute;
   left: var(--x); top: var(--y);
   transform: translate(-50%, -50%);
   display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 56px;
+  padding: 6px 9px;
   font-family: inherit;
-  color: #0a0e14;
-  background: rgba(255, 255, 255, .92);
-  border: 2px solid transparent;
-  border-radius: 999px;
-  padding: 7px 12px;
+  color: var(--texto);
+  background: rgba(11, 17, 27, .9);
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: var(--r-sm);
   cursor: pointer;
-  transition: transform .18s var(--ease), background .18s, box-shadow .25s, border-color .18s;
+  transition: transform .18s var(--ease), background .2s, border-color .2s, box-shadow .25s;
 }
-.puesto:hover { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .9); }
+.puesto:hover {
+  transform: translate(-50%, -50%) scale(1.07);
+  border-color: rgba(255, 255, 255, .65);
+  background: rgba(22, 30, 44, .96);
+}
 .puesto.elegido {
   background: var(--grad-acento);
-  border-color: #fff;
-  box-shadow: 0 0 0 4px rgba(255, 107, 26, .35), 0 10px 22px -10px rgba(255, 107, 26, 1);
+  border-color: #ffd9b3;
+  color: #241000;
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .3), 0 10px 22px -10px rgba(255, 107, 26, .95);
 }
-.puesto-corto { font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
-.puesto-zona { font-size: .52rem; font-weight: 700; opacity: .6; }
+.puesto-corto {
+  font-family: var(--fuente-display);
+  font-size: .95rem; font-weight: 700; letter-spacing: .04em; line-height: 1;
+}
+.puesto-zona {
+  font-size: .5rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  opacity: .6;
+}
 
 .cancha-info {
   display: flex; flex-direction: column; gap: 4px;
@@ -1702,9 +1747,11 @@ button.opcion.oferta:hover .escudo { transform: scale(1.07) rotate(-3deg); }
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(4, 6, 10, .68);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* Sin backdrop-filter: desenfocar el fondo a pantalla completa obligaba al
+     navegador a recalcularlo en cada fotograma del scroll interior, y la
+     lista de logros se movía a ~20 fps. Un velo opaco da el mismo aislamiento
+     visual y no cuesta nada. */
+  background: rgba(5, 7, 11, .9);
   animation: aparecer .25s var(--ease) both;
   padding: 0;
 }
@@ -1801,6 +1848,7 @@ body.modal-abierto { overflow: hidden; }
   gap: 9px;
 }
 .logro-card {
+  contain: layout paint style;
   display: flex;
   align-items: flex-start;
   gap: 11px;
@@ -1917,7 +1965,7 @@ body.modal-abierto { overflow: hidden; }
   /* apiladas, las columnas no comparten altura: sin mínimo, para que la lista
      no deje un hueco cuando el buscador filtra a un solo país */
   .lista-paises { min-height: 0; max-height: 226px; }
-  .cancha { max-width: 340px; }
+  .cancha-marco { max-width: 320px; }
   .equipos-grid { grid-template-columns: 1fr; }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -1947,7 +1995,7 @@ body.modal-abierto { overflow: hidden; }
 @media (min-width: 620px) and (max-width: 900px) {
   .creacion-grid { grid-template-columns: 1fr 1fr; }
   .creacion-col:nth-child(3) { grid-column: 1 / -1; }
-  .cancha { max-width: 420px; margin-inline: auto; }
+  .cancha-marco { width: 100%; max-width: 330px; margin-inline: auto; }
   .lista-paises { max-height: 300px; }
 
   .equipos-grid { grid-template-columns: repeat(3, 1fr); }
@@ -2109,6 +2157,6 @@ body.modal-abierto { overflow: hidden; }
    aspect-ratio) y dejaba a la lista de países un vacío de ~250 px debajo.
    Se le pone tope de ancho, con lo que baja de alto, y las filas de la
    lista se reparten el espacio restante. */
-.cancha { max-width: 300px; margin-inline: auto; }
+.cancha-marco { width: 100%; max-width: 262px; margin-inline: auto; }
 .pais-item { padding: 11px 10px; }
-.lista-paises { align-content: space-between; gap: 7px; }
+.lista-paises { align-content: start; gap: 8px; }
