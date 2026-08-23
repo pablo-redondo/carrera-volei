@@ -416,7 +416,7 @@ body {
 .dato {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 9px 6px;
-  background: var(--panel-solido);
+  background: var(--panel-2);
 }
 .dato i {
   font-family: var(--fuente-display);
@@ -510,7 +510,7 @@ table.tabla-trayectoria thead th {
   color: var(--texto-tenue);
   text-align: left;
   padding: 9px 8px;
-  background: var(--panel-solido);
+  background: var(--panel-2);
   border-bottom: 1px solid var(--borde);
 }
 table.tabla-trayectoria td {
@@ -579,7 +579,7 @@ th.col-num { text-align: right; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 10px 12px;
   border-top: 1px solid var(--borde);
-  background: var(--panel-solido);
+  background: var(--panel-2);
   font-size: .78rem;
 }
 .tray-pie .ico { width: 17px; height: 17px; color: var(--cian); }
@@ -1086,7 +1086,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   width: 100%;
   font-family: inherit; font-size: .95rem; font-weight: 600;
   color: var(--texto);
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--borde);
   border-radius: var(--r-sm);
   padding: 11px 12px;
@@ -1114,7 +1114,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   width: 100%;
   font-family: inherit; font-size: .9rem;
   color: var(--texto);
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--borde);
   border-radius: var(--r-sm);
   padding: 11px 13px 11px 36px;
@@ -1133,8 +1133,8 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   scrollbar-width: thin;
 }
 .pais-item {
-  display: flex; align-items: center; gap: 10px;
-  font-family: inherit; font-size: .84rem; font-weight: 600;
+  display: flex; align-items: center; gap: 12px;
+  font-family: inherit; font-size: .92rem; font-weight: 600;
   text-align: left;
   color: var(--texto);
   background: var(--panel-2);
@@ -2158,7 +2158,7 @@ body.modal-abierto { overflow: hidden; }
    lista se reparten el espacio restante. */
 .cancha-marco { width: 100%; max-width: 262px; margin-inline: auto; }
 .pais-item { padding: 11px 10px; }
-.lista-paises { align-content: start; gap: 8px; }
+.lista-paises { align-content: stretch; grid-auto-rows: 1fr; gap: 8px; }
 
 /* ============ CREACIÓN: ajustes de la referencia ============ */
 /* La lista de países vive dentro de su propia caja, con el buscador fuera

@@ -401,7 +401,7 @@ function renderCreacion(cb) {
   function pasoIdentidad() {
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
-        <span class="pais-bandera">${banderaSvg(id, 26)}</span>
+        <span class="pais-bandera">${banderaSvg(id, 34)}</span>
         <span class="pais-nombre">${escapar(p.nombre)}</span>
         <span class="pais-check" aria-hidden="true">${ico("check")}</span>
       </button>`).join("");
