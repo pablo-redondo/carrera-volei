@@ -409,6 +409,7 @@ function canchasSvg(seleccionada) {
 
 function renderCreacion(cb) {
   const estadoLocal = {
+    paso: 1, // 1: Identidad, 2: País, 3: Posición, 4: Club, 5: Atributos
     nombre: "",
     dorsal: String(Math.floor(Math.random() * 99) + 1),
     paisId: "espana",
@@ -418,223 +419,295 @@ function renderCreacion(cb) {
     reparto: Object.fromEntries(ATRIBUTOS.map((a) => [a.id, 0])),
   };
 
+  const PASOS_CONFIG = [
+    { num: 1, id: "identidad", titulo: "Identidad", sub: "Nombre, dorsal y mano hábil" },
+    { num: 2, id: "nacion",    titulo: "Nacionalidad", sub: "País y colores de selección" },
+    { num: 3, id: "posicion",  titulo: "Posición", sub: "Puesto y rol táctico en pista" },
+    { num: 4, id: "club",      titulo: "Primer Club", sub: "Equipo de debut en 2ª división" },
+    { num: 5, id: "atributos", titulo: "Atributos", sub: "Reparto de puntos iniciales" },
+  ];
+
   const puntosUsados = () => Object.values(estadoLocal.reparto).reduce((a, b) => a + b, 0);
   const dorsalValido = () => {
     const n = Number(estadoLocal.dorsal);
     return Number.isInteger(n) && n >= 1 && n <= 99;
   };
-  const identidadLista = () => Boolean(estadoLocal.nombre.trim() && dorsalValido() && estadoLocal.paisId && estadoLocal.posicionId);
 
-  /* ---------- PASO 1: Identidad Deportiva ---------- */
-  function pasoIdentidad() {
-    const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
-      <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
-        <span class="pais-bandera">${banderaSvg(id, 28)}</span>
-        <span class="pais-info-txt">
-          <span class="pais-nombre">${escapar(p.nombre)}</span>
-          <span class="pais-kit-preview" aria-hidden="true">
+  function pasoValido(paso) {
+    if (paso === 1) return Boolean(estadoLocal.nombre.trim() && dorsalValido());
+    if (paso === 2) return Boolean(estadoLocal.paisId && PAISES[estadoLocal.paisId]);
+    if (paso === 3) return Boolean(estadoLocal.posicionId && POSICIONES[estadoLocal.posicionId]);
+    if (paso === 4) return Boolean(estadoLocal.clubNombre);
+    if (paso === 5) return true;
+    return false;
+  }
+
+  function renderWizard() {
+    const pasoActual = estadoLocal.paso;
+    const config = PASOS_CONFIG[pasoActual - 1];
+    const pais = PAISES[estadoLocal.paisId];
+
+    // Stepper HTML
+    const stepperHtml = PASOS_CONFIG.map((p) => {
+      let clase = "step-pill";
+      if (p.num === pasoActual) clase += " activo";
+      else if (p.num < pasoActual) clase += " completado";
+      return `
+        <button type="button" class="${clase}" data-ir-paso="${p.num}" ${p.num > pasoActual && !pasoValido(pasoActual) ? "disabled" : ""}>
+          <span class="step-num">${p.num < pasoActual ? "✔" : p.num}</span>
+          <span class="step-lbl">${p.titulo}</span>
+        </button>`;
+    }).join(`<span class="step-linea"></span>`);
+
+    // Contenido del paso activo
+    let contenidoPasoHtml = "";
+
+    if (pasoActual === 1) {
+      contenidoPasoHtml = `
+        <div class="paso-box paso-identidad">
+          <div class="campo-pro">
+            <label for="input-nombre">Apellido / Nombre en Camiseta</label>
+            <input type="text" id="input-nombre" maxlength="16" placeholder="EJ. MARTÍNEZ" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
+            <span class="campo-pista">Máximo 16 caracteres · Aparecerá en tu dorsal y dorsales de partido</span>
+          </div>
+
+          <div class="campo-fila-doble">
+            <div class="campo-pro">
+              <label for="input-dorsal">Número de Dorsal (1-99)</label>
+              <div class="dorsal-stepper-wrap">
+                <button type="button" class="btn-dorsal-step" id="btn-dorsal-menos">-</button>
+                <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
+                <button type="button" class="btn-dorsal-step" id="btn-dorsal-mas">+</button>
+                <button type="button" class="btn-dorsal-random" id="btn-dorsal-random" title="Dorsal aleatorio">🎲</button>
+              </div>
+            </div>
+
+            <div class="campo-pro">
+              <label>Mano Hábil</label>
+              <div class="selector-mano-grid" id="selector-mano">
+                <button type="button" data-mano="derecha" class="btn-mano ${estadoLocal.manoHabil === "derecha" ? "elegida" : ""}">
+                  <span class="mano-ico">🤚</span>
+                  <span class="mano-nom">Diestro/a</span>
+                </button>
+                <button type="button" data-mano="izquierda" class="btn-mano ${estadoLocal.manoHabil === "izquierda" ? "elegida" : ""}">
+                  <span class="mano-ico">🖐️</span>
+                  <span class="mano-nom">Zurdo/a</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    } else if (pasoActual === 2) {
+      const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
+        <button type="button" class="pais-card-pro ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
+          <span class="pais-flag-wrap">${banderaSvg(id, 32)}</span>
+          <span class="pais-name-txt">${escapar(p.nombre)}</span>
+          <span class="pais-kit-dots" aria-hidden="true">
             <i style="background:${p.kit.base}"></i>
             <i style="background:${p.kit.detalle}"></i>
           </span>
-        </span>
-        <span class="pais-check" aria-hidden="true">${ico("check")}</span>
-      </button>`).join("");
+          <span class="pais-check-ico" aria-hidden="true">${ico("check")}</span>
+        </button>`).join("");
 
-    const posicionesHtml = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
-      <button type="button" class="tarjeta-posicion ${estadoLocal.posicionId === id ? "elegida" : ""}" data-pos="${id}">
-        <div class="pos-cabecera">
-          <span class="pos-icono">${p.icono}</span>
-          <div>
-            <span class="pos-nombre">${escapar(POSICIONES[id].nombre)}</span>
-            <span class="pos-rol">${escapar(p.rol)}</span>
+      contenidoPasoHtml = `
+        <div class="paso-box paso-nacion">
+          <div class="buscador-bar">
+            ${ico("buscar", "search-ico")}
+            <input type="search" id="buscar-pais" class="input-search-pro" placeholder="Buscar país (España, Italia, Polonia, Brasil...)" autocomplete="off">
           </div>
-          <span class="pos-badge-zona">Zona ${p.zona}</span>
-        </div>
-        <div class="pos-meta-clave">
-          <span class="pos-meta-lbl">Claves:</span>
-          <span class="pos-meta-val">${p.clave}</span>
-        </div>
-      </button>`).join("");
+          <div class="grid-paises-scroll" id="lista-paises">
+            ${paisesHtml}
+          </div>
+        </div>`;
+    } else if (pasoActual === 3) {
+      const posicionesHtml = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
+        <button type="button" class="pos-item-pro ${estadoLocal.posicionId === id ? "elegida" : ""}" data-pos="${id}">
+          <span class="pos-ico-bubble">${p.icono}</span>
+          <div class="pos-info-texts">
+            <div class="pos-title-row">
+              <span class="pos-main-name">${escapar(POSICIONES[id].nombre)}</span>
+              <span class="pos-zona-badge">Zona ${p.zona}</span>
+            </div>
+            <span class="pos-sub-role">${escapar(p.rol)}</span>
+            <span class="pos-keys-pill">⚡ ${p.clave}</span>
+          </div>
+          <span class="pos-sel-indicator">${ico("check")}</span>
+        </button>`).join("");
+
+      contenidoPasoHtml = `
+        <div class="paso-box paso-posicion">
+          <div class="posicion-split-layout">
+            <div class="cancha-tactica-col">
+              ${canchasSvg(estadoLocal.posicionId)}
+            </div>
+            <div class="posiciones-lista-col" id="lista-posiciones">
+              ${posicionesHtml}
+            </div>
+          </div>
+        </div>`;
+    } else if (pasoActual === 4) {
+      const candidatos = equiposIniciales(estadoLocal.paisId, 3);
+      const clubesSegunda = candidatos.map((c, i) => `
+        <button type="button" class="club-debut-card ${estadoLocal.clubNombre === c.nombre ? "elegido" : ""}" data-club="${escapar(c.nombre)}" style="--i:${i}">
+          <div class="club-debut-crest">${escudoClub(c.nombre, 62)}</div>
+          <div class="club-debut-details">
+            <span class="club-debut-nombre">${escapar(c.nombre)}</span>
+            <span class="club-debut-liga">${escapar(pais.ligas.segunda.nombre)}</span>
+            <div class="club-debut-prestigio">
+              <span class="stars-gold">${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}</span><span class="stars-dim">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
+              <span class="prest-num">Prestigio ${c.prestigio}/10</span>
+            </div>
+          </div>
+          <span class="club-check-ico">${ico("check")}</span>
+        </button>`).join("");
+
+      contenidoPasoHtml = `
+        <div class="paso-box paso-club">
+          <div class="paso-intro-banner">
+            <span>Debut profesional en <b>${escapar(pais.ligas.segunda.nombre)}</b> (${banderaSvg(estadoLocal.paisId, 16)} ${escapar(pais.nombre)})</span>
+          </div>
+          <div class="grid-clubes-debut">
+            ${clubesSegunda}
+          </div>
+        </div>`;
+    } else if (pasoActual === 5) {
+      const perfil = POSICIONES[estadoLocal.posicionId];
+      const slidersHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
+        <div class="attr-slider-card" data-fila="${a.id}">
+          <div class="attr-slider-header">
+            <span class="attr-name">${ico(a.id)} ${a.nombre}</span>
+            <span class="attr-val">${perfil.base[a.id]}</span>
+          </div>
+          <div class="attr-track-wrap">
+            <input type="range" class="deslizador-pro" data-attr="${a.id}"
+                   min="0" max="${TOPE_CREACION}" step="1"
+                   value="${perfil.base[a.id]}" aria-label="${a.nombre}">
+          </div>
+        </div>`).join("");
+
+      contenidoPasoHtml = `
+        <div class="paso-box paso-atributos">
+          <div class="puntos-reparto-banner">
+            <div class="puntos-counter-badge">
+              <span class="pts-num" id="puntos-libres">${PUNTOS_CREACION - puntosUsados()}</span>
+              <span class="pts-lbl">Puntos Disponibles</span>
+            </div>
+            <span class="puntos-desc-txt">Reparte tus puntos iniciales para definir tus fortalezas como ${escapar(perfil.nombre)}</span>
+          </div>
+          <div class="grid-atributos-sliders" id="lista-reparto">
+            ${slidersHtml}
+          </div>
+        </div>`;
+    }
+
+    const puedeAvanzar = pasoValido(pasoActual);
+    const esUltimo = pasoActual === 5;
 
     pintarPantalla(`
-      <div class="panel panel-creacion">
-        <header class="creacion-cabecera-pro">
-          <div class="creacion-stepper">
-            <span class="step-item activo"><i class="step-num">1</i> Identidad Deportiva</span>
-            <span class="step-separador"></span>
-            <span class="step-item"><i class="step-num">2</i> Club y Atributos</span>
-          </div>
-          <div class="creacion-titular">
-            <h2>Crea tu Jugador/a</h2>
-            <p>Personaliza tu dorsal, tu país de origen y tu especialidad en la pista.</p>
+      <div class="panel-creacion-wizard">
+        <!-- Barra de Progreso Superior (Stepper) -->
+        <header class="wizard-header">
+          <div class="wizard-stepper-bar">
+            ${stepperHtml}
           </div>
         </header>
 
-        <div class="creacion-layout-pro">
-          <!-- Columna Izquierda: Ficha / Tarjeta de Jugador en Vivo -->
-          <aside class="player-card-panel">
-            <div class="player-card-badge-top">FICHA OFICIAL · TEMPORADA DEBUT</div>
-            <div class="player-card" id="player-card">
-              <div class="card-glow" aria-hidden="true"></div>
-              
-              <div class="card-header-meta">
-                <div class="card-nacion" id="card-nacion">
-                  ${banderaSvg(estadoLocal.paisId, 22)}
-                  <span id="card-pais-nombre">${escapar(PAISES[estadoLocal.paisId].nombre)}</span>
+        <!-- Cuerpo del Wizard -->
+        <div class="wizard-body-layout">
+          <!-- Columna Lateral: Player Card en Vivo -->
+          <aside class="wizard-card-col">
+            <div class="player-live-card" id="player-card">
+              <div class="live-card-halo" aria-hidden="true"></div>
+
+              <div class="live-card-top-meta">
+                <div class="live-flag-chip" id="card-nacion">
+                  ${banderaSvg(estadoLocal.paisId, 20)}
+                  <span>${escapar(PAISES[estadoLocal.paisId].nombre)}</span>
                 </div>
-                <div class="card-mano-chip" id="card-mano-chip">
-                  ${estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo/a" : "🤚 Diestro/a"}
+                <div class="live-hand-chip" id="card-mano-chip">
+                  ${estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo" : "🤚 Diestro"}
                 </div>
               </div>
 
-              <div class="card-pos-chip ${estadoLocal.posicionId ? "asignada" : "pendiente"}" id="card-pos-chip">
+              <div class="live-pos-chip ${estadoLocal.posicionId ? "activo" : "pendiente"}" id="card-pos-chip">
                 ${estadoLocal.posicionId 
                   ? `${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(POSICIONES[estadoLocal.posicionId].nombre)}`
-                  : `⚡ Elige tu posición en la pista`}
+                  : `⚡ Elige posición`}
               </div>
 
-              <div class="jersey-stage">
-                <div class="jersey-spotlight" aria-hidden="true"></div>
+              <div class="live-jersey-stage">
+                <div class="jersey-spotlight-halo" aria-hidden="true"></div>
                 ${camisetaSvg()}
               </div>
 
-              <div class="card-footer-info">
-                <div class="card-nombre-wrap">
-                  <span class="card-dorsal-tag" id="card-dorsal-display">#${estadoLocal.dorsal}</span>
-                  <b class="card-nombre-display" id="card-nombre-display">${escapar(estadoLocal.nombre.trim() || "JUGADOR/A")}</b>
+              <div class="live-card-bottom">
+                <div class="live-card-player-id">
+                  <span class="live-dorsal-tag" id="card-dorsal-display">#${estadoLocal.dorsal}</span>
+                  <span class="live-player-name" id="card-nombre-display">${escapar(estadoLocal.nombre.trim() || "JUGADOR/A")}</span>
                 </div>
-                <div class="card-sub-info">
-                  <span>16 AÑOS · 2ª DIVISIÓN</span>
-                  <span class="card-status-dot"><i></i> DISPONIBLE</span>
+                <div class="live-card-sub-status">
+                  <span>16 AÑOS · DEBUT</span>
+                  <span class="live-dot-ready"><i></i> LISTO</span>
                 </div>
               </div>
             </div>
           </aside>
 
-          <!-- Columna Derecha: Controles agrupados -->
-          <section class="player-controls-panel">
-            <!-- Bloque 1: Datos Personales -->
-            <div class="bloque-personalizacion">
-              <div class="bloque-titulo-pro">
-                <span class="bloque-num">1</span>
-                <div>
-                  <h3>Datos Personales</h3>
-                  <span class="bloque-desc">Nombre en la camiseta, dorsal y perfil de juego</span>
-                </div>
-              </div>
-
-              <div class="campos-fila-pro">
-                <div class="campo campo-nombre-pro">
-                  <label for="input-nombre">Apellido / Nombre deportivo</label>
-                  <input type="text" id="input-nombre" maxlength="16" placeholder="EJ. MARTÍNEZ" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
-                </div>
-
-                <div class="campo campo-dorsal-pro">
-                  <label for="input-dorsal">Dorsal (1-99)</label>
-                  <div class="dorsal-input-wrap">
-                    <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
-                  </div>
-                </div>
-              </div>
-
-              <div class="campo campo-mano-pro">
-                <label>Mano Hábil (Perfil táctico)</label>
-                <div class="selector-mano-pro" id="selector-mano">
-                  <button type="button" data-mano="derecha" class="${estadoLocal.manoHabil === "derecha" ? "elegida" : ""}">
-                    <span class="mano-icono">🤚</span>
-                    <span class="mano-txt"><b>Diestro/a</b><i>Mano derecha dominante</i></span>
-                  </button>
-                  <button type="button" data-mano="izquierda" class="${estadoLocal.manoHabil === "izquierda" ? "elegida" : ""}">
-                    <span class="mano-icono">🖐️</span>
-                    <span class="mano-txt"><b>Zurdo/a</b><i>Clave en ataque por zona 2</i></span>
-                  </button>
-                </div>
-              </div>
+          <!-- Columna Principal: Contenido del Paso Activo -->
+          <main class="wizard-content-col">
+            <div class="step-title-block">
+              <span class="step-eyebrow">Paso ${pasoActual} de 5</span>
+              <h2>${config.titulo}</h2>
+              <p>${config.sub}</p>
             </div>
 
-            <!-- Bloque 2: Nacionalidad -->
-            <div class="bloque-personalizacion">
-              <div class="bloque-titulo-pro">
-                <span class="bloque-num">2</span>
-                <div>
-                  <h3>Nacionalidad y Selección</h3>
-                  <span class="bloque-desc">Define tu país de inicio y los colores de tu equipación</span>
-                </div>
-              </div>
-
-              <div class="buscador-caja-pro">
-                ${ico("buscar", "buscador-lupa")}
-                <input type="search" id="buscar-pais" class="buscador-pro" placeholder="Buscar país (España, Italia, Polonia, Brasil...)" autocomplete="off">
-              </div>
-
-              <div class="lista-paises-caja-pro">
-                <div class="lista-paises-pro" id="lista-paises">${paisesHtml}</div>
-              </div>
+            <div class="step-body-container">
+              ${contenidoPasoHtml}
             </div>
 
-            <!-- Bloque 3: Posición y Cancha -->
-            <div class="bloque-personalizacion">
-              <div class="bloque-titulo-pro">
-                <span class="bloque-num">3</span>
-                <div>
-                  <h3>Posición en la Pista</h3>
-                  <span class="bloque-desc">Elige tu rol táctico tocando la cancha o la lista</span>
-                </div>
+            <!-- Barra de Navegación Inferior -->
+            <footer class="wizard-footer-bar">
+              <button type="button" class="btn-wizard-back ${pasoActual === 1 ? "inactivo" : ""}" id="btn-wizard-prev" ${pasoActual === 1 ? "disabled" : ""}>
+                ← Anterior
+              </button>
+              
+              <div class="wizard-status-txt" id="wizard-status-txt">
+                ${puedeAvanzar ? "✔ Listo para continuar" : "Completa este paso para avanzar"}
               </div>
 
-              <div class="cancha-y-roles-grid">
-                <div class="cancha-col-visual">
-                  ${canchasSvg(estadoLocal.posicionId)}
-                </div>
-                <div class="roles-col-lista" id="lista-posiciones">
-                  ${posicionesHtml}
-                </div>
-              </div>
-
-              <div class="cancha-info-pro" id="cancha-info">
-                ${estadoLocal.posicionId
-                  ? `<b>${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(POSICIONES[estadoLocal.posicionId].nombre)}</b><span>${escapar(POSICIONES[estadoLocal.posicionId].descripcion)}</span>`
-                  : `<b>⚡ Elige tu posición en la pista</b><span>Haz clic en un puesto sobre la cancha o en una de las tarjetas para seleccionarlo.</span>`}
-              </div>
-            </div>
-          </section>
+              <button type="button" class="principal btn-wizard-next" id="btn-wizard-next" ${puedeAvanzar ? "" : "disabled"}>
+                <span>${esUltimo ? "🚀 ¡Comenzar Carrera!" : "Siguiente →"}</span>
+              </button>
+            </footer>
+          </main>
         </div>
-
-        <footer class="creacion-pie-pro">
-          <div class="pie-info-req" id="pie-info-req">
-            ${identidadLista() ? "✔ ¡Identidad lista para firmar tu primer contrato!" : "Completa tu nombre y selecciona una posición para continuar"}
-          </div>
-          <button class="principal btn-creacion-accion" id="btn-siguiente" disabled>
-            <span>Confirmar Identidad</span>
-            <span class="btn-flecha" aria-hidden="true">→</span>
-          </button>
-        </footer>
       </div>
     `);
 
+    // Sincronización de componentes del paso activo
+    engancharEventosPaso();
+  }
+
+  function engancharEventosPaso() {
     const $ = (s) => document.querySelector(s);
-    const btnSiguiente = $("#btn-siguiente");
+    const pasoActual = estadoLocal.paso;
+    const btnNext = $("#btn-wizard-next");
+    const btnPrev = $("#btn-wizard-prev");
     const camisetaNombre = $("#camiseta-nombre");
     const camisetaDorsal = $("#camiseta-dorsal");
-    const inputDorsal = $("#input-dorsal");
-    const inputNombre = $("#input-nombre");
-    const canchaInfo = $("#cancha-info");
     const cardNombreDisplay = $("#card-nombre-display");
     const cardDorsalDisplay = $("#card-dorsal-display");
     const cardManoChip = $("#card-mano-chip");
     const cardPosChip = $("#card-pos-chip");
-    const cardPaisNombre = $("#card-pais-nombre");
     const cardNacion = $("#card-nacion");
-    const pieInfoReq = $("#pie-info-req");
+    const wizardStatusTxt = $("#wizard-status-txt");
 
-    const refrescarBoton = () => {
-      const lista = identidadLista();
-      btnSiguiente.disabled = !lista;
-      if (pieInfoReq) {
-        pieInfoReq.textContent = lista
-          ? "✔ ¡Identidad lista para firmar tu primer contrato!"
-          : "Completa tu nombre y selecciona una posición para continuar";
-        pieInfoReq.classList.toggle("completo", lista);
+    const refrescarBotones = () => {
+      const ok = pasoValido(pasoActual);
+      if (btnNext) btnNext.disabled = !ok;
+      if (wizardStatusTxt) {
+        wizardStatusTxt.textContent = ok ? "✔ Listo para continuar" : "Completa este paso para avanzar";
+        wizardStatusTxt.classList.toggle("ok", ok);
       }
     };
 
@@ -655,19 +728,21 @@ function renderCreacion(cb) {
         el.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
-    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 72, 16, 9);
-    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 70, 68, 38);
 
-    function aplicarKit(paisId) {
+    function sincronizarCamiseta() {
+      const displayTxt = (estadoLocal.nombre.trim() || "JUGADOR/A").toUpperCase();
+      const dorsalTxt = dorsalValido() ? String(Number(estadoLocal.dorsal)) : "?";
+      ajustarTextoCamiseta(camisetaNombre, displayTxt, 72, 16, 9);
+      ajustarTextoCamiseta(camisetaDorsal, dorsalTxt, 70, 68, 38);
+      if (cardNombreDisplay) cardNombreDisplay.textContent = displayTxt;
+      if (cardDorsalDisplay) cardDorsalDisplay.textContent = `#${dorsalTxt}`;
+
       const svg = document.querySelector(".camiseta");
-      if (!svg) return;
-      const kit = paisId ? PAISES[paisId].kit : null;
-      for (const [prop, valor] of [["--kit-base", kit?.base], ["--kit-detalle", kit?.detalle], ["--kit-texto", kit?.texto]]) {
-        if (valor) svg.style.setProperty(prop, valor);
-        else svg.style.removeProperty(prop);
-      }
-      if (cardNacion && paisId) {
-        cardNacion.innerHTML = `${banderaSvg(paisId, 22)} <span id="card-pais-nombre">${escapar(PAISES[paisId].nombre)}</span>`;
+      const kit = estadoLocal.paisId ? PAISES[estadoLocal.paisId]?.kit : null;
+      if (svg && kit) {
+        svg.style.setProperty("--kit-base", kit.base);
+        svg.style.setProperty("--kit-detalle", kit.detalle);
+        svg.style.setProperty("--kit-texto", kit.texto);
       }
       const card = document.getElementById("player-card");
       if (card && kit) {
@@ -676,242 +751,206 @@ function renderCreacion(cb) {
       }
     }
 
-    inputNombre.oninput = (e) => {
-      estadoLocal.nombre = e.target.value;
-      const displayTxt = (e.target.value.trim() || "JUGADOR/A").toUpperCase();
-      ajustarNombreCamiseta(displayTxt);
-      if (cardNombreDisplay) cardNombreDisplay.textContent = displayTxt;
-      refrescarBoton();
-    };
+    sincronizarCamiseta();
 
-    aplicarKit(estadoLocal.paisId);
-    ajustarNombreCamiseta((estadoLocal.nombre.trim() || "JUGADOR/A").toUpperCase());
-    refrescarBoton();
-
-    inputDorsal.oninput = (e) => {
-      estadoLocal.dorsal = e.target.value;
-      const numVal = dorsalValido() ? String(Number(e.target.value)) : "?";
-      ajustarDorsalCamiseta(numVal);
-      if (cardDorsalDisplay) cardDorsalDisplay.textContent = `#${numVal}`;
-      inputDorsal.classList.toggle("invalido", e.target.value !== "" && !dorsalValido());
-      refrescarBoton();
-    };
-    inputDorsal.onblur = () => {
-      if (!dorsalValido()) {
-        estadoLocal.dorsal = String(clampNumero(Number(estadoLocal.dorsal) || 1, 1, 99));
-        inputDorsal.value = estadoLocal.dorsal;
-        inputDorsal.classList.remove("invalido");
-        ajustarDorsalCamiseta(estadoLocal.dorsal);
-        if (cardDorsalDisplay) cardDorsalDisplay.textContent = `#${estadoLocal.dorsal}`;
-        refrescarBoton();
-      }
-    };
-    ajustarDorsalCamiseta(estadoLocal.dorsal);
-
-    $("#buscar-pais").oninput = (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      document.querySelectorAll(".pais-item").forEach((el) => {
-        el.hidden = q !== "" && !el.dataset.nombre.includes(q);
-      });
-    };
-
-    document.querySelectorAll(".pais-item").forEach((el) => {
-      el.onclick = () => {
-        estadoLocal.paisId = el.dataset.pais;
-        estadoLocal.clubNombre = null;
-        document.querySelectorAll(".pais-item").forEach((o) => o.classList.toggle("elegido", o === el));
-        aplicarKit(estadoLocal.paisId);
-        refrescarBoton();
+    // Navegación Stepper
+    document.querySelectorAll("[data-ir-paso]").forEach((btn) => {
+      btn.onclick = () => {
+        const destino = Number(btn.dataset.irPaso);
+        if (destino < pasoActual || pasoValido(pasoActual)) {
+          estadoLocal.paso = destino;
+          renderWizard();
+        }
       };
     });
 
-    function seleccionarPosicion(id) {
-      if (!POSICIONES[id]) return;
-      estadoLocal.posicionId = id;
-      document.querySelectorAll(".puesto").forEach((o) => o.classList.toggle("elegido", o.dataset.pos === id));
-      document.querySelectorAll(".tarjeta-posicion").forEach((o) => o.classList.toggle("elegida", o.dataset.pos === id));
-      
-      const p = PUESTOS_CANCHA[id];
-      if (canchaInfo) {
-        canchaInfo.innerHTML = `<b>${p.icono} ${escapar(POSICIONES[id].nombre)}</b><span>${escapar(POSICIONES[id].descripcion)}</span>`;
-      }
-      if (cardPosChip) {
-        cardPosChip.className = "card-pos-chip asignada";
-        cardPosChip.innerHTML = `${p.icono} ${escapar(POSICIONES[id].nombre)}`;
-      }
-      refrescarBoton();
-    }
-
-    document.querySelectorAll(".puesto").forEach((el) => {
-      el.onclick = () => seleccionarPosicion(el.dataset.pos);
-    });
-
-    document.querySelectorAll(".tarjeta-posicion").forEach((el) => {
-      el.onclick = () => seleccionarPosicion(el.dataset.pos);
-    });
-
-    document.getElementById("selector-mano").onclick = (e) => {
-      const btn = e.target.closest("[data-mano]");
-      if (!btn) return;
-      estadoLocal.manoHabil = btn.dataset.mano;
-      document.querySelectorAll("#selector-mano [data-mano]")
-        .forEach((o) => o.classList.toggle("elegida", o === btn));
-      if (cardManoChip) {
-        cardManoChip.textContent = estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo/a" : "🤚 Diestro/a";
-      }
-    };
-
-    btnSiguiente.onclick = () => pasoEquipo();
-  }
-
-  /* ---------- PASO 2: Equipo y Atributos ---------- */
-  function pasoEquipo() {
-    const pais = PAISES[estadoLocal.paisId];
-    const opciones = equiposIniciales(estadoLocal.paisId, 3);
-    const perfil = POSICIONES[estadoLocal.posicionId];
-    for (const id of Object.keys(estadoLocal.reparto)) estadoLocal.reparto[id] = 0;
-
-    const equiposHtml = opciones.map((c, i) => `
-      <button type="button" class="tarjeta-equipo-pro" data-club="${escapar(c.nombre)}" style="--i:${i}">
-        <div class="equipo-escudo-caja">
-          ${escudoClub(c.nombre, 58)}
-        </div>
-        <div class="equipo-datos-pro">
-          <span class="equipo-nombre-pro">${escapar(c.nombre)}</span>
-          <span class="equipo-liga-pro">${escapar(pais.ligas.segunda.nombre)}</span>
-          <div class="equipo-prestigio-pro" aria-label="Prestigio ${c.prestigio} sobre 10">
-            <span class="estrellas-activas">${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}</span><span class="estrellas-inactivas">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
-            <span class="prestigio-txt">${c.prestigio}/10</span>
-          </div>
-        </div>
-        <div class="equipo-check-badge" aria-hidden="true">${ico("check")}</div>
-      </button>`).join("");
-
-    const repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
-      <div class="reparto-atributo-pro" data-fila="${a.id}">
-        <div class="attr-header-pro">
-          <span class="nombre-attr-pro">${ico(a.id)} ${a.nombre}</span>
-          <span class="valor-attr-pro">${perfil.base[a.id]}</span>
-        </div>
-        <div class="deslizador-wrap-pro">
-          <input type="range" class="deslizador-pro" data-attr="${a.id}"
-                 min="0" max="${TOPE_CREACION}" step="1"
-                 value="${perfil.base[a.id]}" aria-label="${a.nombre}">
-        </div>
-      </div>`).join("");
-
-    pintarPantalla(`
-      <div class="panel panel-creacion">
-        <header class="creacion-cabecera-pro">
-          <div class="creacion-stepper">
-            <span class="step-item completado"><i class="step-num">✔</i> 1. Identidad</span>
-            <span class="step-separador activo"></span>
-            <span class="step-item activo"><i class="step-num">2</i> Primer Club y Atributos</span>
-          </div>
-          <div class="creacion-titular">
-            <h2>Firma tu Primer Contrato</h2>
-            <p>Elige tu club de debut en 2ª división y reparte tus puntos de entrenamiento iniciales.</p>
-          </div>
-        </header>
-
-        <!-- Resumen del jugador creado -->
-        <div class="jugador-resumen-banner">
-          <div class="resumen-perfil-chip">
-            ${banderaSvg(estadoLocal.paisId, 24)}
-            <b>${escapar(estadoLocal.nombre.trim())} #${escapar(estadoLocal.dorsal)}</b>
-            <span class="resumen-separador">·</span>
-            <span>${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(perfil.nombre)}</span>
-            <span class="resumen-separador">·</span>
-            <span>${estadoLocal.manoHabil === "izquierda" ? "Zurdo/a" : "Diestro/a"}</span>
-          </div>
-        </div>
-
-        <div class="creacion-paso2-grid">
-          <section class="bloque-personalizacion">
-            <div class="bloque-titulo-pro">
-              <span class="bloque-num">1</span>
-              <div>
-                <h3>Elige tu Club Inicial</h3>
-                <span class="bloque-desc">${escapar(pais.ligas.segunda.nombre)} (${escapar(pais.nombre)})</span>
-              </div>
-            </div>
-            <div class="equipos-grid-pro">${equiposHtml}</div>
-          </section>
-
-          <section class="bloque-personalizacion">
-            <div class="bloque-titulo-pro">
-              <span class="bloque-num">2</span>
-              <div>
-                <h3>Reparto de Puntos Iniciales</h3>
-                <span class="bloque-desc">Ajusta los atributos acordes a tu estilo de juego</span>
-              </div>
-              <div class="puntos-disponibles-badge">
-                <b id="puntos-libres">${PUNTOS_CREACION}</b>
-                <span>puntos libres</span>
-              </div>
-            </div>
-            <div class="reparto-grid-pro" id="lista-reparto">${repartoHtml}</div>
-          </section>
-        </div>
-
-        <footer class="creacion-pie-pro">
-          <button class="secundario" id="btn-atras">← Volver a la Identidad</button>
-          <button class="principal btn-creacion-accion" id="btn-crear" disabled>
-            <span>Comenzar Carrera Profesional</span>
-            <span class="btn-flecha" aria-hidden="true">→</span>
-          </button>
-        </footer>
-      </div>
-    `);
-
-    const btnCrear = document.getElementById("btn-crear");
-    const listaReparto = document.getElementById("lista-reparto");
-    const puntosLibres = document.getElementById("puntos-libres");
-
-    function actualizarValores() {
-      const restantes = PUNTOS_CREACION - puntosUsados();
-      puntosLibres.textContent = restantes;
-      listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
-        const id = fila.dataset.fila;
-        const base = perfil.base[id];
-        const valor = base + estadoLocal.reparto[id];
-        const deslizador = fila.querySelector(".deslizador-pro");
-
-        fila.querySelector(".valor-attr-pro").textContent = valor;
-        deslizador.value = valor;
-        deslizador.style.setProperty("--base", `${(base / TOPE_CREACION) * 100}%`);
-        deslizador.style.setProperty("--relleno", `${(valor / TOPE_CREACION) * 100}%`);
-        fila.classList.toggle("al-maximo", valor >= TOPE_CREACION);
-      });
-      btnCrear.disabled = !estadoLocal.clubNombre;
-    }
-
-    document.querySelectorAll(".tarjeta-equipo-pro").forEach((el) => {
-      el.onclick = () => {
-        estadoLocal.clubNombre = el.dataset.club;
-        document.querySelectorAll(".tarjeta-equipo-pro").forEach((o) => o.classList.toggle("elegido", o === el));
-        btnCrear.disabled = false;
+    if (btnPrev && pasoActual > 1) {
+      btnPrev.onclick = () => {
+        estadoLocal.paso = Math.max(1, pasoActual - 1);
+        renderWizard();
       };
-    });
+    }
 
-    listaReparto.oninput = (e) => {
-      const deslizador = e.target.closest(".deslizador-pro");
-      if (!deslizador) return;
-      const attr = deslizador.dataset.attr;
-      const base = perfil.base[attr];
-      const usadosEnOtros = puntosUsados() - estadoLocal.reparto[attr];
-      const extraMaximo = Math.min(TOPE_CREACION - base, PUNTOS_CREACION - usadosEnOtros);
-      estadoLocal.reparto[attr] = clampNumero(Number(deslizador.value) - base, 0, extraMaximo);
-      actualizarValores();
-    };
+    if (btnNext) {
+      btnNext.onclick = () => {
+        if (!pasoValido(pasoActual)) return;
+        if (pasoActual === 5) {
+          cb.onCrear({ ...estadoLocal });
+        } else {
+          estadoLocal.paso = Math.min(5, pasoActual + 1);
+          renderWizard();
+        }
+      };
+    }
 
-    document.getElementById("btn-atras").onclick = () => pasoIdentidad();
-    btnCrear.onclick = () => cb.onCrear({ ...estadoLocal });
+    // Eventos específicos según paso
+    if (pasoActual === 1) {
+      const inputNombre = $("#input-nombre");
+      const inputDorsal = $("#input-dorsal");
 
-    actualizarValores();
+      if (inputNombre) {
+        inputNombre.oninput = (e) => {
+          estadoLocal.nombre = e.target.value;
+          sincronizarCamiseta();
+          refrescarBotones();
+        };
+      }
+
+      if (inputDorsal) {
+        inputDorsal.oninput = (e) => {
+          estadoLocal.dorsal = e.target.value;
+          sincronizarCamiseta();
+          inputDorsal.classList.toggle("invalido", e.target.value !== "" && !dorsalValido());
+          refrescarBotones();
+        };
+        inputDorsal.onblur = () => {
+          if (!dorsalValido()) {
+            estadoLocal.dorsal = String(clampNumero(Number(estadoLocal.dorsal) || 1, 1, 99));
+            inputDorsal.value = estadoLocal.dorsal;
+            inputDorsal.classList.remove("invalido");
+            sincronizarCamiseta();
+            refrescarBotones();
+          }
+        };
+      }
+
+      const btnMenos = $("#btn-dorsal-menos");
+      const btnMas = $("#btn-dorsal-mas");
+      const btnRandom = $("#btn-dorsal-random");
+
+      if (btnMenos) {
+        btnMenos.onclick = () => {
+          const cur = Number(estadoLocal.dorsal) || 10;
+          estadoLocal.dorsal = String(clampNumero(cur - 1, 1, 99));
+          if (inputDorsal) inputDorsal.value = estadoLocal.dorsal;
+          sincronizarCamiseta();
+          refrescarBotones();
+        };
+      }
+      if (btnMas) {
+        btnMas.onclick = () => {
+          const cur = Number(estadoLocal.dorsal) || 10;
+          estadoLocal.dorsal = String(clampNumero(cur + 1, 1, 99));
+          if (inputDorsal) inputDorsal.value = estadoLocal.dorsal;
+          sincronizarCamiseta();
+          refrescarBotones();
+        };
+      }
+      if (btnRandom) {
+        btnRandom.onclick = () => {
+          estadoLocal.dorsal = String(Math.floor(Math.random() * 99) + 1);
+          if (inputDorsal) inputDorsal.value = estadoLocal.dorsal;
+          sincronizarCamiseta();
+          refrescarBotones();
+        };
+      }
+
+      document.querySelectorAll("#selector-mano .btn-mano").forEach((btn) => {
+        btn.onclick = () => {
+          estadoLocal.manoHabil = btn.dataset.mano;
+          document.querySelectorAll("#selector-mano .btn-mano").forEach((o) => o.classList.toggle("elegida", o === btn));
+          if (cardManoChip) {
+            cardManoChip.textContent = estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo" : "🤚 Diestro";
+          }
+        };
+      });
+    } else if (pasoActual === 2) {
+      const search = $("#buscar-pais");
+      if (search) {
+        search.oninput = (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          document.querySelectorAll(".pais-card-pro").forEach((el) => {
+            el.hidden = q !== "" && !el.dataset.nombre.includes(q);
+          });
+        };
+      }
+
+      document.querySelectorAll(".pais-card-pro").forEach((el) => {
+        el.onclick = () => {
+          estadoLocal.paisId = el.dataset.pais;
+          estadoLocal.clubNombre = null; // Reinicia club si cambia país
+          document.querySelectorAll(".pais-card-pro").forEach((o) => o.classList.toggle("elegido", o === el));
+          sincronizarCamiseta();
+          if (cardNacion) {
+            cardNacion.innerHTML = `${banderaSvg(estadoLocal.paisId, 20)} <span>${escapar(PAISES[estadoLocal.paisId].nombre)}</span>`;
+          }
+          refrescarBotones();
+        };
+      });
+    } else if (pasoActual === 3) {
+      function seleccionarPosicion(id) {
+        if (!POSICIONES[id]) return;
+        estadoLocal.posicionId = id;
+        document.querySelectorAll(".puesto").forEach((o) => o.classList.toggle("elegido", o.dataset.pos === id));
+        document.querySelectorAll(".pos-item-pro").forEach((o) => o.classList.toggle("elegida", o.dataset.pos === id));
+        
+        const p = PUESTOS_CANCHA[id];
+        if (cardPosChip) {
+          cardPosChip.className = "live-pos-chip activo";
+          cardPosChip.innerHTML = `${p.icono} ${escapar(POSICIONES[id].nombre)}`;
+        }
+        refrescarBotones();
+      }
+
+      document.querySelectorAll(".puesto").forEach((el) => {
+        el.onclick = () => seleccionarPosicion(el.dataset.pos);
+      });
+      document.querySelectorAll(".pos-item-pro").forEach((el) => {
+        el.onclick = () => seleccionarPosicion(el.dataset.pos);
+      });
+    } else if (pasoActual === 4) {
+      document.querySelectorAll(".club-debut-card").forEach((el) => {
+        el.onclick = () => {
+          estadoLocal.clubNombre = el.dataset.club;
+          document.querySelectorAll(".club-debut-card").forEach((o) => o.classList.toggle("elegido", o === el));
+          refrescarBotones();
+        };
+      });
+    } else if (pasoActual === 5) {
+      const perfil = POSICIONES[estadoLocal.posicionId];
+      const listaReparto = $("#lista-reparto");
+      const puntosLibres = $("#puntos-libres");
+
+      function actualizarSliders() {
+        const restantes = PUNTOS_CREACION - puntosUsados();
+        if (puntosLibres) puntosLibres.textContent = restantes;
+        if (listaReparto) {
+          listaReparto.querySelectorAll("[data-fila]").forEach((fila) => {
+            const id = fila.dataset.fila;
+            const base = perfil.base[id];
+            const valor = base + estadoLocal.reparto[id];
+            const deslizador = fila.querySelector(".deslizador-pro");
+
+            fila.querySelector(".attr-val").textContent = valor;
+            if (deslizador) {
+              deslizador.value = valor;
+              deslizador.style.setProperty("--base", `${(base / TOPE_CREACION) * 100}%`);
+              deslizador.style.setProperty("--relleno", `${(valor / TOPE_CREACION) * 100}%`);
+            }
+            fila.classList.toggle("al-maximo", valor >= TOPE_CREACION);
+          });
+        }
+        refrescarBotones();
+      }
+
+      if (listaReparto) {
+        listaReparto.oninput = (e) => {
+          const deslizador = e.target.closest(".deslizador-pro");
+          if (!deslizador) return;
+          const attr = deslizador.dataset.attr;
+          const base = perfil.base[attr];
+          const usadosEnOtros = puntosUsados() - estadoLocal.reparto[attr];
+          const extraMaximo = Math.min(TOPE_CREACION - base, PUNTOS_CREACION - usadosEnOtros);
+          estadoLocal.reparto[attr] = clampNumero(Number(deslizador.value) - base, 0, extraMaximo);
+          actualizarSliders();
+        };
+      }
+
+      actualizarSliders();
+    }
   }
 
-  pasoIdentidad();
+  renderWizard();
 }
 
 /* ================= PRETEMPORADA: ENTRENAMIENTO ================= */
