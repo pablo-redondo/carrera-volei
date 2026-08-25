@@ -267,111 +267,141 @@ function renderInicio({ hayGuardado }, cb) {
    Dos pasos: primero la identidad (camiseta con dorsal, nacionalidad y
    posición sobre la cancha) y después el primer equipo y el reparto de
    atributos. Todo se actualiza en sitio, sin reconstruir la pantalla, para
-   que no reaparezcan las animaciones de entrada en cada clic. */
-
-/* Dónde juega cada posición sobre la media cancha (red arriba).
+   que no reaparezcan las a/* Dónde juega cada posición sobre la media cancha (red arriba).
    x/y en % dentro de la pista; zona = numeración oficial del voleibol. */
 const PUESTOS_CANCHA = {
-  receptor:  { corto: "REC", x: 20, y: 24, zona: 4 },
-  central:   { corto: "CEN", x: 50, y: 18, zona: 3 },
-  opuesto:   { corto: "OPU", x: 80, y: 24, zona: 2 },
-  libero:    { corto: "LIB", x: 30, y: 74, zona: 5 },
-  colocador: { corto: "COL", x: 76, y: 68, zona: 1 },
+  receptor:  { corto: "REC", x: 22, y: 28, zona: 4, icono: "🎯", rol: "Recepción y ataque en banda", clave: "Ataque · Recepción · Saque" },
+  central:   { corto: "CEN", x: 50, y: 20, zona: 3, icono: "🧱", rol: "Bloqueo y ataque rápido", clave: "Bloqueo · Ataque · Físico" },
+  opuesto:   { corto: "OPU", x: 78, y: 28, zona: 2, icono: "🔥", rol: "Remate principal y potencia", clave: "Ataque · Saque · Bloqueo" },
+  libero:    { corto: "LIB", x: 28, y: 74, zona: 5, icono: "🛡️", rol: "Especialista defensivo", clave: "Recepción · Defensa · Colocación" },
+  colocador: { corto: "COL", x: 74, y: 68, zona: 1, icono: "🧠", rol: "Cerebro y colocación", clave: "Colocación · Liderazgo · Defensa" },
 };
 
-/* Camiseta como una equipación real: el nombre va arqueado en la parte alta
-   de la espalda y el dorsal, grande, centrado debajo. Las piezas (cuerpo,
-   mangas, cuello y banda inferior) se colorean según la selección elegida. */
-/* Silueta de la camiseta: diseño plano, sin degradados ni franjas, con el
-   cuerpo en el color principal y solo cuello, puños y bajo en el de detalle.
-   Las versiones anteriores llenaban el pecho de bloques de color y el
-   resultado parecía un manchón en vez de una equipación. */
+/* Camiseta deportiva profesional de vóley:
+   Corte atlético raglán, cuello en V con ribete de contraste, textura de
+   micro-malla sublimada, paneles laterales y sombras de volumen. */
 const CAMISETA_CONTORNO = [
-  "M100 24",
-  "C89 24 79 21 71 16",
-  "L31 37", "C24 41 22 49 25 56",
-  "L42 88", "C45 94 53 96 59 92", "L64 86",
-  "L58 204", "C58 212 63 217 71 218",
-  "C90 221 110 221 129 218", "C137 217 142 212 142 204",
-  "L136 86", "L141 92", "C147 96 155 94 158 88",
-  "L175 56", "C178 49 176 41 169 37",
-  "L129 16", "C121 21 111 24 100 24", "Z",
+  "M100 22",
+  "C88 22 76 18 68 14",
+  "L24 38", "C18 42 16 50 19 57",
+  "L36 94", "C39 100 48 102 54 97", "L60 90",
+  "L56 208", "C56 216 61 222 70 223",
+  "C90 226 110 226 130 223", "C139 222 144 216 144 208",
+  "L140 90", "L146 97", "C152 102 161 100 164 94",
+  "L181 57", "C184 50 182 42 176 38",
+  "L132 14", "C124 18 112 22 100 22", "Z",
 ].join(" ");
 
 function camisetaSvg() {
   return `
-    <svg class="camiseta" viewBox="0 0 200 240" role="img" aria-label="Camiseta del jugador">
+    <svg class="camiseta" viewBox="0 0 200 240" role="img" aria-label="Camiseta oficial del jugador">
       <defs>
         <clipPath id="recorte-camiseta"><path d="${CAMISETA_CONTORNO}"/></clipPath>
-        <!-- Volumen en blanco y negro translúcido, no en color: así el
-             sombreado vale para cualquier equipación sin retocarlo. -->
-        <linearGradient id="volumenCamiseta" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stop-color="#000" stop-opacity=".34"/>
-          <stop offset="16%"  stop-color="#000" stop-opacity=".08"/>
-          <stop offset="38%"  stop-color="#fff" stop-opacity=".17"/>
-          <stop offset="58%"  stop-color="#fff" stop-opacity=".05"/>
-          <stop offset="84%"  stop-color="#000" stop-opacity=".14"/>
-          <stop offset="100%" stop-color="#000" stop-opacity=".36"/>
+        
+        <!-- Textura micro-malla atlética deportiva -->
+        <pattern id="patron-malla" width="5" height="5" patternUnits="userSpaceOnUse">
+          <circle cx="2.5" cy="2.5" r="0.75" fill="#ffffff" opacity="0.08"/>
+        </pattern>
+
+        <!-- Sombreado volumétrico de alta definición -->
+        <linearGradient id="luzCamiseta" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#ffffff" stop-opacity=".32"/>
+          <stop offset="35%"  stop-color="#ffffff" stop-opacity=".06"/>
+          <stop offset="65%"  stop-color="#000000" stop-opacity=".04"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".38"/>
         </linearGradient>
-        <linearGradient id="caidaCamiseta" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stop-color="#fff" stop-opacity=".2"/>
-          <stop offset="26%"  stop-color="#fff" stop-opacity="0"/>
-          <stop offset="100%" stop-color="#000" stop-opacity=".26"/>
+
+        <linearGradient id="volumenLateral" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#000000" stop-opacity=".38"/>
+          <stop offset="16%"  stop-color="#000000" stop-opacity=".05"/>
+          <stop offset="50%"  stop-color="#ffffff" stop-opacity=".12"/>
+          <stop offset="84%"  stop-color="#000000" stop-opacity=".05"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".38"/>
+        </linearGradient>
+
+        <linearGradient id="gradCuello" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity=".25"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".35"/>
         </linearGradient>
       </defs>
 
+      <!-- Cuerpo principal de la equipación -->
       <path class="kit-cuerpo" d="${CAMISETA_CONTORNO}"/>
 
       <g clip-path="url(#recorte-camiseta)">
-        <!-- bajo y puños. Los puños se trazan hacia DENTRO de la manga: hacia
-             fuera quedaban fuera del recorte y desaparecían por completo. -->
-        <rect class="kit-detalle" x="0" y="202" width="200" height="40"/>
-        <path class="kit-detalle" d="M25 56 L42 88 L53 82 L36 50 Z"/>
-        <path class="kit-detalle" d="M175 56 L158 88 L147 82 L164 50 Z"/>
-      </g>
+        <!-- Paneles laterales atléticos -->
+        <path class="kit-detalle" d="M24 38 L60 90 L56 220 L40 220 L19 57 Z" opacity=".95"/>
+        <path class="kit-detalle" d="M176 38 L140 90 L144 220 L160 220 L181 57 Z" opacity=".95"/>
 
-      <g clip-path="url(#recorte-camiseta)">
-        <!-- sombreado de volumen y pliegues de la tela -->
-        <path d="${CAMISETA_CONTORNO}" fill="url(#volumenCamiseta)"/>
-        <path d="${CAMISETA_CONTORNO}" fill="url(#caidaCamiseta)"/>
+        <!-- Puños de mangas y banda inferior -->
+        <path class="kit-detalle" d="M19 57 L36 94 L47 88 L30 51 Z"/>
+        <path class="kit-detalle" d="M181 57 L164 94 L153 88 L170 51 Z"/>
+        <rect class="kit-detalle" x="0" y="212" width="200" height="30"/>
+
+        <!-- Costuras raglán -->
+        <path d="M68 14 C58 40 52 64 60 90" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2.2" stroke-dasharray="3,2"/>
+        <path d="M132 14 C142 40 148 64 140 90" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2.2" stroke-dasharray="3,2"/>
+
+        <!-- Textura micro-malla -->
+        <rect x="0" y="0" width="200" height="240" fill="url(#patron-malla)"/>
+
+        <!-- Sombreado de volumen y drapeado atlético -->
+        <path d="${CAMISETA_CONTORNO}" fill="url(#volumenLateral)"/>
+        <path d="${CAMISETA_CONTORNO}" fill="url(#luzCamiseta)"/>
+
+        <!-- Pliegues realistas -->
         <g class="kit-pliegues">
-          <path d="M76 96 C71 132 72 170 74 202"/>
-          <path d="M124 96 C129 132 128 170 126 202"/>
-          <path d="M91 150 C89 172 89 188 90 204"/>
-          <path d="M109 150 C111 172 111 188 110 204"/>
-          <path d="M38 62 C46 70 53 78 58 88"/>
-          <path d="M162 62 C154 70 147 78 142 88"/>
+          <path d="M74 96 C69 135 70 174 72 208"/>
+          <path d="M126 96 C131 135 130 174 128 208"/>
+          <path d="M88 155 C86 178 87 194 88 212"/>
+          <path d="M112 155 C114 178 113 194 112 212"/>
         </g>
       </g>
 
-      <!-- cuello: banda fina siguiendo el escote. Relleno macizo parecía un
-           babero blanco en vez de un cuello. -->
-      <path class="kit-cuello" clip-path="url(#recorte-camiseta)"
-            d="M74 18 C82 30 92 34 100 34 C108 34 118 30 126 18"/>
+      <!-- Cuello en V atlético -->
+      <g clip-path="url(#recorte-camiseta)">
+        <path d="M68 14 L100 48 L132 14 L124 10 L100 38 L76 10 Z" class="kit-detalle"/>
+        <path d="M68 14 L100 48 L132 14 L124 10 L100 38 L76 10 Z" fill="url(#gradCuello)"/>
+      </g>
+      
+      <!-- Contorno general definido -->
       <path class="kit-contorno" d="${CAMISETA_CONTORNO}"/>
 
-      <text id="camiseta-nombre" class="camiseta-nombre" x="100" y="70" text-anchor="middle">JUGADOR</text>
-      <text id="camiseta-dorsal" class="camiseta-dorsal" x="100" y="155" text-anchor="middle">10</text>
+      <!-- Tipografía deportiva para nombre y dorsal -->
+      <text id="camiseta-nombre" class="camiseta-nombre" x="100" y="78" text-anchor="middle">JUGADOR</text>
+      <text id="camiseta-dorsal" class="camiseta-dorsal" x="100" y="162" text-anchor="middle">10</text>
     </svg>`;
 }
 
-/* Media cancha vista desde arriba, con la red arriba (postes incluidos),
-   la zona de ataque delimitada por la línea de 3 metros y los seis puestos
-   colocados sobre sus zonas reglamentarias. */
-function canchaSvg(seleccionada) {
+/* Media cancha reglamentaria indoor vista desde arriba:
+   Pista bicolor tipo Taraflex con zona de ataque de 3m, red profesional
+   con varillas rojas/blancas y nodos tácticos interactivos. */
+function canchasSvg(seleccionada) {
   const marcas = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
     <button type="button" class="puesto ${seleccionada === id ? "elegido" : ""}" data-pos="${id}" style="--x:${p.x}%; --y:${p.y}%"
             aria-label="${POSICIONES[id].nombre}">
+      <span class="puesto-icono">${p.icono}</span>
       <span class="puesto-corto">${p.corto}</span>
-      <span class="puesto-zona">Zona ${p.zona}</span>
+      <span class="puesto-zona">Z${p.zona}</span>
     </button>`).join("");
 
   return `
     <div class="cancha-marco">
-      <div class="cancha-red" aria-hidden="true"><span></span><span></span></div>
+      <div class="cancha-red" aria-hidden="true">
+        <span class="red-antena antena-izq" title="Antena"></span>
+        <span class="red-malla"></span>
+        <span class="red-antena antena-der" title="Antena"></span>
+      </div>
       <div class="cancha">
-        <div class="cancha-zona-ataque" aria-hidden="true"></div>
+        <div class="cancha-piso" aria-hidden="true"></div>
+        <div class="cancha-zona-ataque" aria-hidden="true">
+          <span class="cancha-etiqueta-ataque">ZONA DE ATAQUE (3m)</span>
+        </div>
         <div class="cancha-linea-ataque" aria-hidden="true"></div>
+        <div class="cancha-linea-central" aria-hidden="true"></div>
+        <div class="cancha-zona-zaga" aria-hidden="true">
+          <span class="cancha-etiqueta-zaga">ZONA DEFENSIVA</span>
+        </div>
         ${marcas}
       </div>
     </div>`;
@@ -381,8 +411,6 @@ function renderCreacion(cb) {
   const estadoLocal = {
     nombre: "",
     dorsal: String(Math.floor(Math.random() * 99) + 1),
-    // Arranca con una selección puesta para que la camiseta salga ya con
-    // colores; en blanco daba la sensación de pantalla a medio cargar.
     paisId: "espana",
     posicionId: null,
     manoHabil: "derecha",
@@ -397,69 +425,189 @@ function renderCreacion(cb) {
   };
   const identidadLista = () => Boolean(estadoLocal.nombre.trim() && dorsalValido() && estadoLocal.paisId && estadoLocal.posicionId);
 
-  /* ---------- PASO 1: identidad ---------- */
+  /* ---------- PASO 1: Identidad Deportiva ---------- */
   function pasoIdentidad() {
     const paisesHtml = Object.entries(PAISES).map(([id, p]) => `
       <button type="button" class="pais-item ${estadoLocal.paisId === id ? "elegido" : ""}" data-pais="${id}" data-nombre="${escapar(p.nombre.toLowerCase())}">
-        <span class="pais-bandera">${banderaSvg(id, 34)}</span>
-        <span class="pais-nombre">${escapar(p.nombre)}</span>
+        <span class="pais-bandera">${banderaSvg(id, 28)}</span>
+        <span class="pais-info-txt">
+          <span class="pais-nombre">${escapar(p.nombre)}</span>
+          <span class="pais-kit-preview" aria-hidden="true">
+            <i style="background:${p.kit.base}"></i>
+            <i style="background:${p.kit.detalle}"></i>
+          </span>
+        </span>
         <span class="pais-check" aria-hidden="true">${ico("check")}</span>
+      </button>`).join("");
+
+    const posicionesHtml = Object.entries(PUESTOS_CANCHA).map(([id, p]) => `
+      <button type="button" class="tarjeta-posicion ${estadoLocal.posicionId === id ? "elegida" : ""}" data-pos="${id}">
+        <div class="pos-cabecera">
+          <span class="pos-icono">${p.icono}</span>
+          <div>
+            <span class="pos-nombre">${escapar(POSICIONES[id].nombre)}</span>
+            <span class="pos-rol">${escapar(p.rol)}</span>
+          </div>
+          <span class="pos-badge-zona">Zona ${p.zona}</span>
+        </div>
+        <div class="pos-meta-clave">
+          <span class="pos-meta-lbl">Claves:</span>
+          <span class="pos-meta-val">${p.clave}</span>
+        </div>
       </button>`).join("");
 
     pintarPantalla(`
       <div class="panel panel-creacion">
-        <header class="creacion-cabecera">
-          <span class="eyebrow">Nueva carrera · paso 1 de 2</span>
-          <h2>Define tu identidad</h2>
+        <header class="creacion-cabecera-pro">
+          <div class="creacion-stepper">
+            <span class="step-item activo"><i class="step-num">1</i> Identidad Deportiva</span>
+            <span class="step-separador"></span>
+            <span class="step-item"><i class="step-num">2</i> Club y Atributos</span>
+          </div>
+          <div class="creacion-titular">
+            <h2>Crea tu Jugador/a</h2>
+            <p>Personaliza tu dorsal, tu país de origen y tu especialidad en la pista.</p>
+          </div>
         </header>
 
-        <div class="creacion-grid">
-          <section class="creacion-col">
-            <h3 class="col-titulo">Identidad</h3>
-            <div class="camiseta-caja">${camisetaSvg()}</div>
-            <div class="campos-identidad">
-              <div class="campo campo-ancho">
-                <label for="input-nombre">Apellido</label>
-                <input type="text" id="input-nombre" maxlength="16" placeholder="APELLIDO" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
+        <div class="creacion-layout-pro">
+          <!-- Columna Izquierda: Ficha / Tarjeta de Jugador en Vivo -->
+          <aside class="player-card-panel">
+            <div class="player-card-badge-top">FICHA OFICIAL · TEMPORADA DEBUT</div>
+            <div class="player-card" id="player-card">
+              <div class="card-glow" aria-hidden="true"></div>
+              
+              <div class="card-header-meta">
+                <div class="card-nacion" id="card-nacion">
+                  ${banderaSvg(estadoLocal.paisId, 22)}
+                  <span id="card-pais-nombre">${escapar(PAISES[estadoLocal.paisId].nombre)}</span>
+                </div>
+                <div class="card-mano-chip" id="card-mano-chip">
+                  ${estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo/a" : "🤚 Diestro/a"}
+                </div>
               </div>
-              <div class="campo">
-                <label for="input-dorsal">Número</label>
-                <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
-              </div>
-            </div>
-            <div class="campo campo-mano">
-              <label>Mano hábil</label>
-              <div class="selector-mano" id="selector-mano">
-                <button type="button" data-mano="izquierda" class="${estadoLocal.manoHabil === "izquierda" ? "elegida" : ""}">Izquierda</button>
-                <button type="button" data-mano="derecha" class="${estadoLocal.manoHabil === "derecha" ? "elegida" : ""}">Derecha</button>
-              </div>
-            </div>
-          </section>
 
-          <section class="creacion-col">
-            <h3 class="col-titulo">Nacionalidad</h3>
-            <div class="buscador-caja">
-              ${ico("buscar", "buscador-lupa")}
-              <input type="search" id="buscar-pais" class="buscador" placeholder="Buscar país" autocomplete="off">
-            </div>
-            <div class="lista-paises-caja">
-              <div class="lista-paises" id="lista-paises">${paisesHtml}</div>
-            </div>
-          </section>
+              <div class="card-pos-chip ${estadoLocal.posicionId ? "asignada" : "pendiente"}" id="card-pos-chip">
+                ${estadoLocal.posicionId 
+                  ? `${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(POSICIONES[estadoLocal.posicionId].nombre)}`
+                  : `⚡ Elige tu posición en la pista`}
+              </div>
 
-          <section class="creacion-col">
-            <h3 class="col-titulo">Posición</h3>
-            ${canchaSvg(estadoLocal.posicionId)}
-            <div class="cancha-info" id="cancha-info">${
-              estadoLocal.posicionId
-                ? `<b>${escapar(POSICIONES[estadoLocal.posicionId].nombre)}</b><span>${escapar(POSICIONES[estadoLocal.posicionId].descripcion)}</span>`
-                : `<b>Elige tu posición</b><span>Pulsa un puesto sobre la cancha para ver qué hace.</span>`
-            }</div>
+              <div class="jersey-stage">
+                <div class="jersey-spotlight" aria-hidden="true"></div>
+                ${camisetaSvg()}
+              </div>
+
+              <div class="card-footer-info">
+                <div class="card-nombre-wrap">
+                  <span class="card-dorsal-tag" id="card-dorsal-display">#${estadoLocal.dorsal}</span>
+                  <b class="card-nombre-display" id="card-nombre-display">${escapar(estadoLocal.nombre.trim() || "JUGADOR/A")}</b>
+                </div>
+                <div class="card-sub-info">
+                  <span>16 AÑOS · 2ª DIVISIÓN</span>
+                  <span class="card-status-dot"><i></i> DISPONIBLE</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Columna Derecha: Controles agrupados -->
+          <section class="player-controls-panel">
+            <!-- Bloque 1: Datos Personales -->
+            <div class="bloque-personalizacion">
+              <div class="bloque-titulo-pro">
+                <span class="bloque-num">1</span>
+                <div>
+                  <h3>Datos Personales</h3>
+                  <span class="bloque-desc">Nombre en la camiseta, dorsal y perfil de juego</span>
+                </div>
+              </div>
+
+              <div class="campos-fila-pro">
+                <div class="campo campo-nombre-pro">
+                  <label for="input-nombre">Apellido / Nombre deportivo</label>
+                  <input type="text" id="input-nombre" maxlength="16" placeholder="EJ. MARTÍNEZ" autocomplete="off" value="${escapar(estadoLocal.nombre)}">
+                </div>
+
+                <div class="campo campo-dorsal-pro">
+                  <label for="input-dorsal">Dorsal (1-99)</label>
+                  <div class="dorsal-input-wrap">
+                    <input type="number" id="input-dorsal" min="1" max="99" inputmode="numeric" value="${estadoLocal.dorsal}">
+                  </div>
+                </div>
+              </div>
+
+              <div class="campo campo-mano-pro">
+                <label>Mano Hábil (Perfil táctico)</label>
+                <div class="selector-mano-pro" id="selector-mano">
+                  <button type="button" data-mano="derecha" class="${estadoLocal.manoHabil === "derecha" ? "elegida" : ""}">
+                    <span class="mano-icono">🤚</span>
+                    <span class="mano-txt"><b>Diestro/a</b><i>Mano derecha dominante</i></span>
+                  </button>
+                  <button type="button" data-mano="izquierda" class="${estadoLocal.manoHabil === "izquierda" ? "elegida" : ""}">
+                    <span class="mano-icono">🖐️</span>
+                    <span class="mano-txt"><b>Zurdo/a</b><i>Clave en ataque por zona 2</i></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bloque 2: Nacionalidad -->
+            <div class="bloque-personalizacion">
+              <div class="bloque-titulo-pro">
+                <span class="bloque-num">2</span>
+                <div>
+                  <h3>Nacionalidad y Selección</h3>
+                  <span class="bloque-desc">Define tu país de inicio y los colores de tu equipación</span>
+                </div>
+              </div>
+
+              <div class="buscador-caja-pro">
+                ${ico("buscar", "buscador-lupa")}
+                <input type="search" id="buscar-pais" class="buscador-pro" placeholder="Buscar país (España, Italia, Polonia, Brasil...)" autocomplete="off">
+              </div>
+
+              <div class="lista-paises-caja-pro">
+                <div class="lista-paises-pro" id="lista-paises">${paisesHtml}</div>
+              </div>
+            </div>
+
+            <!-- Bloque 3: Posición y Cancha -->
+            <div class="bloque-personalizacion">
+              <div class="bloque-titulo-pro">
+                <span class="bloque-num">3</span>
+                <div>
+                  <h3>Posición en la Pista</h3>
+                  <span class="bloque-desc">Elige tu rol táctico tocando la cancha o la lista</span>
+                </div>
+              </div>
+
+              <div class="cancha-y-roles-grid">
+                <div class="cancha-col-visual">
+                  ${canchasSvg(estadoLocal.posicionId)}
+                </div>
+                <div class="roles-col-lista" id="lista-posiciones">
+                  ${posicionesHtml}
+                </div>
+              </div>
+
+              <div class="cancha-info-pro" id="cancha-info">
+                ${estadoLocal.posicionId
+                  ? `<b>${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(POSICIONES[estadoLocal.posicionId].nombre)}</b><span>${escapar(POSICIONES[estadoLocal.posicionId].descripcion)}</span>`
+                  : `<b>⚡ Elige tu posición en la pista</b><span>Haz clic en un puesto sobre la cancha o en una de las tarjetas para seleccionarlo.</span>`}
+              </div>
+            </div>
           </section>
         </div>
 
-        <footer class="creacion-pie">
-          <button class="principal" id="btn-siguiente" disabled>Confirmar identidad</button>
+        <footer class="creacion-pie-pro">
+          <div class="pie-info-req" id="pie-info-req">
+            ${identidadLista() ? "✔ ¡Identidad lista para firmar tu primer contrato!" : "Completa tu nombre y selecciona una posición para continuar"}
+          </div>
+          <button class="principal btn-creacion-accion" id="btn-siguiente" disabled>
+            <span>Confirmar Identidad</span>
+            <span class="btn-flecha" aria-hidden="true">→</span>
+          </button>
         </footer>
       </div>
     `);
@@ -469,18 +617,32 @@ function renderCreacion(cb) {
     const camisetaNombre = $("#camiseta-nombre");
     const camisetaDorsal = $("#camiseta-dorsal");
     const inputDorsal = $("#input-dorsal");
+    const inputNombre = $("#input-nombre");
     const canchaInfo = $("#cancha-info");
+    const cardNombreDisplay = $("#card-nombre-display");
+    const cardDorsalDisplay = $("#card-dorsal-display");
+    const cardManoChip = $("#card-mano-chip");
+    const cardPosChip = $("#card-pos-chip");
+    const cardPaisNombre = $("#card-pais-nombre");
+    const cardNacion = $("#card-nacion");
+    const pieInfoReq = $("#pie-info-req");
 
-    const refrescarBoton = () => { btnSiguiente.disabled = !identidadLista(); };
+    const refrescarBoton = () => {
+      const lista = identidadLista();
+      btnSiguiente.disabled = !lista;
+      if (pieInfoReq) {
+        pieInfoReq.textContent = lista
+          ? "✔ ¡Identidad lista para firmar tu primer contrato!"
+          : "Completa tu nombre y selecciona una posición para continuar";
+        pieInfoReq.classList.toggle("completo", lista);
+      }
+    };
 
-    /* El cuerpo de la camiseta mide 92 unidades de ancho en el viewBox.
-       Primero se reduce el tamaño de letra, pero solo hasta un mínimo legible;
-       si aún no cabe (nombres muy largos), se comprime el texto. */
     function ajustarTextoCamiseta(el, texto, anchoMaximo, tamanoBase, tamanoMinimo) {
-      const destino = el;
-      destino.textContent = texto;
-      destino.removeAttribute("textLength");
-      destino.removeAttribute("lengthAdjust");
+      if (!el) return;
+      el.textContent = texto;
+      el.removeAttribute("textLength");
+      el.removeAttribute("lengthAdjust");
 
       let tam = tamanoBase;
       el.style.fontSize = `${tam}px`;
@@ -489,14 +651,13 @@ function renderCreacion(cb) {
         el.style.fontSize = `${tam}px`;
       }
       if (el.getComputedTextLength() > anchoMaximo) {
-        destino.setAttribute("textLength", anchoMaximo);
-        destino.setAttribute("lengthAdjust", "spacingAndGlyphs");
+        el.setAttribute("textLength", anchoMaximo);
+        el.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
     }
-    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 68, 16, 8);
-    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 68, 66, 36);
+    const ajustarNombreCamiseta = (texto) => ajustarTextoCamiseta(camisetaNombre, texto, 72, 16, 9);
+    const ajustarDorsalCamiseta = (texto) => ajustarTextoCamiseta(camisetaDorsal, texto, 70, 68, 38);
 
-    /* Pinta la camiseta con los colores de la selección elegida. */
     function aplicarKit(paisId) {
       const svg = document.querySelector(".camiseta");
       if (!svg) return;
@@ -505,20 +666,33 @@ function renderCreacion(cb) {
         if (valor) svg.style.setProperty(prop, valor);
         else svg.style.removeProperty(prop);
       }
+      if (cardNacion && paisId) {
+        cardNacion.innerHTML = `${banderaSvg(paisId, 22)} <span id="card-pais-nombre">${escapar(PAISES[paisId].nombre)}</span>`;
+      }
+      const card = document.getElementById("player-card");
+      if (card && kit) {
+        card.style.setProperty("--pais-color-base", kit.base);
+        card.style.setProperty("--pais-color-acento", kit.detalle);
+      }
     }
 
-    $("#input-nombre").oninput = (e) => {
+    inputNombre.oninput = (e) => {
       estadoLocal.nombre = e.target.value;
-      ajustarNombreCamiseta((e.target.value.trim() || "JUGADOR").toUpperCase());
+      const displayTxt = (e.target.value.trim() || "JUGADOR/A").toUpperCase();
+      ajustarNombreCamiseta(displayTxt);
+      if (cardNombreDisplay) cardNombreDisplay.textContent = displayTxt;
       refrescarBoton();
     };
+
     aplicarKit(estadoLocal.paisId);
-    ajustarNombreCamiseta((estadoLocal.nombre.trim() || "JUGADOR").toUpperCase());
+    ajustarNombreCamiseta((estadoLocal.nombre.trim() || "JUGADOR/A").toUpperCase());
     refrescarBoton();
 
     inputDorsal.oninput = (e) => {
       estadoLocal.dorsal = e.target.value;
-      ajustarDorsalCamiseta(dorsalValido() ? String(Number(e.target.value)) : "?");
+      const numVal = dorsalValido() ? String(Number(e.target.value)) : "?";
+      ajustarDorsalCamiseta(numVal);
+      if (cardDorsalDisplay) cardDorsalDisplay.textContent = `#${numVal}`;
       inputDorsal.classList.toggle("invalido", e.target.value !== "" && !dorsalValido());
       refrescarBoton();
     };
@@ -528,6 +702,7 @@ function renderCreacion(cb) {
         inputDorsal.value = estadoLocal.dorsal;
         inputDorsal.classList.remove("invalido");
         ajustarDorsalCamiseta(estadoLocal.dorsal);
+        if (cardDorsalDisplay) cardDorsalDisplay.textContent = `#${estadoLocal.dorsal}`;
         refrescarBoton();
       }
     };
@@ -543,21 +718,36 @@ function renderCreacion(cb) {
     document.querySelectorAll(".pais-item").forEach((el) => {
       el.onclick = () => {
         estadoLocal.paisId = el.dataset.pais;
-        estadoLocal.clubNombre = null;      // el equipo depende del país
+        estadoLocal.clubNombre = null;
         document.querySelectorAll(".pais-item").forEach((o) => o.classList.toggle("elegido", o === el));
         aplicarKit(estadoLocal.paisId);
         refrescarBoton();
       };
     });
 
+    function seleccionarPosicion(id) {
+      if (!POSICIONES[id]) return;
+      estadoLocal.posicionId = id;
+      document.querySelectorAll(".puesto").forEach((o) => o.classList.toggle("elegido", o.dataset.pos === id));
+      document.querySelectorAll(".tarjeta-posicion").forEach((o) => o.classList.toggle("elegida", o.dataset.pos === id));
+      
+      const p = PUESTOS_CANCHA[id];
+      if (canchaInfo) {
+        canchaInfo.innerHTML = `<b>${p.icono} ${escapar(POSICIONES[id].nombre)}</b><span>${escapar(POSICIONES[id].descripcion)}</span>`;
+      }
+      if (cardPosChip) {
+        cardPosChip.className = "card-pos-chip asignada";
+        cardPosChip.innerHTML = `${p.icono} ${escapar(POSICIONES[id].nombre)}`;
+      }
+      refrescarBoton();
+    }
+
     document.querySelectorAll(".puesto").forEach((el) => {
-      el.onclick = () => {
-        const id = el.dataset.pos;
-        estadoLocal.posicionId = id;
-        document.querySelectorAll(".puesto").forEach((o) => o.classList.toggle("elegido", o === el));
-        canchaInfo.innerHTML = `<b>${escapar(POSICIONES[id].nombre)}</b><span>${escapar(POSICIONES[id].descripcion)}</span>`;
-        refrescarBoton();
-      };
+      el.onclick = () => seleccionarPosicion(el.dataset.pos);
+    });
+
+    document.querySelectorAll(".tarjeta-posicion").forEach((el) => {
+      el.onclick = () => seleccionarPosicion(el.dataset.pos);
     });
 
     document.getElementById("selector-mano").onclick = (e) => {
@@ -566,12 +756,15 @@ function renderCreacion(cb) {
       estadoLocal.manoHabil = btn.dataset.mano;
       document.querySelectorAll("#selector-mano [data-mano]")
         .forEach((o) => o.classList.toggle("elegida", o === btn));
+      if (cardManoChip) {
+        cardManoChip.textContent = estadoLocal.manoHabil === "izquierda" ? "🖐️ Zurdo/a" : "🤚 Diestro/a";
+      }
     };
 
     btnSiguiente.onclick = () => pasoEquipo();
   }
 
-  /* ---------- PASO 2: equipo y atributos ---------- */
+  /* ---------- PASO 2: Equipo y Atributos ---------- */
   function pasoEquipo() {
     const pais = PAISES[estadoLocal.paisId];
     const opciones = equiposIniciales(estadoLocal.paisId, 3);
@@ -579,59 +772,95 @@ function renderCreacion(cb) {
     for (const id of Object.keys(estadoLocal.reparto)) estadoLocal.reparto[id] = 0;
 
     const equiposHtml = opciones.map((c, i) => `
-      <button type="button" class="tarjeta-equipo" data-club="${escapar(c.nombre)}" style="--i:${i}">
-        ${escudoClub(c.nombre, 54)}
-        <span class="equipo-datos">
-          <span class="equipo-nombre">${escapar(c.nombre)}</span>
-          <span class="equipo-liga">${escapar(pais.ligas.segunda.nombre)}</span>
-          <span class="equipo-prestigio" aria-label="Prestigio ${c.prestigio} sobre 10">
-            ${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}<span class="tenue">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
-          </span>
-        </span>
+      <button type="button" class="tarjeta-equipo-pro" data-club="${escapar(c.nombre)}" style="--i:${i}">
+        <div class="equipo-escudo-caja">
+          ${escudoClub(c.nombre, 58)}
+        </div>
+        <div class="equipo-datos-pro">
+          <span class="equipo-nombre-pro">${escapar(c.nombre)}</span>
+          <span class="equipo-liga-pro">${escapar(pais.ligas.segunda.nombre)}</span>
+          <div class="equipo-prestigio-pro" aria-label="Prestigio ${c.prestigio} sobre 10">
+            <span class="estrellas-activas">${"★".repeat(Math.max(1, Math.round(c.prestigio / 2)))}</span><span class="estrellas-inactivas">${"★".repeat(5 - Math.max(1, Math.round(c.prestigio / 2)))}</span>
+            <span class="prestigio-txt">${c.prestigio}/10</span>
+          </div>
+        </div>
+        <div class="equipo-check-badge" aria-hidden="true">${ico("check")}</div>
       </button>`).join("");
 
-    /* Un deslizador por atributo: arrastrar es mucho más cómodo que ir
-       pulsando "+" punto a punto. La escala va de 0 al tope para que la barra
-       represente el valor real del atributo; el tramo inicial es el valor base
-       de la posición y no se puede reducir. */
     const repartoHtml = ATRIBUTOS.filter((a) => perfil.pesos[a.id] > 0).map((a) => `
-      <div class="reparto-atributo" data-fila="${a.id}">
-        <span class="nombre-attr">${ico(a.id)} ${a.nombre}</span>
-        <span class="valor-attr">${perfil.base[a.id]}</span>
-        <input type="range" class="deslizador" data-attr="${a.id}"
-               min="0" max="${TOPE_CREACION}" step="1"
-               value="${perfil.base[a.id]}" aria-label="${a.nombre}">
+      <div class="reparto-atributo-pro" data-fila="${a.id}">
+        <div class="attr-header-pro">
+          <span class="nombre-attr-pro">${ico(a.id)} ${a.nombre}</span>
+          <span class="valor-attr-pro">${perfil.base[a.id]}</span>
+        </div>
+        <div class="deslizador-wrap-pro">
+          <input type="range" class="deslizador-pro" data-attr="${a.id}"
+                 min="0" max="${TOPE_CREACION}" step="1"
+                 value="${perfil.base[a.id]}" aria-label="${a.nombre}">
+        </div>
       </div>`).join("");
 
     pintarPantalla(`
-      <div class="panel">
-        <div class="panel-cabecera">
-          <div>
-            <span class="eyebrow">Nueva carrera · paso 2 de 2</span>
-            <h2>Tu primer equipo</h2>
+      <div class="panel panel-creacion">
+        <header class="creacion-cabecera-pro">
+          <div class="creacion-stepper">
+            <span class="step-item completado"><i class="step-num">✔</i> 1. Identidad</span>
+            <span class="step-separador activo"></span>
+            <span class="step-item activo"><i class="step-num">2</i> Primer Club y Atributos</span>
+          </div>
+          <div class="creacion-titular">
+            <h2>Firma tu Primer Contrato</h2>
+            <p>Elige tu club de debut en 2ª división y reparte tus puntos de entrenamiento iniciales.</p>
+          </div>
+        </header>
+
+        <!-- Resumen del jugador creado -->
+        <div class="jugador-resumen-banner">
+          <div class="resumen-perfil-chip">
+            ${banderaSvg(estadoLocal.paisId, 24)}
+            <b>${escapar(estadoLocal.nombre.trim())} #${escapar(estadoLocal.dorsal)}</b>
+            <span class="resumen-separador">·</span>
+            <span>${PUESTOS_CANCHA[estadoLocal.posicionId].icono} ${escapar(perfil.nombre)}</span>
+            <span class="resumen-separador">·</span>
+            <span>${estadoLocal.manoHabil === "izquierda" ? "Zurdo/a" : "Diestro/a"}</span>
           </div>
         </div>
 
-        <p class="narrativa">
-          ${escapar(estadoLocal.nombre.trim())} <b>#${escapar(estadoLocal.dorsal)}</b> ·
-          ${escapar(perfil.nombre)} · ${banderaSvg(estadoLocal.paisId, 18)} ${escapar(pais.nombre)}.
-          Empiezas en <b>${escapar(pais.ligas.segunda.nombre)}</b>: elige dónde firmar tu primer contrato.
-        </p>
+        <div class="creacion-paso2-grid">
+          <section class="bloque-personalizacion">
+            <div class="bloque-titulo-pro">
+              <span class="bloque-num">1</span>
+              <div>
+                <h3>Elige tu Club Inicial</h3>
+                <span class="bloque-desc">${escapar(pais.ligas.segunda.nombre)} (${escapar(pais.nombre)})</span>
+              </div>
+            </div>
+            <div class="equipos-grid-pro">${equiposHtml}</div>
+          </section>
 
-        <div class="equipos-grid">${equiposHtml}</div>
-
-        <div class="form-fila" style="margin-top:24px;">
-          <div class="reparto-cabecera">
-            <label>Reparto de atributos</label>
-            <div class="puntos-restantes"><b id="puntos-libres">${PUNTOS_CREACION}</b> <span>puntos disponibles</span></div>
-          </div>
-          <div id="lista-reparto">${repartoHtml}</div>
+          <section class="bloque-personalizacion">
+            <div class="bloque-titulo-pro">
+              <span class="bloque-num">2</span>
+              <div>
+                <h3>Reparto de Puntos Iniciales</h3>
+                <span class="bloque-desc">Ajusta los atributos acordes a tu estilo de juego</span>
+              </div>
+              <div class="puntos-disponibles-badge">
+                <b id="puntos-libres">${PUNTOS_CREACION}</b>
+                <span>puntos libres</span>
+              </div>
+            </div>
+            <div class="reparto-grid-pro" id="lista-reparto">${repartoHtml}</div>
+          </section>
         </div>
 
-        <div class="opciones">
-          <button class="principal" id="btn-crear" disabled>Comenzar carrera</button>
-          <button class="secundario" id="btn-atras">Volver a la identidad</button>
-        </div>
+        <footer class="creacion-pie-pro">
+          <button class="secundario" id="btn-atras">← Volver a la Identidad</button>
+          <button class="principal btn-creacion-accion" id="btn-crear" disabled>
+            <span>Comenzar Carrera Profesional</span>
+            <span class="btn-flecha" aria-hidden="true">→</span>
+          </button>
+        </footer>
       </div>
     `);
 
@@ -646,11 +875,10 @@ function renderCreacion(cb) {
         const id = fila.dataset.fila;
         const base = perfil.base[id];
         const valor = base + estadoLocal.reparto[id];
-        const deslizador = fila.querySelector(".deslizador");
+        const deslizador = fila.querySelector(".deslizador-pro");
 
-        fila.querySelector(".valor-attr").textContent = valor;
+        fila.querySelector(".valor-attr-pro").textContent = valor;
         deslizador.value = valor;
-        // El tramo hasta "base" es fijo; a partir de ahí, los puntos repartidos.
         deslizador.style.setProperty("--base", `${(base / TOPE_CREACION) * 100}%`);
         deslizador.style.setProperty("--relleno", `${(valor / TOPE_CREACION) * 100}%`);
         fila.classList.toggle("al-maximo", valor >= TOPE_CREACION);
@@ -658,24 +886,20 @@ function renderCreacion(cb) {
       btnCrear.disabled = !estadoLocal.clubNombre;
     }
 
-    document.querySelectorAll(".tarjeta-equipo").forEach((el) => {
+    document.querySelectorAll(".tarjeta-equipo-pro").forEach((el) => {
       el.onclick = () => {
         estadoLocal.clubNombre = el.dataset.club;
-        document.querySelectorAll(".tarjeta-equipo").forEach((o) => o.classList.toggle("elegido", o === el));
+        document.querySelectorAll(".tarjeta-equipo-pro").forEach((o) => o.classList.toggle("elegido", o === el));
         btnCrear.disabled = false;
       };
     });
 
-    /* Un solo listener para todas las barras. Aunque cada barra ya lleva su
-       propio tope, se vuelve a limitar aquí: así el reparto nunca puede pasar
-       de los puntos disponibles (por teclado, por arrastre rápido, etc.). */
     listaReparto.oninput = (e) => {
-      const deslizador = e.target.closest(".deslizador");
+      const deslizador = e.target.closest(".deslizador-pro");
       if (!deslizador) return;
       const attr = deslizador.dataset.attr;
       const base = perfil.base[attr];
       const usadosEnOtros = puntosUsados() - estadoLocal.reparto[attr];
-      // No se puede bajar del valor base ni gastar más puntos de los que quedan.
       const extraMaximo = Math.min(TOPE_CREACION - base, PUNTOS_CREACION - usadosEnOtros);
       estadoLocal.reparto[attr] = clampNumero(Number(deslizador.value) - base, 0, extraMaximo);
       actualizarValores();

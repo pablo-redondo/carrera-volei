@@ -982,71 +982,1000 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .ficha-texto { display: flex; flex-direction: column; gap: 3px; }
 .ficha-detalle { font-size: .75rem; line-height: 1.45; color: var(--texto-tenue); }
 
-/* ============ CREACIÓN: identidad, país y cancha ============ */
-/* Las tres columnas comparten altura y su contenido se reparte de arriba
-   abajo, para que ninguna quede con un hueco muerto al final. */
-/* Panel a pantalla completa con cabecera, tres columnas y pie de acciones. */
-.panel-creacion { display: flex; flex-direction: column; padding: 0; }
-.creacion-cabecera {
-  padding: 18px 22px 15px;
-  border-bottom: 1px solid var(--borde);
-}
-.creacion-cabecera h2 { margin: 0; }
-.creacion-pie {
-  display: flex; align-items: center; justify-content: center;
-  padding: 15px 22px;
-  border-top: 1px solid var(--borde);
-}
-.creacion-pie .secundario, .creacion-pie .principal { min-width: 190px; min-height: 46px; padding: 12px 24px; }
-
-.creacion-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.05fr) minmax(0, 1.05fr);
-  gap: 24px;
-  align-items: stretch;
-  padding: 18px 22px;
-}
-.creacion-col {
+/* ============================================================
+   CREACIÓN PRO: IDENTIDAD, PLAYER CARD, CANCHA Y MERCADO INICIAL
+   ============================================================ */
+.panel-creacion {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-}
-.cancha-info { margin-top: auto; }
-/* La camiseta ocupa el hueco libre de su columna y se centra dentro: antes
-   se quedaba pequeña arriba y dejaba un vacío enorme sobre los campos. */
-.camiseta-caja {
-  flex: 1;
-  display: flex; align-items: center; justify-content: center;
-  padding: 10px 0 16px;
-  min-height: 0;
-  background: radial-gradient(60% 55% at 50% 46%, rgba(255, 107, 26, .13), transparent 70%);
-}
-.col-titulo {
-  margin: 0 0 14px;
-  font-family: var(--fuente-display);
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--texto);
-  text-align: center;
+  padding: 0;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  box-shadow: var(--sombra-alta);
 }
 
-/* --- camiseta con nombre y dorsal --- */
-/* Ojo: dentro de una columna flexible, los márgenes laterales "auto" impiden
-   que el elemento se estire y lo dejan sin ancho. Se centra con align-self. */
-/* La camiseta se centra en el espacio libre de la columna (los campos quedan
-   abajo del todo), para que no quede un vacío grande entre ambos. */
+/* Stepper y cabecera */
+.creacion-cabecera-pro {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--borde);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+}
+.creacion-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.step-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--fuente-display);
+  font-size: .84rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--texto-tenue);
+  transition: color .2s;
+}
+.step-item .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-style: normal;
+  font-size: .75rem;
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  color: var(--texto-tenue);
+}
+.step-item.activo {
+  color: var(--naranja);
+}
+.step-item.activo .step-num {
+  background: var(--grad-acento);
+  border-color: transparent;
+  color: #1a0a00;
+  font-weight: 800;
+  box-shadow: 0 0 14px rgba(255, 107, 26, .55);
+}
+.step-item.completado {
+  color: var(--verde);
+}
+.step-item.completado .step-num {
+  background: rgba(46, 224, 138, .15);
+  border-color: var(--verde);
+  color: var(--verde);
+  font-weight: 800;
+}
+.step-separador {
+  flex: 0 0 40px;
+  height: 2px;
+  background: var(--panel-3);
+  border-radius: 99px;
+}
+.step-separador.activo {
+  background: linear-gradient(90deg, var(--verde), var(--naranja));
+}
+.creacion-titular h2 {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  line-height: 1.15;
+}
+.creacion-titular p {
+  margin: 0;
+  color: var(--texto-medio);
+  font-size: .9rem;
+}
+
+/* Layout de 2 columnas principales */
+.creacion-layout-pro {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  padding: 24px 28px;
+  align-items: start;
+}
+
+/* ---------------- PLAYER CARD EN VIVO (Izquierda) ---------------- */
+.player-card-panel {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.player-card-badge-top {
+  font-family: var(--fuente-display);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  text-align: center;
+}
+.player-card {
+  --pais-color-base: #ff6b1a;
+  --pais-color-acento: #ffb347;
+  position: relative;
+  border-radius: var(--r-lg);
+  background: linear-gradient(165deg, rgba(26, 32, 44, .95), rgba(12, 16, 23, .98));
+  border: 1px solid rgba(255, 255, 255, .12);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, .85);
+  overflow: hidden;
+  transition: border-color .3s, transform .25s var(--ease);
+}
+.player-card:hover {
+  border-color: rgba(255, 255, 255, .25);
+  transform: translateY(-2px);
+}
+.card-glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--pais-color-base) 0%, transparent 70%);
+  opacity: .28;
+  pointer-events: none;
+  filter: blur(28px);
+  transition: background .4s;
+}
+
+.card-header-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 1;
+}
+.card-nacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .84rem;
+  font-weight: 700;
+  color: var(--texto);
+  background: rgba(255, 255, 255, .06);
+  padding: 4px 9px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .1);
+}
+.card-mano-chip {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--texto-medio);
+  background: rgba(255, 255, 255, .04);
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+.card-pos-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  font-family: var(--fuente-display);
+  font-size: .88rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  z-index: 1;
+  transition: all .25s var(--ease);
+}
+.card-pos-chip.pendiente {
+  background: rgba(255, 255, 255, .06);
+  color: var(--texto-tenue);
+  border: 1px dashed rgba(255, 255, 255, .18);
+}
+.card-pos-chip.asignada {
+  background: linear-gradient(135deg, rgba(255, 107, 26, .22), rgba(255, 179, 71, .1));
+  color: var(--ambar);
+  border: 1px solid rgba(255, 107, 26, .45);
+  box-shadow: 0 0 16px -4px rgba(255, 107, 26, .35);
+}
+
+.jersey-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 230px;
+  padding: 10px 0;
+  z-index: 1;
+}
+.jersey-spotlight {
+  position: absolute;
+  inset: 10% 15%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
 .camiseta {
   display: block;
-  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, .55));
   width: 100%;
-  max-width: 100%;
-  height: 100%;
-  max-height: 300px;
-  object-fit: contain;
+  max-width: 210px;
+  height: auto;
+  max-height: 240px;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, .6));
+  transition: transform .25s var(--ease);
 }
-/* Colores de la equipación: se sobrescriben al elegir selección. */
+.jersey-stage:hover .camiseta {
+  transform: scale(1.03) translateY(-2px);
+}
+
+.card-footer-info {
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1;
+}
+.card-nombre-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.card-dorsal-tag {
+  font-family: var(--fuente-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--naranja);
+}
+.card-nombre-display {
+  font-family: var(--fuente-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-sub-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--fuente-display);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--texto-tenue);
+}
+.card-status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--verde);
+}
+.card-status-dot i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--verde);
+  box-shadow: 0 0 8px var(--verde);
+}
+
+/* ---------------- PANEL DE CONTROLES (Derecha) ---------------- */
+.player-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.bloque-personalizacion {
+  background: var(--panel-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bloque-titulo-pro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+.bloque-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, rgba(255, 107, 26, .2), rgba(255, 179, 71, .1));
+  border: 1px solid rgba(255, 107, 26, .35);
+  color: var(--naranja);
+  font-family: var(--fuente-display);
+  font-weight: 800;
+  font-size: .92rem;
+  flex-shrink: 0;
+}
+.bloque-titulo-pro h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.bloque-desc {
+  display: block;
+  font-size: .78rem;
+  color: var(--texto-tenue);
+}
+
+/* Inputs de nombre y dorsal */
+.campos-fila-pro {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 14px;
+}
+.campo-nombre-pro label, .campo-dorsal-pro label, .campo-mano-pro label {
+  display: block;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--texto-tenue);
+  margin-bottom: 6px;
+}
+.campo-nombre-pro input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--texto);
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  transition: all .2s;
+}
+.campo-nombre-pro input:focus {
+  outline: none;
+  border-color: var(--naranja);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .18);
+  background: #1e2430;
+}
+.campo-dorsal-pro input {
+  width: 100%;
+  font-family: var(--fuente-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--naranja);
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 10px;
+  transition: all .2s;
+}
+.campo-dorsal-pro input:focus {
+  outline: none;
+  border-color: var(--naranja);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .18);
+}
+.campo-dorsal-pro input.invalido {
+  border-color: var(--rojo);
+}
+
+/* Selector Mano Hábil */
+.selector-mano-pro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.selector-mano-pro button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  color: var(--texto-medio);
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s;
+}
+.selector-mano-pro button .mano-icono {
+  font-size: 1.35rem;
+}
+.selector-mano-pro button .mano-txt {
+  display: flex;
+  flex-direction: column;
+}
+.selector-mano-pro button .mano-txt b {
+  font-size: .88rem;
+  color: var(--texto);
+}
+.selector-mano-pro button .mano-txt i {
+  font-style: normal;
+  font-size: .68rem;
+  color: var(--texto-tenue);
+}
+.selector-mano-pro button:hover {
+  border-color: rgba(255, 255, 255, .3);
+  background: rgba(255, 255, 255, .05);
+}
+.selector-mano-pro button.elegida {
+  border-color: var(--naranja);
+  background: linear-gradient(135deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .05));
+  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4);
+}
+.selector-mano-pro button.elegida .mano-txt b {
+  color: var(--ambar);
+}
+
+/* Selector de País */
+.buscador-caja-pro {
+  position: relative;
+}
+.buscador-caja-pro .buscador-lupa {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--texto-tenue);
+  pointer-events: none;
+}
+.buscador-pro {
+  width: 100%;
+  font-family: inherit;
+  font-size: .9rem;
+  color: var(--texto);
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 10px 12px 10px 38px;
+  transition: all .2s;
+}
+.buscador-pro:focus {
+  outline: none;
+  border-color: var(--naranja);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .18);
+}
+.lista-paises-caja-pro {
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  padding: 8px;
+}
+.lista-paises-pro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+.lista-paises-pro::-webkit-scrollbar { width: 5px; }
+.lista-paises-pro::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .2);
+  border-radius: 99px;
+}
+.pais-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.pais-item:hover {
+  background: rgba(255, 255, 255, .06);
+}
+.pais-item.elegido {
+  background: rgba(255, 107, 26, .15);
+  border-color: var(--naranja);
+}
+.pais-info-txt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+.pais-nombre {
+  font-size: .86rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pais-kit-preview {
+  display: inline-flex;
+  gap: 3px;
+}
+.pais-kit-preview i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .25);
+}
+
+/* Grid de Posición + Cancha */
+.cancha-y-roles-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.roles-col-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.tarjeta-posicion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s var(--ease);
+}
+.tarjeta-posicion:hover {
+  border-color: rgba(255, 255, 255, .35);
+  background: #1f2735;
+  transform: translateX(2px);
+}
+.tarjeta-posicion.elegida {
+  border-color: var(--naranja);
+  background: linear-gradient(135deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .05));
+  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4);
+}
+.pos-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pos-icono {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.pos-nombre {
+  display: block;
+  font-family: var(--fuente-display);
+  font-size: .98rem;
+  font-weight: 700;
+  color: var(--texto);
+  line-height: 1.2;
+}
+.tarjeta-posicion.elegida .pos-nombre {
+  color: var(--ambar);
+}
+.pos-rol {
+  display: block;
+  font-size: .72rem;
+  color: var(--texto-tenue);
+}
+.pos-badge-zona {
+  margin-left: auto;
+  font-family: var(--fuente-display);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: var(--texto-medio);
+}
+.tarjeta-posicion.elegida .pos-badge-zona {
+  background: var(--naranja);
+  color: #1a0a00;
+}
+.pos-meta-clave {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: .7rem;
+  padding-left: 32px;
+}
+.pos-meta-lbl {
+  color: var(--texto-tenue);
+  font-weight: 700;
+}
+.pos-meta-val {
+  color: var(--texto-medio);
+}
+
+/* Pista de vóley Taraflex pro */
+.cancha-col-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cancha-marco {
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+}
+.cancha-red {
+  position: relative;
+  height: 20px;
+  margin: 0 6px;
+  border-top: 3px solid #ffffff;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 1px, transparent 1px 8px);
+}
+.red-antena {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 28px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(180deg, #e6223a 0 5px, #ffffff 5px 10px);
+  box-shadow: 0 0 6px rgba(0,0,0,.5);
+}
+.antena-izq { left: -6px; }
+.antena-der { right: -6px; }
+
+.cancha {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 3px solid rgba(255, 255, 255, .85);
+  border-top: none;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  background: #0f3764;
+  overflow: hidden;
+  box-shadow: 0 16px 36px -18px rgba(0, 0, 0, .8);
+}
+.cancha-zona-ataque {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 33.3%;
+  background: #174c88;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cancha-etiqueta-ataque, .cancha-etiqueta-zaga {
+  font-family: var(--fuente-display);
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: rgba(255, 255, 255, .22);
+  pointer-events: none;
+  user-select: none;
+}
+.cancha-linea-ataque {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 33.3%;
+  height: 2px;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255,255,255,.4);
+}
+.cancha-linea-central {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255, 255, 255, .15);
+  pointer-events: none;
+}
+.cancha-zona-zaga {
+  position: absolute;
+  inset: 33.3% 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.puesto {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 44px;
+  padding: 4px 6px;
+  background: rgba(8, 14, 24, .92);
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: var(--r-sm);
+  color: var(--texto);
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,.6);
+  transition: all .2s var(--ease);
+  z-index: 2;
+}
+.puesto-icono {
+  font-size: .85rem;
+  line-height: 1;
+}
+.puesto-corto {
+  font-family: var(--fuente-display);
+  font-size: .85rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.puesto-zona {
+  font-size: .5rem;
+  font-weight: 800;
+  opacity: .7;
+}
+.puesto:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  border-color: #ffffff;
+  background: #172438;
+}
+.puesto.elegido {
+  background: var(--grad-acento);
+  border-color: #ffe0b2;
+  color: #1a0a00;
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, .35), 0 8px 18px rgba(255, 107, 26, .8);
+  transform: translate(-50%, -50%) scale(1.12);
+}
+
+.cancha-info-pro {
+  background: var(--panel-3);
+  border-left: 3px solid var(--naranja);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 10px 14px;
+  font-size: .82rem;
+  line-height: 1.45;
+  color: var(--texto-medio);
+}
+.cancha-info-pro b {
+  display: block;
+  color: var(--texto);
+  margin-bottom: 2px;
+  font-size: .9rem;
+}
+
+/* Pie de creación */
+.creacion-pie-pro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 28px;
+  border-top: 1px solid var(--borde);
+  background: rgba(12, 16, 23, .9);
+}
+.pie-info-req {
+  font-size: .84rem;
+  color: var(--texto-tenue);
+  font-weight: 600;
+}
+.pie-info-req.completo {
+  color: var(--verde);
+}
+.btn-creacion-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 28px;
+  font-size: 1rem;
+}
+.btn-creacion-accion .btn-flecha {
+  font-size: 1.15rem;
+  transition: transform .2s;
+}
+.btn-creacion-accion:hover:not(:disabled) .btn-flecha {
+  transform: translateX(4px);
+}
+
+/* ---------------- PASO 2: CLUB Y ATRIBUTOS ---------------- */
+.jugador-resumen-banner {
+  padding: 12px 28px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--borde);
+}
+.resumen-perfil-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .92rem;
+  color: var(--texto);
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  padding: 6px 16px 6px 10px;
+}
+.resumen-separador {
+  color: var(--texto-tenue);
+}
+.creacion-paso2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 24px;
+  padding: 24px 28px;
+}
+.equipos-grid-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tarjeta-equipo-pro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  transition: all .2s var(--ease);
+}
+.tarjeta-equipo-pro:hover {
+  border-color: rgba(255, 107, 26, .45);
+  background: #1f2735;
+  transform: translateY(-2px);
+}
+.tarjeta-equipo-pro.elegido {
+  border-color: var(--naranja);
+  background: linear-gradient(135deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .04));
+  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4);
+}
+.equipo-datos-pro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.equipo-nombre-pro {
+  font-family: var(--fuente-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.equipo-liga-pro {
+  font-size: .75rem;
+  color: var(--texto-tenue);
+}
+.equipo-prestigio-pro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .8rem;
+}
+.estrellas-activas { color: var(--oro); }
+.estrellas-inactivas { color: rgba(255,255,255,.15); }
+.prestigio-txt { font-size: .7rem; color: var(--texto-tenue); font-weight: 700; }
+
+.equipo-check-badge {
+  color: var(--naranja);
+  opacity: 0;
+  transform: scale(.7);
+  transition: all .2s var(--ease);
+}
+.tarjeta-equipo-pro.elegido .equipo-check-badge {
+  opacity: 1;
+  transform: none;
+}
+
+.puntos-disponibles-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel-3);
+  border: 1px solid var(--borde-fuerte);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+.puntos-disponibles-badge b {
+  font-family: var(--fuente-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--naranja);
+}
+.puntos-disponibles-badge span {
+  font-size: .72rem;
+  color: var(--texto-medio);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.reparto-grid-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.reparto-atributo-pro {
+  background: var(--panel-3);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.attr-header-pro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nombre-attr-pro {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .88rem;
+  font-weight: 700;
+}
+.valor-attr-pro {
+  font-family: var(--fuente-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--texto);
+}
+.reparto-atributo-pro.al-maximo .valor-attr-pro {
+  color: var(--naranja);
+}
+
+.deslizador-wrap-pro {
+  position: relative;
+}
+.deslizador-pro {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, .25) 0% var(--base, 30%), 
+    var(--naranja) var(--base, 30%) var(--relleno, 50%), 
+    rgba(255, 255, 255, .08) var(--relleno, 50%) 100%);
+  outline: none;
+}
+.deslizador-pro::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--texto);
+  border: 3px solid var(--panel);
+  box-shadow: 0 2px 8px rgba(0,0,0,.6);
+  cursor: pointer;
+  transition: transform .15s;
+}
+.deslizador-pro::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--ambar);
+}
+
+/* Colores dinámicos de la camiseta */
 .camiseta {
   --kit-base: #eef2f7;
   --kit-detalle: #c3cedd;
@@ -1054,254 +1983,27 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 }
 .kit-cuerpo   { fill: var(--kit-base); }
 .kit-detalle  { fill: var(--kit-detalle); }
-.kit-brillo   { pointer-events: none; }
 .kit-contorno { fill: none; stroke: #0a0e14; stroke-width: 3.5; stroke-linejoin: round; }
-.kit-cuello { fill: none; stroke: var(--kit-detalle); stroke-width: 7; stroke-linecap: round; }
-.kit-pliegues { fill: none; stroke: #000; stroke-opacity: .13; stroke-width: 2.4; stroke-linecap: round; }
+.kit-cuello   { fill: var(--kit-detalle); }
+.kit-pliegues { fill: none; stroke: #000; stroke-opacity: .14; stroke-width: 2.2; stroke-linecap: round; }
 
-/* Tamaños en unidades del viewBox: el cuerpo de la camiseta mide 92 de ancho
-   (de x=64 a x=156), así que el texto nunca debe pasar de ~84. */
 .camiseta-nombre {
-  font-family: var(--fuente);
-  font-size: 15px;
+  font-family: var(--fuente-display);
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: .6px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   fill: var(--kit-texto);
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
 }
 .camiseta-dorsal {
-  font-family: var(--fuente);
-  font-size: 66px;
+  font-family: var(--fuente-display);
+  font-size: 68px;
   font-weight: 800;
   letter-spacing: -2px;
   fill: var(--kit-texto);
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.5));
 }
-.campos-identidad { display: grid; grid-template-columns: 1fr 84px; gap: 10px; }
-.campo label {
-  display: block;
-  font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--texto-tenue);
-  margin-bottom: 6px;
-}
-.campo input {
-  width: 100%;
-  font-family: inherit; font-size: .95rem; font-weight: 600;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-sm);
-  padding: 11px 12px;
-  transition: border-color .2s, box-shadow .2s;
-}
-.campo input:focus {
-  outline: none;
-  border-color: var(--naranja);
-  box-shadow: 0 0 0 3px rgba(255, 107, 26, .16);
-}
-.campo input.invalido { border-color: var(--rojo); }
-#input-dorsal { text-align: center; font-weight: 800; }
-
-/* --- buscador y lista de países --- */
-.buscador-caja { position: relative; margin-bottom: 10px; }
-.buscador-lupa {
-  position: absolute;
-  left: 12px; top: 50%;
-  transform: translateY(-50%);
-  width: 16px; height: 16px;
-  color: var(--texto-tenue);
-  pointer-events: none;
-}
-.buscador {
-  width: 100%;
-  font-family: inherit; font-size: .9rem;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-sm);
-  padding: 11px 13px 11px 36px;
-}
-.buscador::-webkit-search-cancel-button { filter: invert(.6); }
-.buscador:focus { outline: none; border-color: var(--naranja); box-shadow: 0 0 0 3px rgba(255, 107, 26, .16); }
-.lista-paises {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-content: start;
-  gap: 6px;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: thin;
-}
-.pais-item {
-  display: flex; align-items: center; gap: 12px;
-  font-family: inherit; font-size: .92rem; font-weight: 600;
-  text-align: left;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-sm);
-  padding: 10px 11px;
-  cursor: pointer;
-  transition: background .18s, border-color .18s, transform .18s var(--ease);
-}
-.pais-item:hover { transform: translateY(-1px); border-color: var(--borde-fuerte); }
-/* Marca de elegido, para que se vea cuál está activo sin depender solo del
-   color del borde. */
-.pais-check {
-  margin-left: auto;
-  display: inline-flex;
-  color: var(--naranja);
-  opacity: 0;
-  transform: scale(.7);
-  transition: opacity .18s, transform .18s var(--ease);
-}
-.pais-check .ico { width: 15px; height: 15px; }
-.pais-item.elegido .pais-check { opacity: 1; transform: none; }
-.pais-item[hidden] { display: none; }
-.pais-item:hover { background: var(--panel-3); }
-.pais-item.elegido {
-  border-color: var(--naranja);
-  background: linear-gradient(150deg, rgba(255, 107, 26, .2), rgba(255, 107, 26, .05));
-}
-.pais-bandera { display: inline-flex; line-height: 0; flex-shrink: 0; }
-.bandera { display: block; border-radius: 2px; }
-.pais-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* --- media cancha vista desde arriba --- */
-.cancha-marco { margin-bottom: 12px; }
-
-/* La red va por encima del borde de la pista, con sus dos postes: antes era
-   una banda rayada pegada al borde superior y no se leía como una red. */
-.cancha-red {
-  position: relative;
-  height: 22px;
-  margin: 0 7px;
-  border-top: 3px solid rgba(255, 255, 255, .92);
-  background: repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0 1px, transparent 1px 9px);
-}
-.cancha-red span {
-  position: absolute;
-  top: -5px;
-  width: 4px; height: 30px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #e2e9f2, #78859a);
-}
-.cancha-red span:first-child { left: -7px; }
-.cancha-red span:last-child  { right: -7px; }
-
-.cancha {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border: 2px solid rgba(255, 255, 255, .8);
-  border-top: none;
-  border-radius: 0 0 var(--r-sm) var(--r-sm);
-  background: #123a63;
-  overflow: hidden;
-  box-shadow: 0 16px 34px -26px #000;
-}
-/* Zona de ataque: los tres primeros metros, en tono cálido como en las
-   pistas de competición. */
-.cancha-zona-ataque {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 33.3%;
-  background: rgba(255, 255, 255, .07);
-}
-.cancha-linea-ataque {
-  position: absolute;
-  left: 0; right: 0; top: 33.3%;
-  height: 2px;
-  background: rgba(255, 255, 255, .8);
-}
-
-/* Puestos como fichas, en la línea del resto de la interfaz: los círculos
-   blancos sueltos desentonaban con las tarjetas del resto de la app. */
-.puesto {
-  position: absolute;
-  left: var(--x); top: var(--y);
-  transform: translate(-50%, -50%);
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  min-width: 52px;
-  padding: 5px 8px;
-  font-family: inherit;
-  color: var(--texto);
-  background: rgba(8, 13, 21, .82);
-  border: 1px solid rgba(255, 255, 255, .22);
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: transform .18s var(--ease), background .2s, border-color .2s, box-shadow .25s;
-}
-.puesto:hover {
-  transform: translate(-50%, -50%) scale(1.07);
-  border-color: rgba(255, 255, 255, .65);
-  background: rgba(22, 30, 44, .96);
-}
-.puesto.elegido {
-  background: var(--grad-acento);
-  border-color: #ffd9b3;
-  color: #241000;
-  box-shadow: 0 0 0 3px rgba(255, 107, 26, .3), 0 10px 22px -10px rgba(255, 107, 26, .95);
-}
-.puesto-corto {
-  font-family: var(--fuente-display);
-  font-size: .95rem; font-weight: 700; letter-spacing: .04em; line-height: 1;
-}
-.puesto-zona {
-  font-size: .5rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
-  opacity: .6;
-}
-
-.cancha-info {
-  display: flex; flex-direction: column; gap: 4px;
-  min-height: 62px;
-  background: var(--panel-2);
-  border: none;
-  border-left: 2px solid var(--naranja);
-  border-radius: 0 var(--r-sm) var(--r-sm) 0;
-  padding: 11px 14px;
-  font-size: .78rem;
-  line-height: 1.5;
-  color: var(--texto-tenue);
-}
-.cancha-info b { color: var(--texto); font-size: .86rem; }
-
-/* --- tarjetas de equipo inicial --- */
-.equipos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
-}
-.tarjeta-equipo {
-  display: flex; align-items: center; gap: 13px;
-  text-align: left;
-  font-family: inherit;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-md);
-  padding: 15px 16px;
-  cursor: pointer;
-  transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
-}
-.tarjeta-equipo:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 107, 26, .45);
-  background: var(--panel-3);
-  box-shadow: 0 14px 28px -20px rgba(255, 107, 26, .9);
-}
-.tarjeta-equipo.elegido {
-  border-color: var(--naranja);
-  background: linear-gradient(158deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .04));
-  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4);
-}
-.tarjeta-equipo:hover .escudo { transform: scale(1.08) rotate(-3deg); }
-.equipo-datos { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.equipo-nombre { font-size: .94rem; font-weight: 800; line-height: 1.25; }
-.equipo-liga { font-size: .73rem; color: var(--texto-tenue); }
-.equipo-prestigio { font-size: .8rem; color: var(--oro); letter-spacing: 2px; }
-.equipo-prestigio .tenue { color: rgba(255, 255, 255, .18); }
 
 /* ============================ CREACIÓN ============================ */
 .form-fila { margin-bottom: 24px; }
@@ -1958,15 +2660,6 @@ body.modal-abierto { overflow: hidden; }
   .tarjeta-opcion h3 { font-size: .85rem; }
   .tarjeta-opcion p { font-size: .71rem; }
 
-  /* creación: las tres columnas se apilan */
-  .creacion-grid { grid-template-columns: 1fr; gap: 14px; }
-  .camiseta { max-width: 158px; }
-  /* apiladas, las columnas no comparten altura: sin mínimo, para que la lista
-     no deje un hueco cuando el buscador filtra a un solo país */
-  .lista-paises { min-height: 0; max-height: 226px; }
-  .cancha-marco { max-width: 320px; }
-  .equipos-grid { grid-template-columns: 1fr; }
-
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .opciones { gap: 10px; }
 
@@ -1989,14 +2682,7 @@ body.modal-abierto { overflow: hidden; }
 }
 
 /* ============================ TABLET ============================ */
-/* Las reglas que repartían la antigua ficha lateral en rejilla se han
-   eliminado: esa ficha ya no existe (ahora va arriba, a ancho completo). */
 @media (min-width: 620px) and (max-width: 900px) {
-  .creacion-grid { grid-template-columns: 1fr 1fr; }
-  .creacion-col:nth-child(3) { grid-column: 1 / -1; }
-  .cancha-marco { width: 100%; max-width: 330px; margin-inline: auto; }
-  .lista-paises { max-height: 300px; }
-
   .equipos-grid { grid-template-columns: repeat(3, 1fr); }
   .stats-grid { grid-template-columns: repeat(4, 1fr); }
   .vitrina { grid-template-columns: 1fr 1fr; }
@@ -2134,102 +2820,101 @@ body.modal-abierto { overflow: hidden; }
   .ovr-num { font-size: 2.1rem; }
 }
 
-/* El panel de creación se ajusta a su contenido en vez de estirarse a toda
-   la altura de la ventana: estirado, las columnas cortas (camiseta y cancha)
-   se quedaban con 180 px de vacío interior debajo de su contenido. */
+/* ============================ RESPONSIVE: CREACIÓN PRO ============================ */
 .panel-creacion { flex: 0 0 auto; }
 
-@media (max-width: 900px) {
-  .creacion-grid { grid-template-columns: 1fr; padding: 14px; gap: 18px; }
-  /* Apiladas, el filete separador va arriba y no a la izquierda. */
-  .creacion-col { padding: 18px 0 0; border-left: none; border-top: 1px solid var(--borde); }
-  .creacion-col:first-child { padding-top: 0; border-top: none; }
-  .creacion-cabecera { padding: 14px 16px 12px; }
-  .creacion-pie { padding: 12px 16px; }
-  .creacion-pie .principal { width: 100%; min-width: 0; }
-  .camiseta-caja { max-height: 230px; }
-  .lista-paises { max-height: 260px; }
-}
-
-/* --- Equilibrado de las tres columnas de creación ---
-   La cancha marcaba la altura de la fila (su alto sale del ancho por
-   aspect-ratio) y dejaba a la lista de países un vacío de ~250 px debajo.
-   Se le pone tope de ancho, con lo que baja de alto, y las filas de la
-   lista se reparten el espacio restante. */
-.cancha-marco { width: 100%; max-width: 262px; margin-inline: auto; }
-.pais-item { padding: 11px 10px; }
-.lista-paises { align-content: stretch; grid-auto-rows: 1fr; gap: 8px; }
-
-/* ============ CREACIÓN: ajustes de la referencia ============ */
-/* La lista de países vive dentro de su propia caja, con el buscador fuera
-   y encima, y su barra de desplazamiento a la vista. */
-.lista-paises-caja {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-md);
-  padding: 8px;
-}
-.lista-paises { padding-right: 6px; }
-.lista-paises::-webkit-scrollbar { width: 6px; }
-.lista-paises::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .22);
-  border-radius: 99px;
-}
-.lista-paises::-webkit-scrollbar-track { background: transparent; }
-/* Dentro de la caja, cada país es una fila, no una tarjeta con marco. */
-.pais-item {
-  background: transparent;
-  border-color: transparent;
-}
-.pais-item:hover { background: var(--panel-3); transform: none; }
-.pais-item.elegido {
-  background: var(--panel-3);
-  border-color: rgba(255, 255, 255, .75);
-}
-
-/* Selector de mano hábil: dos opciones, la activa en claro. */
-.campo-mano { margin-top: 10px; }
-.selector-mano {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-md);
-}
-.selector-mano button {
-  font-family: inherit;
-  font-size: .88rem;
-  font-weight: 700;
-  color: var(--texto-tenue);
-  background: transparent;
-  border: none;
-  border-radius: var(--r-sm);
-  padding: 10px 8px;
-  cursor: pointer;
-  transition: background .18s, color .18s;
-}
-.selector-mano button:hover { color: var(--texto); }
-.selector-mano button.elegida {
-  background: var(--texto);
-  color: #10131a;
-}
-
-/* Con las tres columnas en paralelo la pista aprovecha el ancho de la suya y
-   la descripción va justo debajo (con el tope anterior quedaba un hueco de
-   ~100 px entre ambas). Solo a partir de 901 px: apiladas, la pista ocuparía
-   todo el ancho de la pantalla. */
-@media (min-width: 901px) {
-  .creacion-col .cancha-marco { max-width: none; }
-}
-.cancha-info { margin-top: 0; }
-
-/* Sin flechas de incremento en el dorsal: la referencia usa un campo limpio
-   y el stepper del navegador desentona (y se cuela sobre el borde). */
 #input-dorsal::-webkit-outer-spin-button,
 #input-dorsal::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 #input-dorsal { -moz-appearance: textfield; appearance: textfield; }
+
+@media (max-width: 960px) {
+  .creacion-layout-pro {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 22px;
+  }
+  .player-card-panel {
+    position: static;
+    max-width: 380px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .creacion-paso2-grid {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .creacion-cabecera-pro {
+    padding: 16px 16px 14px;
+  }
+  .creacion-stepper {
+    gap: 8px;
+  }
+  .step-item {
+    font-size: .75rem;
+  }
+  .step-separador {
+    flex: 0 0 20px;
+  }
+  .creacion-titular h2 {
+    font-size: 1.45rem;
+  }
+  .creacion-layout-pro {
+    padding: 14px;
+    gap: 16px;
+  }
+  .player-card {
+    padding: 12px;
+  }
+  .jersey-stage {
+    min-height: 180px;
+  }
+  .camiseta {
+    max-width: 170px;
+    max-height: 190px;
+  }
+  .card-nombre-display {
+    font-size: 1.25rem;
+  }
+  .bloque-personalizacion {
+    padding: 14px;
+    gap: 12px;
+  }
+  .campos-fila-pro {
+    grid-template-columns: 1fr 100px;
+    gap: 10px;
+  }
+  .selector-mano-pro {
+    grid-template-columns: 1fr;
+  }
+  .cancha-y-roles-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .cancha-marco {
+    max-width: 210px;
+  }
+  .creacion-pie-pro {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .pie-info-req {
+    text-align: center;
+  }
+  .btn-creacion-accion {
+    width: 100%;
+    justify-content: center;
+  }
+  .creacion-paso2-grid {
+    padding: 14px;
+    gap: 16px;
+  }
+  .jugador-resumen-banner {
+    padding: 10px 14px;
+  }
+}
