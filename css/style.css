@@ -66,8 +66,6 @@
 .stat-valor,
 .camiseta-dorsal,
 .oferta-salario b,
-.puntos-restantes b,
-.reparto-atributo .valor-attr,
 .equipo-nombre,
 .vitrina-txt b,
 .jugador-info h2 {
@@ -1005,8 +1003,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 /* ============================================================
    CREACIÓN WIZARD PRO (5 PASOS · CERO SCROLL · FULLSCREEN FIT)
    ============================================================ */
+/* Alto ajustado al contenido (con tope de seguridad): en escritorio, donde
+   sobra alto de sobra, forzar 100dvh dejaba huecos enormes encima y debajo
+   del contenido real. El modo "pantalla completa sin scroll" solo hace
+   falta en móvil, y se restablece en su media query. */
 .panel-creacion-wizard {
-  height: calc(100dvh - 72px);
   max-height: calc(100dvh - 72px);
   display: flex;
   flex-direction: column;
@@ -1015,6 +1016,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   background: var(--panel);
   border: 1px solid var(--borde);
   box-shadow: var(--sombra-alta);
+}
+/* El asistente ya no se estira a todo el alto: lo centramos como una
+   tarjeta compacta en vez de anclarlo arriba con un vacío debajo. */
+.contenido:has(.panel-creacion-wizard) .pantalla {
+  justify-content: center;
 }
 
 /* --- Barra Superior de Stepper --- */
@@ -1100,6 +1106,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   min-height: 0;
   display: grid;
   grid-template-columns: 280px 1fr;
+  /* align-content:start evita que las dos filas/columnas se repartan el alto
+     sobrante cuando el panel es más alto que su contenido (sobre todo en
+     escritorio): sin esto, la tarjeta del jugador y el paso activo se
+     separaban con un hueco enorme en vez de quedar juntos arriba. */
+  align-content: start;
   gap: 20px;
   padding: 16px 22px;
   overflow: hidden;
@@ -1109,7 +1120,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .wizard-card-col {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 0;
 }
 .player-live-card {
@@ -1318,7 +1329,7 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -1368,6 +1379,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+/* Sin esto, el contenido interno (botones de dorsal + selector de mano) no
+   podía encogerse por debajo de su ancho natural, y en móvil el selector de
+   mano hábil se salía del panel: solo se veía "Diestro/a" y "Zurdo/a"
+   quedaba invisible fuera de la pantalla. */
+.campo-fila-doble > .campo-pro { min-width: 0; }
 .dorsal-stepper-wrap {
   display: flex;
   align-items: center;
@@ -1413,13 +1429,15 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  min-width: 0;
 }
 .btn-mano {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 10px 4px;
+  min-width: 0;
   background: var(--panel-3);
   border: 1px solid var(--borde);
   border-radius: var(--r-sm);
@@ -1427,8 +1445,11 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   cursor: pointer;
   transition: all .2s;
 }
-.btn-mano .mano-ico { font-size: 1.2rem; }
-.btn-mano .mano-nom { font-size: .88rem; font-weight: 700; color: var(--texto); }
+.btn-mano .mano-ico { font-size: 1.2rem; flex-shrink: 0; }
+.btn-mano .mano-nom {
+  font-size: .88rem; font-weight: 700; color: var(--texto);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .btn-mano:hover {
   border-color: rgba(255, 255, 255, .3);
   background: rgba(255, 255, 255, .05);
@@ -1778,12 +1799,16 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   font-size: .76rem;
   color: var(--texto-tenue);
 }
+/* A dos columnas en pantallas anchas: align-content:start evita que las
+   filas del grid se repartan el alto sobrante (eso dejaba una tarjeta por
+   atributo con medio deslizador y un vacío enorme debajo). */
 .grid-atributos-sliders {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-content: start;
+  gap: 10px;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -2048,175 +2073,6 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
   transform: scale(1.2);
   background: var(--ambar);
 }
-
-/* ============================ CREACIÓN ============================ */
-.form-fila { margin-bottom: 24px; }
-.form-fila > label {
-  display: block;
-  font-size: .66rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase;
-  color: var(--texto-tenue);
-  margin-bottom: 10px;
-}
-.form-fila input[type="text"] {
-  width: 100%;
-  font-family: inherit; font-size: 1rem;
-  color: var(--texto);
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-md);
-  padding: 14px 16px;
-  transition: border-color .2s, box-shadow .2s, background .2s;
-}
-.form-fila input[type="text"]:focus {
-  outline: none;
-  border-color: var(--naranja);
-  background: var(--panel-3);
-  box-shadow: 0 0 0 4px rgba(255, 107, 26, .14);
-}
-.form-fila input::placeholder { color: var(--texto-tenue); }
-
-.tarjetas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(186px, 1fr)); gap: 11px; }
-
-.tarjeta-opcion {
-  position: relative;
-  background: var(--panel-2);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-md);
-  padding: 14px 15px;
-  cursor: pointer;
-  overflow: hidden;
-  transition: transform .18s var(--ease), border-color .2s, background .2s, box-shadow .25s;
-}
-.tarjeta-opcion:hover {
-  border-color: rgba(255, 107, 26, .45);
-  background: var(--panel-3);
-  transform: translateY(-3px);
-  box-shadow: 0 14px 28px -20px rgba(255, 107, 26, .9);
-}
-.tarjeta-opcion:active { transform: translateY(-1px) scale(.99); }
-.tarjeta-opcion.seleccionada {
-  border-color: var(--naranja);
-  background: linear-gradient(158deg, rgba(255, 107, 26, .18), rgba(255, 107, 26, .04));
-  box-shadow: 0 0 0 1px rgba(255, 107, 26, .4), 0 14px 30px -18px rgba(255, 107, 26, .95);
-}
-.tarjeta-opcion.seleccionada::after {
-  content: "✓";
-  position: absolute; top: 11px; right: 12px;
-  width: 20px; height: 20px;
-  display: grid; place-items: center;
-  font-size: .7rem; font-weight: 800; color: #2a1305;
-  background: var(--grad-acento);
-  border-radius: 50%;
-  animation: pop .35s var(--ease) both;
-}
-@keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
-.tarjeta-opcion h3 { margin: 0 0 5px; font-size: .93rem; font-weight: 800; padding-right: 24px; }
-.tarjeta-opcion p { margin: 0; font-size: .76rem; line-height: 1.5; color: var(--texto-tenue); }
-
-/* Contador compacto junto al rótulo: antes ocupaba una caja a todo lo ancho
-   con dos palabras dentro, que era puro espacio desaprovechado. */
-.reparto-cabecera {
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 10px;
-  margin-bottom: 6px;
-}
-.reparto-cabecera label { margin: 0; }
-.puntos-restantes {
-  display: inline-flex; align-items: baseline; gap: 7px;
-  padding: 7px 14px;
-  font-size: .74rem; font-weight: 700; color: var(--texto-medio);
-  background: rgba(255, 107, 26, .1);
-  border: 1px solid rgba(255, 107, 26, .3);
-  border-radius: 999px;
-}
-.puntos-restantes b {
-  font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums;
-  background: var(--grad-acento);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-
-/* En pantallas anchas el reparto va a dos columnas: si no, cada fila se
-   estira a todo lo ancho y deja un vacío enorme entre el nombre y los botones. */
-#lista-reparto {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0 28px;
-}
-
-.reparto-atributo {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 2px 10px;
-  padding: 9px 0 11px;
-  border-bottom: 1px solid var(--borde);
-}
-.reparto-atributo:last-child { border-bottom: none; }
-.reparto-atributo .nombre-attr {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: .84rem; font-weight: 600;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.reparto-atributo .nombre-attr .ico { width: 16px; height: 16px; color: var(--naranja); vertical-align: 0; }
-.reparto-atributo .valor-attr {
-  text-align: right; font-size: 1.02rem; font-weight: 800;
-  font-variant-numeric: tabular-nums; color: var(--ambar);
-}
-.reparto-atributo.al-maximo .valor-attr { color: var(--verde); }
-
-/* Barras deslizantes para repartir los puntos */
-.deslizador {
-  grid-column: 1 / -1;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 24px;              /* zona de agarre amplia, sobre todo en móvil */
-  background: transparent;
-  cursor: pointer;
-  margin: 0;
-}
-.deslizador:focus { outline: none; }
-.deslizador:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(255, 179, 71, .45); }
-.deslizador:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(255, 179, 71, .45); }
-
-/* --relleno lo fija el JS con el valor actual */
-.deslizador::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: 99px;
-  /* tramo base (fijo, apagado) · puntos repartidos (naranja) · vacío */
-  background: linear-gradient(90deg,
-    rgba(255, 107, 26, .42) 0 var(--base, 0%),
-    var(--naranja) var(--base, 0%) var(--relleno, 0%),
-    rgba(255, 255, 255, .1) var(--relleno, 0%) 100%);
-}
-.deslizador::-moz-range-track {
-  height: 6px;
-  border-radius: 99px;
-  /* tramo base (fijo, apagado) · puntos repartidos (naranja) · vacío */
-  background: linear-gradient(90deg,
-    rgba(255, 107, 26, .42) 0 var(--base, 0%),
-    var(--naranja) var(--base, 0%) var(--relleno, 0%),
-    rgba(255, 255, 255, .1) var(--relleno, 0%) 100%);
-}
-.deslizador::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px; height: 20px;
-  margin-top: -7px;          /* centra el tirador sobre la pista de 6px */
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--naranja);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, .55);
-  transition: transform .15s var(--ease);
-}
-.deslizador::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid var(--naranja);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, .55);
-}
-.deslizador:hover::-webkit-slider-thumb { transform: scale(1.12); }
-.deslizador:active::-webkit-slider-thumb { transform: scale(1.2); }
 
 /* ============================ ESTADÍSTICAS ============================ */
 .stats-grid {
@@ -2687,6 +2543,10 @@ body.modal-abierto { overflow: hidden; }
   .panel h2 { font-size: 1.2rem; }
   .hero { padding: 32px 18px 34px; border-radius: var(--r-lg); }
   .hero .acciones { max-width: none; }
+  /* El tope mínimo del clamp (2.6rem) no bajaba en pantallas estrechas: en
+     móviles de ~360-390px el título se salía del panel y se cortaba el
+     botón. Aquí sí puede encogerse por debajo de ese mínimo. */
+  .hero h1 { font-size: clamp(1.9rem, 10vw, 4.6rem); }
 
   .sidebar { padding: 16px; border-radius: var(--r-lg); }
   .atributos { grid-template-columns: 1fr 1fr; gap: 11px 15px; }
@@ -2698,11 +2558,6 @@ body.modal-abierto { overflow: hidden; }
   .ficha-valor { font-size: .72rem; }
   .ficha-entreno.ancha { min-height: 60px; padding: 12px 15px; }
   .ficha-entreno.ancha .ficha-nombre { font-size: .83rem; }
-
-  .tarjetas-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
-  .tarjeta-opcion { padding: 12px 13px; }
-  .tarjeta-opcion h3 { font-size: .85rem; }
-  .tarjeta-opcion p { font-size: .71rem; }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .opciones { gap: 10px; }
@@ -2735,7 +2590,6 @@ body.modal-abierto { overflow: hidden; }
 
 
 @media (max-width: 359px) {
-  .tarjetas-grid { grid-template-columns: 1fr; }
   .atributos { grid-template-columns: 1fr; }
   .rejilla-entreno { grid-template-columns: 1fr 1fr; }
 }
