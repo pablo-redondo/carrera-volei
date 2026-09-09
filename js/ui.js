@@ -239,6 +239,14 @@ function renderTrayectoria(jugador) {
 function actualizarCabeceraTemporada(jugador, temporadaNum) {
   const el = $cabeceraTemporada();
   el.textContent = jugador ? `T${temporadaNum} · ${jugador.edad} años` : "";
+
+  const relleno = document.getElementById("progreso-carrera-fill");
+  if (relleno) {
+    const pct = jugador
+      ? clampNumero(((jugador.edad - EDAD_INICIAL) / (EDAD_RETIRO_OBLIGATORIO - EDAD_INICIAL)) * 100, 0, 100)
+      : 0;
+    relleno.style.width = `${pct}%`;
+  }
 }
 
 /* ================= PANTALLA DE INICIO ================= */

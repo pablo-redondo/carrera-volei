@@ -196,6 +196,35 @@ body {
 
 .cabecera-derecha { display: flex; align-items: center; gap: 8px; }
 
+/* Marcador de progreso de carrera: franja fina bajo la cabecera que se
+   rellena de 16 a 38 años, como el reloj de un marcador deportivo. Solo
+   tiene sentido con una partida en curso. */
+.progreso-carrera {
+  position: relative;
+  flex-shrink: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, .05);
+  overflow: visible;
+}
+body:not(:has(#ficha:not(.oculto))) .progreso-carrera { display: none; }
+.progreso-carrera-fill {
+  position: absolute; inset: 0 auto 0 0;
+  width: 0%;
+  background: var(--grad-acento);
+  box-shadow: 0 0 10px 0 rgba(255, 107, 26, .55);
+  transition: width .7s var(--ease);
+}
+.progreso-carrera-fill::after {
+  content: "";
+  position: absolute;
+  right: -3px; top: 50%;
+  width: 7px; height: 7px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--ambar);
+  box-shadow: 0 0 9px 2px rgba(255, 179, 71, .9);
+}
+
 .cabecera-temporada, .cabecera-overall {
   font-size: .7rem;
   font-weight: 800;
@@ -280,6 +309,31 @@ body {
 .contenido:has(.panel-creacion-wizard) ~ .pie,
 body:has(.panel-creacion-wizard) .pie {
   display: none;
+}
+/* En escritorio, con la partida en marcha, el marco de la app (cabecera,
+   ficha, trayectoria) se ancla a la ventana y solo hace scroll el panel de
+   turno: antes toda la página se alargaba hacia abajo con cada decisión —
+   ver captura de "fin de temporada" — dejando la trayectoria a medio
+   desplazar y el botón de continuar fuera de la vista. */
+@media (min-width: 901px) {
+  body:has(#ficha:not(.oculto)) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  body:has(#ficha:not(.oculto)) .contenido {
+    height: calc(100dvh - 65px);
+    max-height: calc(100dvh - 65px);
+    overflow: hidden;
+  }
+  body:has(#ficha:not(.oculto)) .pie {
+    display: none;
+  }
+  body:has(#ficha:not(.oculto)) .columna-juego {
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-right: 2px;
+  }
 }
 .columna-juego {
   display: flex;
@@ -700,8 +754,8 @@ th.col-num { text-align: right; }
 .narrativa b { color: var(--texto); font-weight: 700; }
 .narrativa.destacada {
   position: relative;
-  margin: 16px 0;
-  padding: 16px 18px;
+  margin: 12px 0;
+  padding: 12px 16px;
   font-size: 1rem;
   color: var(--texto);
   background: linear-gradient(135deg, rgba(255, 107, 26, .1), rgba(255, 107, 26, .02));
@@ -718,7 +772,7 @@ th.col-num { text-align: right; }
 }
 
 /* ============================ BOTONES ============================ */
-.opciones { display: flex; flex-direction: column; gap: 11px; margin-top: 20px; }
+.opciones { display: flex; flex-direction: column; gap: 11px; margin-top: 16px; }
 
 button.opcion {
   position: relative;
@@ -2078,15 +2132,15 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  gap: 11px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 14px;
 }
 .stat-tile {
   position: relative;
   background: linear-gradient(165deg, var(--panel-3), var(--panel-2));
   border: 1px solid var(--borde);
   border-radius: var(--r-md);
-  padding: 18px 12px 15px;
+  padding: 13px 12px 11px;
   text-align: center;
   overflow: hidden;
   transition: transform .2s var(--ease), border-color .2s;
@@ -2104,14 +2158,14 @@ button.secundario:hover { border-color: var(--ambar); background: rgba(255, 107,
 .stat-tile:hover { transform: translateY(-3px); border-color: var(--borde-fuerte); }
 .stat-valor {
   display: block;
-  font-size: 2.4rem; font-weight: 700;
+  font-size: 2.05rem; font-weight: 700;
   font-variant-numeric: tabular-nums; line-height: .92;
   background: var(--grad-acento);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .stat-tile.fria .stat-valor { background: var(--grad-frio); -webkit-background-clip: text; background-clip: text; }
 .stat-label {
-  display: block; margin-top: 6px;
+  display: block; margin-top: 4px;
   font-size: .64rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase;
   color: var(--texto-tenue);
 }
@@ -2128,7 +2182,7 @@ table.tabla-stats tr:last-child td { border-bottom: none; }
 table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-size: .92em; }
 
 /* ============================ CHIPS ============================ */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: .77rem; font-weight: 700;
@@ -2283,22 +2337,44 @@ table.tabla-stats .tenue { color: var(--texto-tenue); font-weight: 500; font-siz
 .vitrina {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 14px;
 }
 .vitrina.amplia { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
 .vitrina-pieza {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 11px 16px;
   border-radius: var(--r-md);
   border: 1px solid rgba(255, 197, 61, .3);
   background:
     radial-gradient(120px 80px at 18% 20%, rgba(255, 197, 61, .16), transparent 70%),
     var(--panel-2);
-  animation: subir .5s var(--ease) both;
-  animation-delay: calc(.07s * var(--i, 0));
+  overflow: hidden;
+  animation: subir .5s var(--ease) both, brillo-titulo 2.6s ease-in-out .5s 2;
+}
+/* Destello de celebración: recorre la tarjeta un par de veces al aparecer,
+   para que levantar un título se note aunque el resto del resumen ahora
+   sea más compacto. */
+.vitrina-pieza::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent, rgba(255, 224, 138, .35), transparent);
+  transform: translateX(-140%) skewX(-18deg);
+  pointer-events: none;
+}
+@keyframes brillo-titulo {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 197, 61, 0); }
+  30%      { box-shadow: 0 0 26px 2px rgba(255, 197, 61, .4); }
+}
+.vitrina-pieza:nth-child(1)::after { animation: destello-titulo 2.6s ease-in-out .5s 2; }
+.vitrina-pieza:nth-child(2)::after { animation: destello-titulo 2.6s ease-in-out .75s 2; }
+@keyframes destello-titulo {
+  0%, 15% { transform: translateX(-140%) skewX(-18deg); }
+  45%, 100% { transform: translateX(220%) skewX(-18deg); }
 }
 .vitrina-pieza .trofeo {
   flex-shrink: 0;
